@@ -3,6 +3,7 @@
 fitfileanalyses.py
 '''
 
+import os
 
 
 ################################################################################
@@ -44,6 +45,8 @@ hBox1 = wx.BoxSizer()
 hBox1.Add(notesText, proportion=1, flag=wx.EXPAND)
 
 # notes input filename
+def load(event):
+    print 'load button pressed'
 FileNameCtl = wx.TextCtrl(bkg)
 loadButton = wx.Button(bkg, label='Open')
 loadButton.Bind(wx.EVT_BUTTON, load)
@@ -53,6 +56,8 @@ hBox2.Add(loadButton, proportion=0, flag=wx.LEFT, border=5)
 
 ContentsCtl = wx.TextCtrl(bkg, style=wx.TE_MULTILINE | wx.HSCROLL)
 ContentsCtl.SetValue( 'This will be the output window' )
+font1 = wx.Font(10, wx.MODERN, wx.NORMAL, wx.NORMAL, False, u'Courier New')
+ContentsCtl.SetFont(font1)
 
 # vertical box sizer
 vbox = wx.BoxSizer(wx.VERTICAL)
