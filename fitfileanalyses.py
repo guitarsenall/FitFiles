@@ -29,6 +29,17 @@ wildcard = "FIT files (*.fit)|*.fit|"  \
 #           classes & functions           #
 ###########################################
 
+def AutoFillConfigFile(FilePath):
+    # attempt to find appropriate config file
+    if 'will' in FilePath.split('\\'):
+        WillConfigFilename = 'cyclingconfig_will.txt'
+        if os.path.exists(WillConfigFilename):
+            ConfigFileCtl.SetLabel(WillConfigFilename)
+    elif 'kim' in FilePath.split('\\'):
+        KimConfigFilename = 'cyclingconfig_kim.txt'
+        if os.path.exists(KimConfigFilename):
+            ConfigFileCtl.SetLabel(KimConfigFilename)
+
 class MyFileDropTarget(wx.FileDropTarget):
     def __init__(self, window):
         wx.FileDropTarget.__init__(self)
@@ -42,13 +53,64 @@ class MyFileDropTarget(wx.FileDropTarget):
         os.chdir(FilePath)
         win.SetStatusText(os.getcwd(), number=0)
         SetFileNameText(FileName)
+        AutoFillConfigFile(FilePath)
         return True
 
 def LoadFitFile(event):
     print 'LoadFitFile button pressed'
+    dlg = wx.FileDialog(
+        None, message="Choose a .FIT file",
+        defaultDir=os.getcwd(),
+        defaultFile="",
+        wildcard = "Garmin files (*.fit)|*.fit|"  \
+                   "All files (*.*)|*.*",
+        style=wx.FD_OPEN |
+              wx.FD_CHANGE_DIR | wx.FD_FILE_MUST_EXIST |
+              wx.FD_PREVIEW
+        )
+    if dlg.ShowModal() == wx.ID_OK:
+        # This returns a Python list of files that were selected.
+        paths = dlg.GetPaths()
+        #contents.SetValue('You selected %d files:' % len(paths))
+        (FilePath, FileName) = os.path.split(paths[0])
+        OutStr = [ "CWD: %s" % os.getcwd() ]
+        OutStr.append( 'PATH: %s' % FilePath )
+        OutStr.append( 'FILE: %s' % FileName )
+        OutputTextCtl.SetValue( '\n'.join(OutStr) )
+        for s in OutStr:
+            print s  #OutStr
+        SetFileNameText(FileName)
+        win.SetStatusText(os.getcwd(), number=0)
+        AutoFillConfigFile(FilePath)
+    dlg.Destroy()
+
 
 def LoadConfigFile(event):
     print 'LoadConfigFile button pressed'
+    dlg = wx.FileDialog(
+        None, message="Choose a configuration file",
+        defaultDir=os.getcwd(),
+        defaultFile="",
+        wildcard = "Text files (*.txt)|*.txt|"  \
+                   "All files (*.*)|*.*",
+        style=wx.FD_OPEN |
+              wx.FD_CHANGE_DIR | wx.FD_FILE_MUST_EXIST |
+              wx.FD_PREVIEW
+        )
+    if dlg.ShowModal() == wx.ID_OK:
+        # This returns a Python list of files that were selected.
+        paths = dlg.GetPaths()
+        (FilePath, FileName) = os.path.split(paths[0])
+        OutStr = [ "CWD: %s" % os.getcwd() ]
+        OutStr.append( 'PATH: %s' % FilePath )
+        OutStr.append( 'FILE: %s' % FileName )
+        OutputTextCtl.SetValue( '\n'.join(OutStr) )
+        for s in OutStr:
+            print s  #OutStr
+        ConfigFileCtl.SetLabel(FileName)
+        win.SetStatusText(os.getcwd(), number=0)
+    dlg.Destroy()
+
 
 ###########################################
 #    main app, window, and background     #
