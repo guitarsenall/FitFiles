@@ -26,6 +26,25 @@ wildcard = "FIT files (*.fit)|*.fit|"  \
 #---------------------------------------------------------------------------
 
 ###########################################
+#           classes & functions           #
+###########################################
+
+class MyFileDropTarget(wx.FileDropTarget):
+    def __init__(self, window):
+        wx.FileDropTarget.__init__(self)
+        self.window = window
+        #self.log = log
+
+    def OnDropFiles(self, x, y, filenames):
+        txt = "\n%d file(s) dropped at %d,%d:\n" % (len(filenames), x, y)
+        txt += '\n'.join(filenames)
+        (FilePath, FileName) = os.path.split(filenames[0])
+        os.chdir(FilePath)
+        win.SetStatusText(os.getcwd(), number=0)
+        SetFileNameText(FileName)
+        return True
+
+###########################################
 #    main app, window, and background     #
 ###########################################
 
@@ -35,6 +54,7 @@ stBar   = win.CreateStatusBar(number=1, style=wx.STB_DEFAULT_STYLE, id=-1,
                                 name='stBar')
 win.SetStatusText(os.getcwd(), number=0)
 bkg = wx.Panel(win)
+
 
 ###########################################
 #             controls                    #
@@ -47,7 +67,12 @@ hBox1.Add(notesText, proportion=1, flag=wx.EXPAND)
 # notes input filename
 def load(event):
     print 'load button pressed'
-FileNameCtl = wx.TextCtrl(bkg)
+FileNameCtl = wx.StaticText(bkg, -1, "", style=wx.ST_NO_AUTORESIZE|wx.BORDER_SIMPLE)
+#FileNameCtl.SetWindowVariant(wx.WINDOW_VARIANT_SMALL)
+dt = MyFileDropTarget(bkg)
+FileNameCtl.SetDropTarget(dt)
+def SetFileNameText(txt):
+    FileNameCtl.SetLabel(txt)
 loadButton = wx.Button(bkg, label='Open')
 loadButton.Bind(wx.EVT_BUTTON, load)
 hBox2 = wx.BoxSizer()

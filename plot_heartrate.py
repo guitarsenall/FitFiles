@@ -12,7 +12,8 @@ from fitparse import Activity
 #            + r'sample-activity.fit'
 #fitfilepath = r'2017-01-02-16-12-43_edge.fit'
 #fitfilepath = r'2017-01-02-16-07-51_zwift.fit'
-fitfilepath = r'2018-02-26-19-28-36.fit'
+fitfilepath = r'S:\will\documents\OneDrive\bike\activities\will\\' \
+            + r'2018-12-02-20-29-34.fit'
 
 activity = Activity(fitfilepath)
 activity.parse()
@@ -108,7 +109,7 @@ age     = 50.0
 
 #   calibration at endurance
 EnduranceHR     = 140.0                         # BPM
-EndurancePower  = 180.0                         # watts
+EndurancePower  = 190.0                         # watts
 EnduranceBurn   = EndurancePower*3600/1e3/60    # Cal/min
 EnduranceCoef   = EnduranceBurn                     \
                 / (   -55.0969 + 0.6309*EnduranceHR \
