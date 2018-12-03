@@ -7,8 +7,8 @@ age         : 52.0          ; years
 
 [power]
 
-EndurancePower  : 190.0     ; watts
-ThresholdPower  : 260.0     ; watts
+EndurancePower  : 175.0     ; watts
+ThresholdPower  : 250.0     ; watts
 EnduranceHR     : 140.0     ; BPM
 ThresholdHR     : 170.0     ; BPM
 

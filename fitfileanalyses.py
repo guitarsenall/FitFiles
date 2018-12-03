@@ -44,6 +44,12 @@ class MyFileDropTarget(wx.FileDropTarget):
         SetFileNameText(FileName)
         return True
 
+def LoadFitFile(event):
+    print 'LoadFitFile button pressed'
+
+def LoadConfigFile(event):
+    print 'LoadConfigFile button pressed'
+
 ###########################################
 #    main app, window, and background     #
 ###########################################
@@ -55,7 +61,6 @@ stBar   = win.CreateStatusBar(number=1, style=wx.STB_DEFAULT_STYLE, id=-1,
 win.SetStatusText(os.getcwd(), number=0)
 bkg = wx.Panel(win)
 
-
 ###########################################
 #             controls                    #
 ###########################################
@@ -65,30 +70,61 @@ hBox1 = wx.BoxSizer()
 hBox1.Add(notesText, proportion=1, flag=wx.EXPAND)
 
 # notes input filename
-def load(event):
-    print 'load button pressed'
-FileNameCtl = wx.StaticText(bkg, -1, "", style=wx.ST_NO_AUTORESIZE|wx.BORDER_SIMPLE)
+FileNameCtl = wx.StaticText(bkg, -1, "",
+                    style = wx.ST_NO_AUTORESIZE | wx.BORDER_SIMPLE )
 #FileNameCtl.SetWindowVariant(wx.WINDOW_VARIANT_SMALL)
 dt = MyFileDropTarget(bkg)
 FileNameCtl.SetDropTarget(dt)
 def SetFileNameText(txt):
     FileNameCtl.SetLabel(txt)
 loadButton = wx.Button(bkg, label='Open')
-loadButton.Bind(wx.EVT_BUTTON, load)
+loadButton.Bind(wx.EVT_BUTTON, LoadFitFile)
 hBox2 = wx.BoxSizer()
 hBox2.Add(FileNameCtl, proportion=1, flag=wx.EXPAND)
 hBox2.Add(loadButton, proportion=0, flag=wx.LEFT, border=5)
 
-ContentsCtl = wx.TextCtrl(bkg, style=wx.TE_MULTILINE | wx.HSCROLL)
-ContentsCtl.SetValue( 'This will be the output window' )
+# Analyses Choice
+analyses_labels = [ 'Endurance Laps',
+                    'Zone Detection',
+                    'Interval Laps',
+                    'Heart Rate',
+                    'Compare Two Powers']
+AnalysesText = wx.StaticText(bkg, label = "Choose analysis to run:" )
+AnalysesCtl = wx.Choice(bkg, choices = analyses_labels)
+AnalysesCtl.SetSelection(1)
+def AnalysesEventChoice(event):
+    OutStr  = 'AnalysesEventChoice: %s\n' % event.GetString()
+    OutputTextCtl.SetValue( OutStr )
+    print OutStr
+bkg.Bind(wx.EVT_CHOICE, AnalysesEventChoice, AnalysesCtl)
+hBox3 = wx.BoxSizer()
+hBox3.Add(AnalysesText, proportion=0, flag=wx.RIGHT, border=5)
+hBox3.Add(AnalysesCtl, proportion=0, flag=wx.EXPAND)
+
+# configuration file
+ConfigFileTxt    = wx.StaticText(bkg, label = 'Configuration File:')
+ConfigFileCtl    = wx.StaticText(bkg, -1, "",
+                            style = wx.ST_NO_AUTORESIZE | wx.BORDER_SIMPLE )
+ConfigFileButton = wx.Button(bkg, label='...')
+ConfigFileButton.Bind(wx.EVT_BUTTON, LoadConfigFile)
+hBox4 = wx.BoxSizer()
+hBox4.Add(ConfigFileTxt, proportion=0, flag=wx.RIGHT, border=5)
+hBox4.Add(ConfigFileCtl, proportion=1, flag=wx.EXPAND | wx.RIGHT, border=5)
+hBox4.Add(ConfigFileButton, proportion=0, flag=wx.LEFT, border=5)
+
+# output text
+OutputTextCtl = wx.TextCtrl(bkg, style=wx.TE_MULTILINE | wx.HSCROLL)
+OutputTextCtl.SetValue( 'This will be the output window' )
 font1 = wx.Font(10, wx.MODERN, wx.NORMAL, wx.NORMAL, False, u'Courier New')
-ContentsCtl.SetFont(font1)
+OutputTextCtl.SetFont(font1)
 
 # vertical box sizer
 vbox = wx.BoxSizer(wx.VERTICAL)
 vbox.Add(hBox1, proportion=0, flag=wx.EXPAND | wx.ALL, border=5)
 vbox.Add(hBox2, proportion=0, flag=wx.EXPAND | wx.ALL, border=5)
-vbox.Add(ContentsCtl, proportion=1,
+vbox.Add(hBox3, proportion=0, flag=wx.EXPAND | wx.ALL, border=5)
+vbox.Add(hBox4, proportion=0, flag=wx.EXPAND | wx.ALL, border=5)
+vbox.Add(OutputTextCtl, proportion=1,
          flag=wx.EXPAND | wx.LEFT | wx.BOTTOM | wx.RIGHT, border=5)
 bkg.SetSizer(vbox)
 
