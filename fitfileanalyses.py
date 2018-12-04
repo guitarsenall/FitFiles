@@ -112,6 +112,34 @@ def LoadConfigFile(event):
     dlg.Destroy()
 
 
+def LaunchAnalysis(event):
+    AnalysesChoice  = AnalysesCtl.GetSelection()
+    AnalysesChoice  = AnalysesCtl.GetString(AnalysesChoice)
+    print 'Launch Analysis called with analysis: ' + AnalysesChoice
+    if AnalysesChoice == 'Endurance Laps':
+        FITFileName = FileNameCtl.GetLabel()
+        if not os.path.exists(FITFileName):
+            dlg = wx.MessageDialog(win,
+                        'A valid .FIT file must be entered.',
+                        'WARNING',
+                        wx.OK | wx.ICON_INFORMATION
+                        )
+            dlg.ShowModal()
+            dlg.Destroy()
+            return
+        print 'Running endurance summary on ' + FITFileName
+    else:
+        print 'Analysis not yet supported: ' + AnalysesChoice
+        dlg = wx.MessageDialog(win,
+                    'Analysis not supported: ' + AnalysesChoice,
+                    'WARNING',
+                    wx.OK | wx.ICON_INFORMATION
+                    )
+        dlg.ShowModal()
+        dlg.Destroy()
+        return
+
+
 ###########################################
 #    main app, window, and background     #
 ###########################################
@@ -153,7 +181,7 @@ analyses_labels = [ 'Endurance Laps',
                     'Compare Two Powers']
 AnalysesText = wx.StaticText(bkg, label = "Choose analysis to run:" )
 AnalysesCtl = wx.Choice(bkg, choices = analyses_labels)
-AnalysesCtl.SetSelection(1)
+AnalysesCtl.SetSelection(0)
 def AnalysesEventChoice(event):
     OutStr  = 'AnalysesEventChoice: %s\n' % event.GetString()
     OutputTextCtl.SetValue( OutStr )
@@ -174,6 +202,18 @@ hBox4.Add(ConfigFileTxt, proportion=0, flag=wx.RIGHT, border=5)
 hBox4.Add(ConfigFileCtl, proportion=1, flag=wx.EXPAND | wx.RIGHT, border=5)
 hBox4.Add(ConfigFileButton, proportion=0, flag=wx.LEFT, border=5)
 
+# LAUNCH and CLOSE buttons
+LaunchButton = wx.Button(bkg, label='LAUNCH ANALYSIS')
+LaunchButton.Bind(wx.EVT_BUTTON, LaunchAnalysis)
+def OnClose(event):
+    print 'OnClose called'
+    win.Close(True)
+CloseButton = wx.Button(bkg, label='CLOSE')
+CloseButton.Bind(wx.EVT_BUTTON, OnClose)
+hBox5 = wx.BoxSizer()
+hBox5.Add(LaunchButton, proportion=1, flag=wx.LEFT, border=5)
+hBox5.Add(CloseButton, proportion=1, flag=wx.LEFT, border=5)
+
 # output text
 OutputTextCtl = wx.TextCtrl(bkg, style=wx.TE_MULTILINE | wx.HSCROLL)
 OutputTextCtl.SetValue( 'This will be the output window' )
@@ -186,6 +226,7 @@ vbox.Add(hBox1, proportion=0, flag=wx.EXPAND | wx.ALL, border=5)
 vbox.Add(hBox2, proportion=0, flag=wx.EXPAND | wx.ALL, border=5)
 vbox.Add(hBox3, proportion=0, flag=wx.EXPAND | wx.ALL, border=5)
 vbox.Add(hBox4, proportion=0, flag=wx.EXPAND | wx.ALL, border=5)
+vbox.Add(hBox5, proportion=0, flag=wx.EXPAND | wx.ALL, border=5)
 vbox.Add(OutputTextCtl, proportion=1,
          flag=wx.EXPAND | wx.LEFT | wx.BOTTOM | wx.RIGHT, border=5)
 bkg.SetSizer(vbox)
