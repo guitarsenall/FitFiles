@@ -1,0 +1,3522 @@
+
+                                    Wednesday, January 4, 2017 (11:56 AM)
+OBJECTIVE: Use Python with MatPlotLib and NumPy to analyze my workout
+files from my Garmin Edge 810.
+
++   Project ideas:
+    *   Saddle endurance measurement.
+    *   Heart rate as a transfer function on power.
+        -   article on "Heart rate control during treadmill exercise..."
+                https://www.sciencedirect.com/science/article
+                    /pii/S174680941630057X
+        -   article "Optimal control of heart rate during treadmill exercise"
+                https://onlinelibrary.wiley.com/doi/pdf/10.1002/oca.2355
+            Describes a "nominal plant" from treadmill speed (power) to
+            heart rate.
+                "the plant transfer function Pd = B/A is taken to be a
+                first-order LTI system; this assumption follows previous
+                observations that such a model gives a good representation of HR
+                dynamics during moderate-to-vigorous treadmill exercise..."
+                    Y(s)/U(s) = k/(tau*s+1)
+        -   article "Identification of heart rate dynamics during
+            moderate-to-vigorous treadmill exercise"
+                https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4687158/
+            This is reference #13 in "Optimal control..."
+            With,
+                    Y(s)/U(s) = k/(tau*s+1)
+            parameter ranges are,
+                    20.7 <=  k  <= 28.0
+                    43.8 <= tau <= 67.7
+    *   Plot torque or pedal force
+        -   Cumulative histogram: crank revs above load.
+            See,
+                https://matplotlib.org/gallery/statistics
+                    /histogram_cumulative.html
+    *   Interval summary (formatted printout)
+        -   Use lap times or auto-detect based on a level-crossing function:
+            >   Must remain above "fire" for "debounce" counts (approx 5 sec).
+            >   Ends when remains below "reset" for "debounce" counts.
+            >   See E:\cat_code_backup\primary\2016\grinder_state
+                    \segment_detection.pro
+                for debounce technique.
+    *   Upgrade dragdrop.py to plot heart rate with grids.
+    *   Zone-based overplot of heart rate and power. This will show how
+        appropriate the heart rate is to the power. Map to zone points
+        for Y axis.
+    *   Endurance ride summary with drag-drop support and formatted printout.
+        -   table of lap results with average HR, power, NP, EF,
+        -   Eventually included percent seated time.
+        -   Power balance while seated. Degrading with fatigue?
+    *   Use wxPython to create a dialog with a suite of custom analyses
+        applied to a .FIT file that is drag-dropped onto the dialog
+        (or originally onto the .BAT launcher).
+        -   Can I have a static text showing the name of the .FIT file?
+            If so, I need to be able to change the label when a new file
+            is drag-dropped. Google.
+                    https://stackoverflow.com/questions/293344
+                        /wxpython-set-value-of-statictext
+            Yes. wx.StaticText has a method, SetLabel(), that is not clearly
+            specified in the API at,
+                https://wxpython.org/Phoenix/docs/html/wx.StaticText.html
+            because it inherits the method from a superclass.
+        -   I considered using a wxChoice control to list the analyses since
+            it would be easy to add an analysis.
+        -   Perhaps associate a config file (e.g., cyclingconfig_will.txt)
+            with the dialog?
+        -   Add a section for a second file for analyses that compare
+            two .FIT files?
+        -   Make it run on a web page?
+            >   Example:
+                    https://www.dcrainmaker.com/analyzer
+        -   Provide a log panel for formatted printing.
+            >   Redirect STDOUT to it?
+            >   Not sure a log is really what I want. See
+                        https://wxpython.org/Phoenix/docs/html
+                            /log_classes_overview.html
+                A text control would be more appropriate. Each analysis.
+                when performed, can just overwrite its contents.
+        -   Drag-dropping:
+            >   This link has sample code for a FileDropTarget.
+                    https://wiki.wxpython.org/DragAndDrop
+            >   The wxPython demo has a sample file-drop under
+                    Clipboard and DnD -> DragAndDrop
+                The code subclasses wx.FileDropTarget.
+    *   Generate a table of extended ASCII characters to import into
+        EditPlus as a ClipText file.
+        -   It NEEDS to include the "approximately equal" symbol, which
+            is NOT covered by ANSI. See,
+                http://www.fileformat.info/info/unicode/char/2248/index.htm
+            This symbol is available in Windows as alt-247 and alt-2248.
+            Python can print it with
+                    >>> print u"\u2248"
+            However, the resulting text file cannot be saved in default
+            ANSI format. Probably Unicode.
+
+
+
++   Get it all working.
+
+    *   Learning.
+        -   12/19/16:
+            Begin reading "Beginning Python: From Novice to Professional"
+            Installed Pythonista 3 on iPhone. It has NumPy and MatPlotLib.
+        -   12/21/16:
+            -   Libraries for .FIT files:
+                >   https://github.com/dtcooper/python-fitparse
+                    Says this version "is deprecated and it is currently being
+                    rewritten on the ng branch. For now, the master branch can
+                    still be considered stable. Updates to come." "Here's a
+                    Python library to parse ANT/Garmin .FIT files. These are
+                    files produced by several newer Garmin cycling computers,
+                    notably the Garmin Edge 500 and Edge 800." This IS the
+                    master branch…or, at least, contains it.
+                >   https://pypi.python.org/pypi/fitparse/1.0.0
+                    "Welcome to the rewrite for the next generation (ng) of
+                    python-fitparse."
+                    "WARNING: This is a WIP considered HIGHLY unstable. You want
+                    to use the master branch for now."
+                >   http://dtcooper.github.io/python-fitparse/
+                    Looks old and incomplete.
+                >   Garmin App Development:
+                    https://developer.garmin.com/connect-iq/
+                    In "Monkey C", said to be similar to Python.
+                >   Xert Strain and Stress--interesting metrics.
+                    https://apps.garmin.com/en-US/apps/f2045c7c-bd10-4864-8a40-1ba954b83f7f
+                    Discussion:
+                    http://baronbiosys.com/?p=1641
+        -   12/22/16.
+            >   I wrote a script on the iPhone (Pythonista) to assemble a power
+                signal consisting of a number of intervals, plot it, filter it
+                (moving average), and compute the normalized power.
+                c:\Users\Will\Google Drive\scratch.py
+            >   Also reading about Max Power Available
+                http://baronbiosys.com/?p=89
+                and Fitness Signature (Power-Duration Model)
+                http://new.baronbiosys.com/?p=4
+            >   TrainingPeaks has their own version: Functional Reserve
+                Capacity:
+                http://www.slideshare.net/TrainingPeaks
+                    /the-new-power-duration-model-in-wko4-part-4
+                Defines matches.
+            >   Critical Power Model explained
+                https://tspace.library.utoronto.ca/bitstream/1807/69056/3
+                    /Tsai_Ming-Chang_201503_PhD_thesis.pdf
+
+    *   Installing Python and Matplotlib.
+        -   12/22/16
+                Get MatPlotLib working on the PC (in Python 3.4)
+                http://matplotlib.org/users/installing.html
+                Need to install for a standard installation with Python 3.4:
+                python -m pip install -U pip setuptools
+                python -m pip install matplotlib
+                Failed. Old version of PIP. Upgrade:
+                python -m pip install --upgrade pip
+                Try again:
+                python -m pip install matplotlib
+                It works! … in the command window.
+                It works in PyScripter also (use Remote Tk engine).
+        -   1/3/17
+                Get fitparse module from
+                https://github.com/dtcooper/python-fitparse
+                Installed in C:\Python34\Lib\site-packages\fitparse\
+                Looks like I need Python 2.7
+                http://dtcooper.github.io/python-fitparse/
+                Get latest 64-bit version at
+                https://www.python.org/downloads/windows/
+                https://www.python.org/ftp/python/2.7.13/python-2.7.13.amd64.msi
+                Install to C:\Python27\
+                add to path.
+                the python command now runs 2.7 in the command window.
+                But what about MatPlotLib?
+                Try this from C:\Python27\
+                python -m pip install matplotlib
+                It worked!!  Python 2.7 with MatPlotLib works in PyScripter!
+                Run
+                S:\will\documents\bike\python-fitparse-master\tests\test.py
+                success
+                S:\will\documents\bike\python-fitparse-master
+                    \scripts\sample_program.py
+                success. Prints out TONS of stuff.
+
+                                        Wednesday, January 4, 2017 (12:16 PM)
+    *   Get fitparse working and understood.
+        -   sample_program.py is not very helpful. The Activity instance, a,
+            is far too large and complex to understand.
+            >   There is another example in Readme.md. Save code as
+                readme_sample.py. Got it working with sample-activity.fit.
+                Its output looks like this:
+                    -------------- Record #1 ---------------
+                     * timestamp: 2011-06-26 16:18:40 s
+                     * distance: 0.0 m
+                     * altitude: 161.0 m
+                     * speed: 0.0 m/s
+                     * heart_rate: 100 bpm
+                     * temperature: 22 C
+                    ...
+                    ------------- Record #3098 -------------
+                     * timestamp: 2011-06-26 19:34:21 s
+                     * position_lat: 521320503 semicircles
+                     * position_long: -947410530 semicircles
+                     * distance: 88797.21 m
+                     * altitude: 171.8 m
+                     * speed: 0.0 m/s
+                     * heart_rate: 154 bpm
+                     * temperature: 22 C
+                Sample interval is at least a second, but often greater.
+                Notice the time interval is 3:15:41, or 11,741 seconds,
+                but there are only 3098 records.
+            >   I will have to track time.
+                    >>> t0 = datetime.strptime("2011-06-26 16:18:40", \
+                                                "%Y-%m-%d %H:%M:%S" )
+                    >>> t2 = datetime.strptime("2011-06-26 19:34:21", \
+                                                "%Y-%m-%d %H:%M:%S" )
+                Note the capital 'Y' for 4 digits.
+                    >>> t2-t0
+                    datetime.timedelta(0, 11741)
+                    >>> dt.seconds
+                    11741
+                Nope, the timestamp is alread a datetime.datetime object.
+        -   I was able to assemble a pair of lists describing the
+            heart rate over time:
+                if 'heart_rate' in field_name:
+                    dt  = t-t0
+                    time_signal.append(dt.total_seconds())
+                    heart_rate.append(field_data)
+        -   Can I plot it?
+            >   Copy scratch.py which contains a successful plot.
+            >   Hack plot_heartrate.py.
+            >   IT WORKS!!
+                                            Thursday, January 5, 2017 (10:04 AM)
+        -   Exercise: Compute calories from heart rate.
+            >   Prototype in scratch.py.
+            >   Got it working in plot_heartrate.py.
+                    See first_heart_rate_b
+
+
++   Compare data from two systems: Zwift (with power from the PowerBeam Pro)
+    and the Garmin Edge 810 (with power from the Quarq Elsa RS powermeter).
+    *   Develop in compare_two_powers.py.
+        -   This will not be trivial. The signals have variable time
+            increments, and to compare them, I will have to resample them.
+            Beyond that every signal I extract might have
+            its own time vector; not all records have all signals!
+            >   Start with extracting and cross-plotting heart rate
+                against power for one file.
+            >   I think I can assume timestamp will be in every record,
+                and throw an exception if it is not. It works.
+            >   Now I need a data structure that handles every signal in
+                the file.
+                    data['heart_rate'] = 2xn array
+                    heart_rate_time = data['heart_rate'][0,:]
+                    heart_rate_data = data['heart_rate'][1,:]
+                This scheme appears to work:
+                    >>> t = [ 0, 1, 2]
+                    >>> x = [10, 11, 12]
+                    >>> data['hr'] = transpose( array( zip(t,x) ) )
+                    >>> data['hr'][0,:]
+                    array([0, 1, 2])
+                    >>> data['hr'][1,:]
+                    array([10, 11, 12])
+                Not really. With each detection of x (e.g., heart rate or
+                power), I need to store a point, (t,x), into a list.
+                This appears to work:
+                    >>> data_list = [ (0,10), (1,11), (2,12)]
+                    >>> data = {}
+                    >>> data['hr'] = transpose( array(data_list) )
+                    >>> data['hr'][0,:]
+                    array([0, 1, 2])
+                    >>> data['hr'][1,:]
+                    array([10, 11, 12])
+                so just store a tuple in the list:
+                    data[field_name].append( (dt.total_seconds(), \
+                                                field_data) )
+                However, how will the first point or empty list be created?
+                I think I can check,
+                    if field_name in data.keys():
+                        data[field_name].append( (dt.total_seconds(),   \
+                                                    field_data)         )
+                    else:
+                        data[field_name] = [ (dt.total_seconds(),   \
+                                                    field_data)     ]
+                IT WORKED!!
+                    distance: 3635 points
+                    temperature: 3635 points
+                    power: 3631 points
+                    heart_rate: 3635 points
+                    altitude: 3635 points
+                    position_long: 3635 points
+                    position_lat: 3635 points
+                    speed: 3635 points
+                    cadence: 3629 points
+                Sure enough, some signals have missing points--include
+                heart rate and power. I will have to resample.
+                                            Friday, January 6, 2017 (09:51 AM)
+            >   Now I need a new data structure containing constant-increment-
+                resampled vectors.
+                -   That will mean metadata about the start time and
+                    increment. Wait! It starts at zero by definition, and
+                    it ends at dt.total_seconds() when the loop is finished with
+                    the last record found.
+                -   Resampling means interpolation:
+                        from numpy import *     # pylab works too
+                        u = arange(5)
+                        v = u*10
+                        x = arange(4) + 0.5
+                        y = interp(x, u, v)
+                        >>> y
+                        array([  5.,  15.,  25.,  35.])
+            >   Got the cross-plot!
+                    see first_heart_rate_c
+            >   Do I want to extract and resample separately? Or is it time
+                to make a class and encapsulate? Nah, just a function that
+                accepts the activity and returns the resampled signal
+                dictionary.
+                -   However, I do want to move the function to a separate
+                    file, activity_tools.py.
+        -   Overplot data from both systems.
+            >   The Zwift file contains a challenging record:
+                    -------------- Record #92 --------------
+                     * timestamp: 2017-01-02 16:14:43 s
+                     * position_lat: -138817216 semicircles
+                     * position_long: 1991811712 semicircles
+                     * distance: 601.7 m
+                     * compressed_speed_distance: (9.72, 255.9375) m/s,
+                    m
+                     * heart_rate: 95 bpm
+                     * altitude: 1.6 m
+                     * speed: 2.643 m/s
+                     * power: 55 watts
+                     * cadence: 66 rpm
+                I need to ignore non-numeric data fields. google:
+                    if isinstance(field_data, (int, long, float)):
+                        ...
+            >   Got it.
+                    See compare_two_powers_a
+                The PowerBeam is delayed by about 6 seconds--A LOT:
+                    see compare_two_powers_b
+                This is way more than the inertia of the flywheel could
+                ever account for. I remember thinking there was a 6-second
+                delay between the change in slope on the screen and the
+                change in resistance I was feeling. Coincidence?
+                                        Saturday, January 7, 2017 (01:16 PM)
+        -   Slight rabbit trail: Create a batch file on which I can drag-drop
+            a .fit file and report calories.
+            >   Implement in scratch.bat and scratch.py.
+            >   Scratch.bat:
+                        ECHO OFF
+                        ECHO file received:
+                        ECHO %1
+                        ECHO calling python on %1
+                        python scratch.py %1
+                        pause
+            >   Scratch.py:
+                        import sys
+                        print 'command line args: ', sys.argv[1:]
+            >   So far, so good. I'll come back to this later.
+
+    *   Cross-plot the two powers against each other.
+        -   I took data this morning using the Fluid2 trainer with ZPower
+            in Zwift.
+            >   Plot:
+                    see compare_two_powers_c
+                Heart rates are synched within 1 second. Notice the very
+                generous ZPower boost while the tire and trainer are
+                warming up. Yet it converges to a moderate boost as well.
+        -   Cool idea: Color the dots according to their position in time
+            so that later points can be differentiated from earlier points.
+            Got it (after A LOT of study):
+                see compare_two_powers_d
+            I can see what I was thinking: Very early, at 175 watts, ZPower
+            was giving me 300 watts. This later converged to a boost
+            of 25 watts--a 15% boost. Notice the hard jumps had much better
+            agreement above 300 watts.
+                                            Monday, January 9, 2017 (12:33 PM)
+        -   I need linear regression.
+            >   logical operations on arrays are difficult.
+                Use nonzero the way I would use WHERE() in PV-WAVE
+                or find() in Matlab. But I have to build the truth array
+                with numpy.logical_and. However, it only does two arrays at
+                a time:
+                    ii      = nonzero( logical_and( edge_t>32,      \
+                                       logical_and(edge_power>50,   \
+                                                   edge_power<300) ))
+                    x       = edge_power[ii]
+                    y       = zwift_power_r[ii]
+                    coef    = polyfit( x, y, deg=1 )
+                    slope   = coef[0]
+                    offset  = coef[1]
+            >   Got it working, but without coloring the line according
+                to the time slice used:
+                    see compare_two_powers_e
+                                        Wednesday, January 11, 2017 (12:27 PM)
+        -   I also need delay analysis to shift one data file relative
+            to the other in a way that minimizes error.
+            >   How do I delay one signal relative to the other and compare
+                them? Prototype in scratch.py. This works:
+                        from numpy import zeros, sqrt, average
+                        a       = zeros(10)
+                        a[5]    = 1
+                        b       = zeros(10)
+                        b[7]    = 1
+                        MinDelay    = -3
+                        MaxDelay    = 3
+                        FirstIter   = True
+                        for i in range(MinDelay, MaxDelay+1):
+                            if i==0:
+                                c = b - a
+                            elif i>0:
+                                c = b[0:-i] - a[i:]
+                            else:
+                                c = b[-i:] - a[0:i]
+                            rms = sqrt(average( c**2 ))
+                            print '    delay: %i, rms = %6.3f' % (i,rms)
+                            if FirstIter:
+                                MinRMS  = rms
+                                iMin    = i
+                                FirstIter   = False
+                            else:
+                                if rms < MinRMS:
+                                    MinRMS  = rms
+                                    iMin    = i
+                        print 'minimum RMS is ', MinRMS
+                        print 'delay with minimum RMS is ', iMin
+            >   Try it on the ZPower set:
+                Heart rate and cadence signals show the Zwift file
+                is delayed by 1 second. The power signal shows no
+                difference:
+                        delay: -4, rms = 70.584
+                        delay: -3, rms = 67.281
+                        delay: -2, rms = 61.587
+                        delay: -1, rms = 61.020
+                        delay: 0, rms = 68.621
+                        delay: 1, rms = 72.475
+                        delay: 2, rms = 72.583
+                When I zoom in on the plot, I see it closer to 2 seconds,
+                which has nearly the same RMS as 1 second.
+                    see compare_two_powers_f
+                ZPower does a nice job of quick response!
+            >   Try it on the PowerBeam set.
+                -   Plot with speed to get an idea of the role of
+                    accelearation.
+                        see compare_two_powers_g
+                    It looks like Zwift speed is the simulated version while
+                    the garmin is the measured speed of the rear wheel.
+                    The measured speed of the PowerBeam appears to not be
+                    available.
+                                        Thursday, January 12, 2017 (12:12 PM)
+                    Delay analysis says the two files have no delay between
+                    them, but the powerbeam is delayed 2 seconds relative
+                    to the Quarq. However, this plot shows the onward
+                    power step (25.5 seconds) is delayed by 4 seconds while
+                    the offward step (28.2 seconds) is delayed 6 seconds
+                    (as the powerbeam ramps down more gradually).
+                        see compare_two_powers_h
+                    This interval shows delays of
+                        onward  = 6 sec
+                        offward = 4 sec
+                    However, in this one, the powerbeam ramps straight down
+                    during the offward step with a clear delay of 4 sec.
+                    Another interval,
+                        see compare_two_powers_i
+                    shows delays of
+                        onward  = 5 sec
+                        offward = 5 sec
+                    And yet another interval,
+                        see compare_two_powers_j
+                    shows delays of
+                        onward  = 6 sec
+                        offward = 1 sec
+                    This one has an odd offward step in which the PB shoots
+                    down with no delay but then shelves for a couple seconds at
+                    the bottom.
+                    Or, to rearrange the data:
+                        interval    onward  offward
+                            g           4       6
+                            h           6       4
+                            i           5       5
+                            j           6       1
+                          ave         5.3     4.0 (ave 4.6)
+                                #                               1/15/17
+                                #   Oops, forgot to look at the regression:
+                                #       see compare_two_powers_k
+                                #       see compare_two_powers_l
+                                #       heart rate optimum delay:  0
+                                #       cadence optimum delay:  0
+                                #       power optimum delay:  -2
+                                #       slope = 0.912, offset = 11
+                                #   so the PB is 9% lower than the Quarq.
+
+                                Thursday, January 12, 2017 (continued)
++   New utility: I want to drag-drop a FIT file on a program and have it
+    simply report the calories burned subject to the following data
+    in a configuration file:
+            weight  = 188.0*0.45359237  # lb->kg
+            age     = 50.0              # years
+            EnduranceHR     = 140.0     # BPM
+            EndurancePower  = 180.0     # watts
+            ThresholdHR     = 170.0     # BPM
+            ThresholdPower  = 271.0     # watts
+    *   I created a simple program to support drag-dropping:
+        -   dragdrop.bat:
+                    ECHO OFF
+                    ECHO file received:
+                    ECHO %1
+                    ECHO calling python on %1
+                    python dragdrop.py %1
+                    pause
+        -   dragdrop.py:
+                    import sys
+                    print 'command line args: ', sys.argv[1:]
+        -   output:
+                S:\...\fitfiles>ECHO OFF
+                file received:
+                S:\...\fitfiles\2017-01-08-15-41-48_zwift.fit
+                calling python on S:\...\fitfiles\2017-01-08-15-41-48_zwift.fit
+                command line args:  ['S:\\will\\documents\\bike\\fitfiles
+                    \\2017-01-08-15-41-48_zwift.fit']
+                Press any key to continue . . .
+        -   So I CAN get the file and submit it to a python script.
+    *   Create configuration file, fitcalories.txt.
+                    [user]
+                    weight  : 188.0*0.45359237  # lb->kg
+                    age     : 50.0              # years
+                    [power]
+                    EndurancePower  : 180.0     # watts
+                    ThresholdPower  : 271.0     # watts
+                    EnduranceHR     : 140.0     # BPM
+                    ThresholdHR     : 170.0     # BPM
+        -   Try parsing it.
+            >   Need some adjustments.
+                :   Inline comments need ';'
+                :   Can't do math on a float. Need separate conversion.
+            >   New version:
+                    [user]
+                    weight      : 188.0         ; lb
+                    WeightToKg  : 0.45359237    ; lb->kg
+                    age         : 50.0          ; years
+                    [power]
+                    EndurancePower  : 180.0     ; watts
+                    ThresholdPower  : 271.0     ; watts
+                    EnduranceHR     : 140.0     ; BPM
+                    ThresholdHR     : 170.0     ; BPM
+                It works.
+    *   Finish it based on activity_tools.py.
+        IT WORKS!!!
+            S:\will\documents\bike\fitfiles>ECHO OFF
+            file received:
+            S:\will\documents\bike\fitfiles\2017-01-08-15-41-48_zwift.fit
+            calling python on S:\will\documents\bike\fitfiles
+                \2017-01-08-15-41-48_zwift.fit
+            command line args:  ['S:\\will\\documents\\bike\\fitfiles
+                \\2017-01-08-15-41-48_zwift.fit']
+            -------------------- fitcalories.txt --------------------
+            WeightEntry   :  188.0
+            WeightToKg    :  0.45359237
+            weight        :  85.27536556
+            age           :  50.0
+            EndurancePower:  180.0
+            ThresholdPower:  271.0
+            EnduranceHR   :  140.0
+            ThresholdHR   :  170.0
+            finished extracting lists
+            -------------------- RESULTS --------------------
+            total time           =    93 minutes
+            average heart rate   =   138 BPM
+            total work           =  1019 kJ
+            total calories       =  1018 Cal
+            Press any key to continue . . .
+
+
+                                        Thursday, January 26, 2017 (02:01 PM)
++   I need to detect and process laps.
+    *   How do I detect a lap?
+        -   Found a way to find different record types:
+                from datetime import datetime
+                from fitparse import Activity
+                fitfilepath = r'2017-01-02-16-12-43_edge.fit'
+                activity = Activity(fitfilepath)
+                activity.parse()
+                #records = activity.get_records_by_type('record')
+                records = activity.records
+                record_types = set()
+                for record in records:
+                    if record.type.name != 'record':
+                        print record.type.name
+                        record_types.add(record.type.name)
+            which results in,
+                >>> record_types
+                set(['activity',
+                     'device_info',
+                     'device_settings',
+                     'event',
+                     'file_creator',
+                     'file_id',
+                     'lap',
+                     'session',
+                     'unknown',
+                     'user_profile',
+                     'zones_target'])
+            (note the savvy use of set. That came from the book.)
+        -   Get info on laps using readme_sample.py with,
+                records = activity.get_records_by_type('lap')
+            The first of nine lap records is,
+                -------------- Record #1 ---------------
+                 * timestamp: 2017-01-02 16:38:04 s
+                 * start_time: 2017-01-02 16:12:43
+                 * start_position_lat: 485575301 semicircles
+                 * start_position_long: -1067995097 semicircles
+                 * end_position_lat: 485576381 semicircles
+                 * end_position_long: -1067995676 semicircles
+                 * total_elapsed_time: 1521.275 s
+                 * total_timer_time: 1339.275 s
+                 * total_distance: 10925.87 m
+                 * total_cycles: 1705 cycles
+                 * message_index: 0
+                 * total_calories: 194 kcal
+                 * total_fat_calories: 97 kcal
+                 * avg_speed: 8.158 m/s
+                 * max_speed: 11.127 m/s
+                 * avg_power: 164 watts
+                 * max_power: 355 watts
+                 * total_ascent: 2 m
+                 * total_descent: 0 m
+                 * event: lap
+                 * event_type: stop
+                 * avg_heart_rate: 128 bpm
+                 * max_heart_rate: 149 bpm
+                 * avg_cadence: 79 rpm
+                 * max_cadence: 111 rpm
+                 * lap_trigger: manual
+                 * sport: cycling
+            The total_elapsed_time of 1521.275 sec agrees precisely with the
+            first lap time of 25:21. But all I get in the data records is
+            a timestamp. So I will have to process timestamps to retrieve
+            records in between lap times.
+                                            Friday, January 27, 2017 (07:30 PM)
+    *   Got it working...mostly. Implemented in dragdrop.py with
+        threshold_state_detect( x, OnLevel, OffLevel, DebounceCounts=5 )
+        in activity_tools.py.
+        -   threshold_state_detect() replicates the PV-WAVE function,
+            find_pls() but adds the debounce feature. State-machine
+            logic. Very nice. Good challenge.
+        -   It detects VO2max intervals as sweet-spot intervals also.
+            Not sure yet how to prevent that.
+            >   Minimum length required to add the interval to the
+                list?
+                                            Sunday, January 29, 2017 (10:14 AM)
+                Close. Don't add it to threshold_state_detect(). Add it to
+                the calling routine. Works great.
+                    Command Line : S:\will\documents\bike\fitfiles
+                        \2017-01-26-15-29-03_intervals.fit
+                    command line args:  ['S:\\will\\documents\\bike\\fitfiles
+                        \\2017-01-26-15-29-03_intervals.fit']
+                    -------------------- cyclingconfig.txt --------------------
+                    WeightEntry   :  188.0
+                    WeightToKg    :  0.45359237
+                    weight        :  85.27536556
+                    age           :  50.0
+                    EndurancePower:  180.0
+                    ThresholdPower:  271.0
+                    EnduranceHR   :  140.0
+                    ThresholdHR   :  170.0
+                    finished extracting lists
+                    ----------------- CALORIE/ENERGY RESULTS -----------------
+                    total time           =    94 minutes
+                    average heart rate   =   133 BPM
+                    total work           =   880 kJ
+                    total calories       =   987 Cal
+                    -------------------- VO2MAX INTERVALS --------------------
+                        interval  0:  331 watts for 01:54
+                        interval  1:  333 watts for 02:00
+                        interval  2:  324 watts for 01:57
+                        interval  3:  324 watts for 00:58
+                        interval  4:  315 watts for 00:51
+                        interval  5:  321 watts for 00:50
+                        interval  6:  341 watts for 01:00
+                    VO2max interval average = 328 watts for   9.5 minutes
+                    ----------------- SWEET-SPOT INTERVALS -----------------
+                        interval 15:  246 watts for 10:16
+                    Sweet-spot interval average = 246 watts for  10.3 minutes
+
+
++   threshold_state_detect() will also work great for
+    Saddle endurance measurement.
+    *   What does standing look like? Here is a classic standing segment:
+            see saddle_endurance_a
+        I worry that using threshold_state_detect() on the cadence will not
+        detect a drop in cadence due to the debounce. Yet I need the debounce
+        to detect that I am seated again. Notice I alternate between pedaling
+        and rest over a period of 8 seconds. Suppose I had a "running minimum"
+        that takes the minimum over a boxcar of 8 seconds. Its value would
+        remain below 30 rpm during a standing segment. Using this signal, I
+        could set OffLevel=30 and OnLevel=60 for threshold_state_detect().
+                                        Wednesday, February 1, 2017 (11:54 AM)
+        -   Got it working in activity_tools.py
+                def running_minimum( x, boxcar=8 ):
+                    '''
+                    Like it says, a running minimum over
+                    the given boxcar length
+                    '''
+                    from numpy import zeros
+                    nPts = len(x)
+                    run_min = zeros(nPts)
+                    for i in range(boxcar-1,nPts):
+                        iBeg = 0 if i<boxcar-1 else i-boxcar+1
+                        iEnd = i    # placeholder
+                        run_min[i] = min( x[iBeg:iEnd] )
+                    return run_min
+                # end running_minimum()
+    *   Clone plot_cadence.py from plot_heartrate.py.
+
+                                        Wednesday, February 28, 2018 (1:16 PM)
++   After more than a year, get this thing running again.
+
+    *   Preliminary setup on laptop.
+        >   Move this folder to
+                D:\Users\Owner\Documents\2018\fitfiles
+        >   Installation
+            Notes copied from
+                D:\Users\Owner\Documents\2018\computers\notes.txt
+            from February 23, 2018
+            :   stuff to install:
+                    Python 2 and 3
+                    PyScripter
+                    MatPlotLib for plotting
+                    FitParse for .FIT file processing
+            :   I cannot remember the particulars of installing python,
+                particularly 64-bit Vs 32-bit.
+                Just download the default at
+                    https://www.python.org/downloads/
+                for both versions 2.7.14 and 3.6.4.
+                #   v3 is a 32-bit program.
+            :   I found these notes from 12/15/16:
+                    Download and install Python from
+                    https://www.python.org/
+                    Get Python 3.5.2 and attempt to standardize on Python 3
+                        (though I used 2.6 at Cat).
+                    https://wiki.python.org/moin/Python2orPython3
+                    For some reason, it gave me the 32-bit version, and I
+                        cannot find a 64-bit. So I need a 32-bit version of
+                        PyScripter.
+                    Download and install PyScripter 2.6.0 from
+                    https://sourceforge.net/projects/pyscripter/
+                    Not working. "python cannot be initialized". I suspect
+                    Python 3.5.2 is not supported by PyScripter. It installs a
+                        program menu item for 3.4. Google around.
+                    Install 64-bit Python 3.4.3 (python-3.4.3.amd64.msi).
+                        Add to path.
+                    Install 64-bit PyScripter 2.6.0
+                        (PyScripter-v2.6.0-x64-Setup.exe).
+                    IT WORKED!!
+            :   So it looks like I hit trouble because I had a 64-bit
+                version of PyScripter. Perhaps I should get a 32-bit.
+                Download default from
+                    https://sourceforge.net/projects/pyscripter/
+                which gives PyScripter-v3.2.2-Setup.exe, which is 32-bit.
+                Install it. It gives a note:
+                    This is the 32-bit version of PyScripter.
+                    If you are using a 64-bit version of Windows please note
+                    that PyScripter will only
+                    work if a 32-bit version of Python is installed.
+                It runs both with Python 2 and 3.
+            :   fitparse is at
+                    https://github.com/dtcooper/python-fitparse
+                but it is not obvious how to download it. Inspect desktop.
+                The .py files are installed in
+                    C:\Python27\Lib\site-packages\fitparse\
+                Create this folder on the laptop, and download the files
+                into it:
+                            __init__.py
+                            base.py
+                            processors.py
+                            profile.py
+                            records.py
+                            utils.py
+                A note reads,
+                    Latest commit 3303ab3  on Oct 13, 2017.
+                    pR0Ps Bump version to v1.0.1
+            :   Try some basic code:
+                    D:\Users\Owner\Documents\bike\fitfiles\readme_sample.py
+                It fails. Apparently fitparse has changed fundamentally:
+                the activity class is no longer defined!
+                #   Phooey! Right now I just need to get Python working
+                    on the laptop. Place the new code in fitparse_1.0.1,
+                    get the old code from the desktop, place in fitparse_old,
+                    and copy it into
+                        C:\Python27\Lib\site-packages\fitparse\
+                    IT WORKS!
+                    At least, readme_sample.py works on an old .FIT file
+                    (2017-01-02-16-12-43_edge.fit).
+                #   But I am a little concerned that it only finds 9 records.
+                    Run it on the desktop. Same result.
+                                        Wednesday, February 28, 2018 (1:25 PM)
+            :   MatPlotLib
+                Try this in a command window
+                    > cd C:\Python27\
+                    > python -m pip install matplotlib
+                It appeared to work. Test in PyScripter with Python 2.7:
+                    >>> import matplotlib as mp
+                The command runs without error. Conclude Python 2.7 with
+                MatPlotLib works in PyScripter!
+                #   Try running plot_heartrate.py in PyScripter.
+                    Oops, verbose is true. Takes forever.
+                    IT WORKS!!!
+        >   Can I read a file from the new Garmin Edge 1000? I have a vague
+            memory of running into problems with this.
+            Try plot_heartrate.py with 2018-02-26-19-28-36.fit.
+            Yes. It worked fine.
+        >   How about dragdrop.py?
+            :   This is executed by dropping a .FIT file on dragdrop.bat.
+                Update for the new location of the file.
+            :   An error results:
+                    D:\Users\Owner\Documents\2018\fitfiles>ECHO OFF
+                    The system cannot find the drive specified.
+                    file received:
+                    D:\Users\Owner\Documents\2018\fitfiles
+                        \2018-02-26-19-28-36.fit
+                    calling python on D:\Users\Owner\Documents\2018
+                        \fitfiles\2018-02-26-19-28-36.fit
+                      File "D:\Users\Owner\Documents\2018\fitfiles
+                        \dragdrop.py", line 5
+                        print 'command line args: ', sys.argv[1:]
+                                                  ^
+                    SyntaxError: Missing parentheses in call to 'print'.
+                    Did you mean print('command line args: ', sys.argv[1:])?
+                    Press any key to continue . . .
+                I think it is calling Python v3 instead of 2. And I think
+                this has to do with the path environment variable.
+                Set in control panel | system | system properties | adv...
+                Check in command window:
+                >echo %path%
+                    C:\ProgramData\Oracle\Java\javapath;C:\Windows\system32;
+                    C:\Windows;C:\Windows\System32\Wbem;
+                    C:\Windows\System32\WindowsPowerShell\v1.0\;
+                    c:\Python27\;
+                    C:\Users\Owner\AppData\Local\Programs\Python
+                        \Python36-32\Scripts\;
+                    C:\Users\Owner\AppData\Local\Programs\Python\Python36-32\;
+                    C:\Users\Owner\AppData\Local\Microsoft\WindowsApps;
+                >python
+                    Python 2.7.14 (v2.7.14:84471935ed, Sep 16 2017, 20:19:30)
+                        [MSC v.1500 32 bit (Intel)] on win32
+                    Type "help", "copyright", "credits" or "license" for
+                        more information.
+                IT WORKED!
+            :   Try again. Error persists.
+            :   Force the python path in dragdrop.bat:
+                    c:\python27\python D:\Users\Owner\Documents\2018
+                        \fitfiles\dragdrop.py %1
+                This works and results in:
+                    D:\Users\Owner\Documents\2018\fitfiles>ECHO OFF
+                    The system cannot find the drive specified.
+                    file received:
+                    D:\Users\Owner\Documents\2018\fitfiles
+                        \2018-02-26-19-28-36.fit
+                    calling python on D:\Users\Owner\Documents\2018\fitfiles
+                        \2018-02-26-19-28-36.fit
+                    command line args:  ['D:\\Users\\Owner\\Documents\\2018
+                        \\fitfiles\\2018-02-26-19-28-36.fit']
+                    -------------------- cyclingconfig.txt --------------------
+                    WeightEntry   :  188.0
+                    WeightToKg    :  0.45359237
+                    weight        :  85.27536556
+                    age           :  50.0
+                    EndurancePower:  180.0
+                    ThresholdPower:  271.0
+                    EnduranceHR   :  140.0
+                    ThresholdHR   :  170.0
+                    finished extracting lists
+                    -------------------- CALORIE/ENERGY RESULTS ---------------
+                    total time           =    60 minutes
+                    average heart rate   =   137 BPM
+                    total work           =   598 kJ
+                    total calories       =   667 Cal
+                    -------------------- VO2MAX INTERVALS --------------------
+                    -------------------- SWEET-SPOT INTERVALS ----------------
+                    interval detected at sample 715
+                    interval ended at sample 1134
+                    interval detected at sample 1315
+                    interval ended at sample 1735
+                    interval detected at sample 1919
+                    interval ended at sample 2334
+                    interval detected at sample 2515
+                    interval ended at sample 2934
+                        interval  0:  244 watts for 06:59
+                        interval  1:  245 watts for 07:00
+                        interval  2:  246 watts for 06:55
+                        interval  3:  243 watts for 06:59
+                    Sweet-spot interval average = 245 watts for  27.9 minutes
+                    Press any key to continue . . .
+
+                                            Friday, March 16, 2018 (1:35 PM)
+    *   Duplicate laptop setup on desktop.
+        -   See
+                S:\will\documents\2018\computers\notes.txt
+            for more (Python, PyScripter, fitparse, and MatPlotLib).
+        -   Test dragdrop.bat (dragdrop.py). It works.
+
+                                        Tuesday, April 10, 2018 (4:00 PM)
+    *   Return to processing laps (see line 511 above).
+        I want a simple analysis that detects VO2max laps, sums their
+        total time, and averages their power. This should be simple since
+        a lap record contains the two fields,
+             * total_elapsed_time: 121.25 s
+             * avg_power: 301 watts
+        Clone detect_laps.py from readme_sample.py.
+        -   I got something working. A key section of code uses nonzero()
+            the way PV-WAVE used WHERE():
+                from numpy import nonzero, array, arange, zeros
+                power = array(avg_power)
+                ii = nonzero( power > 220 )[0]   # index array
+                time = array(elapsed_time)
+                print "average interval power: %d watts" % \
+                    (sum(power[ii]*time[ii]) / sum(time[ii]))
+        -   I should probably turn this into a drag-drop routine for
+            processing interval workouts and perform a formatted print
+            of interval statistics.
+                                            Wednesday, April 11, 2018 (8:36 AM)
+            >   Formatted printing:
+                    lots of info in
+                        https://docs.python.org/2/library/string.html
+                    Perhaps too much to digest.
+                        https://stackoverflow.com/questions/9535954
+                            /printing-lists-as-tabular-data
+                    This has tips on site packages like tabulate. But I think
+                    I want to do this manually for understanding.
+                        https://docs.python.org/2/tutorial/inputoutput.html
+                        https://docs.python.org/2/library
+                            /stdtypes.html#string-formatting
+                :   This is interesting:
+                        >>> print "%8s"*6 % tuple(names1)
+                                             avg     avg     avg     max
+                        >>> print "%8s"*6 % tuple(names2)
+                             lap    time   power cadence      HR      HR
+                :   Getting closer:
+                        for i in range(len(ii)):
+                            mm = time[ii[i]] // 60
+                            ss = time[ii[i]]  % 60
+                            print '%8d%5i:%02i%8d' \
+                                    % (i, mm, ss, power[ii[i]] )
+                    gives
+                                         avg     avg     avg     max
+                         lap    time   power     cad      HR      HR
+                           0    2:48     319
+                           1    2:00     307
+                           2    2:01     301
+                           3    2:00     282
+                :   Nailed it:
+                        print "%8s"*6 % tuple(names1)
+                        print "%8s"*6 % tuple(names2)
+                        for i in range(len(ii)):
+                            mm = time[ii[i]] // 60
+                            ss = time[ii[i]]  % 60
+                            print '%8d%5i:%02i%8d%8d%8d%8d' \
+                                    % (ii[i], mm, ss, power[ii[i]],
+                                        cadence[ii[i]],
+                                        avg_hr[ii[i]],
+                                        max_hr[ii[i]] )
+                        mm = sum(time[ii]) // 60
+                        ss = sum(time[ii])  % 60
+                        print '%8s%5i:%02i%8d%8d%8d%8d' \
+                                % ("AVERAGE", mm, ss,
+                                    sum(power[ii]*time[ii]) / sum(time[ii]),
+                                    average(cadence[ii]),
+                                    average(avg_hr[ii]),
+                                    average(max_hr[ii]) )
+                    which gives,
+                                             avg     avg     avg     max
+                             lap    time   power     cad      HR      HR
+                               1    2:48     319      89     160     174
+                               3    2:00     307      97     159     176
+                               5    2:01     301      97     165     177
+                               7    2:00     282      97     160     176
+                         AVERAGE    8:50     303      95     161     175
+            >   Now to support drag-dropping.Clone techniques in dragdrop.py
+                and dragdrop.bat. Create interval_laps.bat for the
+                drag-drop process.
+                IT WORKS!!!
+
+                                            Monday, April 16, 2018 (9:29 AM)
++   Zone detection.
+    I want a signal containing the zone obtained from the power.
+    To be in a zone, two things must be true: (1) the power at x[i] must
+    be within the zone; and (2) the forward 30-second average (P30f) must be
+    in or above the zone.
+
+    *   There may be more to this as transitioning into the zone from below
+        may have different requirements than transitioning from above.
+        -   As long as P30f lies within the current zone, no transition
+            should occur.
+        -   If P30f exceeds the current zone upper boundary (Zhi), then
+            allow a transition if P[i] also exceeds Zhi.
+        -   If P30f is below the current zone lower boundary (Zlo), then
+            allow a transition if P[i] also lies below Zlo.
+        -   I think I can transition into the neighboring zone and do not
+            have to handle skipping zones. This may allow one sample in
+            the "skipped", as when a Z5 interval begins after recovery
+            in Z1, where one second will occur in each of Z2, Z3, and Z4.
+            This would "rob" zone 5 of three seconds. Hmmmm...No, I think
+            I want to go ahead and skip the intermediate zones.
+
+    *   Prototype preliminary code in zone_detect.py.
+        -   A single low scan at the end of an interval can trigger a downward
+            transition. Use a centered, 3-second average power as the
+            instantaneous power for such decisions.
+        -   I think I pretty much have it working.
+                see zone_detect_a.png
+            However, I don't get any extra credit for me 10 seconds of zone 6-7
+            burst at the end of the effort. And zones 6 and 7 are not likely to
+            last 30 seconds. Consider shorter criteria of 20 and 6 seconds,
+            respectively. Does that imply that zone 3, for instance, should
+            require a longer time to transition into from zone 2?
+            Consider the upward transition:
+                if LocateZone( cp3[i], zones ) > CurrentZone:
+                    if LocateZone( fp30[i], zones ) > CurrentZone:
+                        CurrentZone = min(
+                            LocateZone( cp3[i], zones ),
+                            LocateZone(  fp30[i], zones ))
+                        zone[i] = CurrentZone
+            Instead of using fp30[i], perhaps use a signal that somehow depends
+            on CurrentZone. Suppose each zone has its own "entry window":
+                    zone  window
+                      1     90
+                      2     60
+                      3     50
+                      4     40
+                      5     30
+                      6     15
+                      7      5
+            I could write a function to compute its forward boxcar average:
+                    fpZ1    = ForwardBoxcarAverage( power, window=90 )
+                    fpZ2    = ForwardBoxcarAverage( power, window=60 )
+                    fpZ3    = ForwardBoxcarAverage( power, window=50 )
+                    fpZ4    = ForwardBoxcarAverage( power, window=40 )
+                    fpZ5    = ForwardBoxcarAverage( power, window=30 )
+                    fpZ6    = ForwardBoxcarAverage( power, window=15 )
+                    fpZ7    = ForwardBoxcarAverage( power, window= 5 )
+            and assemble these into a dictionary:
+                    boxcars = { 1 : fpZ1
+                                2 : fpZ2
+                                3 : fpZ3
+                                4 : fpZ4
+                                5 : fpZ5
+                                6 : fpZ6
+                                7 : fpZ7 }
+            so that I could test
+                if LocateZone( boxcars[CurrentZone+1][i], zones )
+                    > CurrentZone:
+            However, how would I handle zone skipping? And might multiple
+            zones qualify for entry?
+
+                                            Tuesday, April 17, 2018 (9:36 AM)
+    *   I have an idea. I don't need to skip zones on quick transitions
+        if the sample interval is small. Thus, up-sample the data by 5x!
+        -   Use NumPy interp(Xnew, Xold, Yold)
+            Easy enough.
+        -   I want to label the time axis in hh:mm:ss format. Search.
+            google("matplotlib plot time hms x axis")
+                https://stackoverflow.com/questions/35663705
+                    /how-to-plot-time-on-y-axis-in-hm-format-in-matplotlib
+                https://stackoverflow.com/questions/17709823
+                    /plotting-timestamps-hour-minute-seconds-with-matplotlib
+                https://stackoverflow.com/questions/23120063
+                    /precision-plotting-in-time-axis
+            Not simple at all!!  The last hit seems to be the most
+            implementable. Got it!
+                import matplotlib.pyplot as plt
+                import matplotlib.dates as md
+                from matplotlib.dates import date2num, DateFormatter
+                import datetime as dt
+                base = dt.datetime(2014, 1, 27, 0, 0, 0)
+                x = [base + dt.timedelta(seconds=t) for t in new_time]
+                x = date2num(x) # Convert to matplotlib format
+                fig, ax = plt.subplots()
+                ax.plot_date( x, power, 'b-' );
+                ax.plot_date( x, fp30, 'r.');
+                ax.plot_date( x, zone_mid, 'g-');
+                ax.xaxis.set_major_formatter(DateFormatter('%H:%M:%S'))
+                ax.set_yticks( zone_lows, minor=False)
+                fig.autofmt_xdate()
+                plt.legend(['power', 'fwd 30-sec power', 'zone mid'],
+                            loc='upper left');
+                plt.grid()
+                plt.show()
+            It seems to work, as does the up-sampling:
+                zone_detect_b.png
+            Notice the transition to Z3 in between samples that lie
+            in zones 2 and 4.
+        -   What transitions are different, and which are the same?
+            If it only takes 6 seconds for the Z6-Z7 transition, I suppose
+            it should take 6 seconds for the reverse, Z7-Z6. So the window
+            is a property of the zone boundary. Or I can assign a window
+            to each zone with the understanding it is an upward exit out
+            of that zone, then handle downward transitions accordingly.
+                    zone  window
+                      1     90
+                      2     60
+                      3     45
+                      4     30
+                      5     15
+                      6      5
+                      7      1
+            >   I got it working, but it is a conceptual failure:
+                    see zone_detect_c.png
+                It will not recognize the 6 seconds in Z7 because it cannot
+                first transition Z4-Z5 or Z5-Z6 (which requires 15 seconds
+                in Z6).
+
+    *   I will simply have to support zone skipping.
+        -   When testing for an upward transition, I can test for all zones.
+            The windows relate to the upper boundaries. That is, The 15-second
+            window for zone 5 is for the Z5-Z6 boundary. I suppose I can
+            select the highest qualifying zone:
+                TestZone = 7
+                while TestZone >= 1:
+                    if  (LocateZone(           cp3[i], zones ) >= TestZone) \
+                      & (LocateZone( boxcars[cz-1][i], zones ) >= TestZone):
+                        CurrentZone = TestZone
+                        zone[i]     = CurrentZone
+                        break
+                    TestZone -= 1
+        -   With a downward transition, I think I still need to select
+            the highest qualifying zone because the windows decrease with
+            zone.
+                TestZone = 7
+                while TestZone >= 1:
+                    if  (LocateZone(           cp3[i], zones ) <= TestZone) \
+                      & (LocateZone( boxcars[cz-1][i], zones ) <= TestZone):
+                        CurrentZone = TestZone
+                        zone[i]     = CurrentZone
+                        break
+                    TestZone -= 1
+            And I FINALLY get credit for my 6-second burst in zone 7!
+                See zone_detect_d.png
+
+                                        Wednesday, April 18, 2018 (9:13 AM)
+    *   Time to plot and compare histograms.
+        -   Great tutorial on MatPlotLib histograms with multiple data sets:
+                https://matplotlib.org/gallery/statistics
+                    /histogram_multihist.html
+            But how will I control the bins to equal the zones?
+                https://matplotlib.org/gallery/statistics
+                    /histogram_histtypes.html
+            I set up a list (array?):
+                bins = [100, 150, 180, 195, 205, 220, 250, 300]
+                ax1.hist(x, bins, density=True, histtype='bar', rwidth=0.8)
+                ax1.set_title('unequal bins')
+        -   I'm having trouble with ax.hist() hanging.
+            Needed to transpose the data:
+                data = array([ power, zone_mid ]).transpose()
+            It was trying to build a histogram with 35000 data sets, each
+            having only two points!
+        -   I'm now having a lot of trouble figuring out how to scale the
+            Y axis to reflect time, whether in seconds or minutes.
+            >   This example computes the histogram but plots it as
+                a bar plot:
+                    https://stackoverflow.com/questions/23838544
+                        /logging-count-value-in-histogram-not-the-axis-itself
+            >   This one computes the histogram with numpy.histogram(),
+                normalizes the counts, and plots as bar plot:
+                    https://stackoverflow.com/questions/19139232
+                        /change-the-count-in-a-python-histogram-bin
+                But I don't know if I will be able to plot two histograms
+                together this way.  This about does it:
+                    https://matplotlib.org/gallery/statistics
+                        /barchart_demo.html
+                Integrate these approaches.
+                    See zone_detect_e.png
+                Beautiful!  The raw-power histogram overestimates
+                zones 5, 6, and 7 by a factor of 2!
+
+                                            Thursday, April 19, 2018 (9:41 AM)
+    *   Add heart rate with its own zones to the time plot.
+        -   Peruse the MatPlotLib Gallery to find code dealing with
+            subplots:
+                https://matplotlib.org/gallery.html
+            Great line:
+                fig, (ax0, ax1) = plt.subplots(nrows=2, sharex=True)
+        -   Where is heart rate again? Debug to line where signals are
+            extracted:
+                [Dbg]>>> signals.keys()
+                ['distance',
+                 'temperature',
+                 'power',
+                 'altitude',
+                 'heart_rate',
+                 'speed',
+                 'cadence']
+            Gotcha.
+        -   Looking good:
+                see zone_detect_f.png
+            Along with zone_detect_e.png, these are good demo graphics.
+
+    *   Another great example:
+            see zone_detect_g.png
+        This comes from an F1 hill repeat. VO2max is overestimated by a
+        factor of 3x by a raw-power histogram. These come from the
+        transient peaks while pedaling in Z4.
+
+                                                Tuesday, May 1, 2018 (9:48 AM)
++   Apply zone-detection (zone_detect.py) to Kim's workout last night:
+        D:\Users\Owner\Documents\OneDrive\bike\activities\kim
+            \2018-04-30-17-53-29.fit
+    *   Create a configuration file for her (cyclingconfig_kim.txt):
+                [user]
+                weight      : 110.0         ; lb
+                WeightToKg  : 0.45359237    ; lb->kg
+                age         : 56.0          ; years
+                [power]
+                EndurancePower  : 110.0     ; watts
+                ThresholdPower  : 160.0     ; watts
+                EnduranceHR     : 135.0     ; BPM
+                ThresholdHR     : 165.0     ; BPM
+    *   Run.
+            See zone_detect_h.png
+        Wow! Notice the differences in zones 5 and 6!
+        The main result is, she spent 57 minutes in zone 3 and above,
+        which is, I believe, a record and a significant accomplishment.
+
+                                            Thursday, May 3, 2018 (10:10 AM)
+    *   Problem:
+            see zone_detect_i.png
+        Kim loses credit for 30 seconds of zone-4 content.
+        This is not the first time I have seen this problem: a single low
+        sample triggers a downward transition that should not occur, and
+        the forward boxcar average prevents it from rising again--especially
+        because it has fallen into zone-2 where it requires 60 seconds for an
+        upward transition. Downward transitions are inherently different from
+        upward transitions because of the use of a forward boxcar average.
+        Therefore, I want to subject the downward transition to a more
+        restrictive condition: a phaseless, lowpass-filtered version of the
+        instantaneous power. I am thinking of a cutoff around 0.1-0.2 Hz (a
+        5-10-second period).
+        -   First, can I double-check my 3-second, centered-moving-average
+            power?
+                see check_3sec_avg_a.png
+            The magenta dots labeled "filtered power" are the 3-sec average,
+            and it looks reasonable, and it certainly dips into zone 2.
+            However, this is actually a TWO-second average:
+                cp3[i] = average( power[i-sr:i+sr+1] )
+            where sr is the sample rate. It contains 3 points spanning
+            2 seconds, so it is a cheap 0.5-Hz lowpass filter.
+        -   How do I filter--that is, perform signal processing--in Python?
+            >   SciPy has an excellent array of Matlab-like functions:
+                    https://docs.scipy.org/doc/scipy/reference/signal.html
+                particularly the filtfilt() function:
+                    https://docs.scipy.org/doc/scipy/reference/generated
+                        /scipy.signal.filtfilt.html
+                of particular interest:
+                    >>> from scipy import signal
+                    >>> b, a = signal.butter(8, 0.125)
+                    >>> y = signal.filtfilt(b, a, x, padlen=150)
+                                                Friday, May 4, 2018 (9:28 AM)
+        -   First step: replace cp3 with a 1/3-Hz-lowpass-filtered signal.
+            >   What is the cutoff, Wn, supplied to butter()?
+                I want it to occur at 1/3-Hz. Wn is normalized so that 1
+                is the Nyquist frequency, SampleRate/2. Thus, I want
+                    cutoff  = 0.333
+                    Wn      = cutoff / (SampleRate/2)
+            >   Keywords for filtfilt()?
+                :   I think I want the beginning padded with the first sample
+                    to assume the rider has always been at that value.
+                    An appropriate padding length would be a period of the
+                    cutoff frequency:
+                        PadLen  = SampleRate/cutoff
+            >   No module named scipy?!?!? Install on laptop:
+                    https://www.scipy.org/install.html
+                Try in PyScripter:
+                    >>> pip install scipy
+                No luck. Try command window:
+                    c:\Python27>
+                    c:\Python27>python -m pip install scipy
+                    Collecting scipy
+                      Downloading https://files.pythonhosted.org/packages/8b
+                            /cc/5644...d0b
+                            /scipy-1.0.1-cp27-none-win32.whl (26.4MB)
+                        100% |################################| 26.4MB 43kB/s
+                    Requirement already satisfied: numpy>=1.8.2 in
+                        c:\python27\lib\site-packages (from scipy)
+                    Installing collected packages: scipy
+                    Successfully installed scipy-1.0.1
+                    You are using pip version 9.0.1, however version 10.0.1
+                        is available.
+                    You should consider upgrading via the
+                        'python -m pip install --upgrade pip' command.
+                Very well, upgrade pip:
+                    c:\Python27>python -m pip install --upgrade pip
+                    Collecting pip
+                      Downloading https://files.pythonhosted.org/packages/0f
+                            /74/ecd...ab4
+                            /pip-10.0.1-py2.py3-none-any.whl (1.3MB)
+                        100% |################################| 1.3MB 384kB/s
+                    Installing collected packages: pip
+                      Found existing installation: pip 9.0.1
+                        Uninstalling pip-9.0.1:
+                          Successfully uninstalled pip-9.0.1
+                    Successfully installed pip-10.0.1
+                The installation created the module in
+                    C:\Python27\Lib\site-packages\scipy\
+            >   Try it. It works.
+                    see lowpass_filter_a.png
+                But 1/3 Hz is too high. Even the 2-sec boxcar average is
+                more resilient against the downward bounce.
+        -   Try a lower cutoff.
+            >   0.2 Hz.
+                    see lowpass_filter_b.png
+                I may be running into a new problem: filter transients.
+                Notice the dip below zero.
+            >   0.2 Hz, 4-pole. No luck.
+                    see lowpass_filter_c.png
+                Notice, the raw power basically takes 6 seconds to get back
+                fully into zone 4.
+            >   0.1 Hz, 4-pole.
+                    see lowpass_filter_d.png
+                Still no luck. The filtered power barely dips into zone 2
+                after a delay and triggers the transition. And more problems
+                become evident: it barely gets into zone 7, so it is ever ready
+                to trigger downward transitions after a burst.
+                                                Saturday, May 5, 2018 (8:12 AM)
+        -   If it takes 90 seconds to transition out of zone 2, then I don't
+            want to transition downward into zone 2 unless I know more about
+            the future. And perhaps a boxcar average really is the right
+            filter; it does not exhibit transients.
+                                                Monday, May 7, 2018 (9:54 AM)
+            I begin to think I want a centered boxcar average whose width
+            depends on the zone I am transitioning down into.
+                if cz > 1:
+                    tz = cz-1
+                    while tz >= 1:
+                        if  (LocateZone( CBoxCars[tz][i], pZones ) <= tz) \
+                          & (LocateZone( FBoxCars[tz][i], pZones ) <= tz):
+                            CurrentZone = tz
+                            zone[i]     = CurrentZone
+                            break
+                        tz -= 1
+            where FBoxCars is the forward boxcar list, and CBoxCars is the
+            centered boxcar list. But this logic does not do the trick:
+            I can't know which zone will be returned by LocateZone, so I
+            don't know which FBoxCars to use...or do I? I guess upward
+            transitions can skip zones because it begins testing for zone 7
+            and proceeds downwards. Downward transitions begin testing
+            at tz = cz-1, the next lower zone, and proceed one at a time.
+            And the criteria is only that LocateZone() <= tz. So downward
+            transitions do not skip zones! This should work!
+                see lowpass_filter_e.png
+            Kim gets more credit in zone 4, but why does it suddenly
+            transition into zone 2? It skipped! Confused.
+            >   Install SciPy and upgrade pip on desktop within command
+                window:
+                    c:\Python27>python -m pip install scipy
+                    c:\Python27>python -m pip install --upgrade pip
+                Got it working on the desktop.
+            >   Explanation: At the transition, when it tests true for z3,
+                it proceeds to test for z2 and tests true, so it transitions
+                there. At this point, it is in z4 where the centered window
+                used to test for z3 is 30 sec wide, and the z2 window is
+                even longer (45 sec). So the window is responding to the
+                rest that begins 10 sec later.
+            >   Obvious! I must never allow a transition without the
+                instantaneous power in the new zone!
+                    tz = cz-1
+                    while tz >= 1:
+                        if (LocateZone(           cp3[i], pZones ) <= tz) \
+                          & (LocateZone( CBoxCars[tz][i], pZones ) <= tz) \
+                          & (LocateZone( FBoxCars[tz][i], pZones ) <= tz):
+                            CurrentZone = tz
+                            zone[i]     = CurrentZone
+                            break
+                        tz -= 1
+                Try it.
+                    see lowpass_filter_f.png
+                IT WORKED!!
+                    see lowpass_filter_g.png
+                        lowpass_filter_h.png
+                A great example of very dynamic pedalling with good zone
+                detection in agreement with heart rate. Quite happy with the
+                analysis of the whole file. And the histogram shows the
+                improvement from the technique.
+
+                                                Tuesday, May 29, 2018 (8:29 AM)
++   Friday, May 25, Kim rode with the new PowerTap C1 Chainring power meter
+    recorded by Zwift while the power measured by the Wahoo Kickr was recorded
+    by the Garmin Edge 810. I used compare_two_powers.py to compare the two,
+    but first I modified it to remove the delay measured between the two
+    heart-rate signals:
+            plt.plot(edge_t-HRDelay/60.0, edge_power, 'r')
+            plt.plot(zwift_t, zwift_power, 'b')
+    This gave a very interesting result:
+        see kims_powertap_a.png
+    which shows good agreement between the two power meters, but the
+    Wahoo Kickr is delayed by about 1.2 seconds (as we suspected from Kim's
+    perceived lag when trying to draft me once). I would like to cross-plot
+    the two signals, but there is another issue: time scaling. That is,
+    what if the two sampling systems are running at slightly different
+    rates? I want a way to remove both the delay and the scaling error
+    before I perform regression.
+
+    *   I gave it some thought. Suppose Time2 is running faster than Time1
+        and started earlier. It's signal will appear delayed and
+        "stretched out" relative to Time1 so that its time axis would be,
+            Time2 = m*Time1 + B
+        where m and B are the slope and offset, respectively.
+        I wrote time_scaling.py to play with this and make sure I'm getting
+        it right.
+        -   A very simple example: m = 2.0, B = 2.0:
+                # create a test signal
+                nPts    = 20
+                x1      = zeros(nPts)
+                x1[0]   = 1.0
+                x1[4]   = 1.0
+                t1      = arange(nPts)
+                # create a signal that is x1 delayed by B
+                # and time-scaled by m
+                x2      = zeros(nPts)
+                x2[2]  = 1.0   # x1[0] delayed 2
+                x2[10] = 1.0   # x1[4] delayed and stretched
+                t2      = arange(nPts)
+            Create a plot with the original signals, x1 "time-scaled" onto x2,
+            and x1 resampled onto x2:
+                see time_scaling_a.png
+            time-scaling x1 onto x2 is done with,
+                t1s = m*t1+B
+                ax1.plot(t1s, x1, 'b-o')
+                ax1.plot(t1, x2, 'r-+')
+            that is, plot x1 against the scaled time axis.
+            resampling x1 onto x2 is done with,
+                x1r = interp(t1, t1s, x1)
+                ax2.plot(t1, x1r, 'b-o')
+                ax2.plot(t1, x2,  'r-+')
+            This takes some thought: x1 is a function of the "corrected"
+            time vector, t1s, and shown as such in the second plot. So
+            it needs to be sampled in the same time series as x2.
+            At this point, x2 can be cross-plotted against x1r, and
+            regression can be performed.
+
+    *   Now I need another tool: take the two signals, x1 and x2, and
+        determine the scale and delay so that they can be removed.
+        -   The strategy will be to write a function that applies a
+            given scale and delay and computes the resulting RMS error
+            between the signals. This function will be passed to
+            scipy.optimize.minimize to determine the scale and delay
+            that minimizes the error.
+                https://docs.scipy.org/doc/scipy/reference/optimize.html
+        -   For this, I need a better pair of test signals because the
+            interpolated 0.5's in x1r will produce large errors that will
+            through minimize() off. I think I need wide pulses rather
+            than single-scan impulses.
+            Time to think! Consider the lines above,
+                x2[2]  = 1.0   # x1[0] delayed 2
+                x2[10] = 1.0   # x1[4] delayed 2 and stretched 2x
+            so a time index into x1 can be transformed into a time index
+            into x2 with i2 = m*i1+B. Perhaps I can plan a pulse in x1:
+                iBeg1   = 50
+                iEnd1   = 70
+                x1[iBeg1:iEnd1] = 1.0
+                iBeg2 = m*iBeg1 + B
+                iEnd2 = m*iEnd1 + B
+                x2[iBeg2:iEnd2] = 1.0
+            It worked!
+                see time_scaling_b.png
+            The interpolated points in x1r will create errors, but I think
+            they will be small relative to those created by incorrect
+            values of m and B.
+
+    *   I think I can now write the function to apply the scale and delay
+        and return the RMS error:
+            def ScaleDelayError(scale, delay):
+            # x1 and x2 must exist in calling namespace
+                nPts    = len(x1)
+                t1      = arange(nPts)
+                t1s     = scale*t1 + delay
+                x1r     = interp(t1, t1s, x1)
+                err     = x1r - x2
+                RMSError    = sqrt(average( err**2 ))
+                return RMSError
+        Notice I do not have to make x1 and x2 global variables. Python
+        lets my function access them!
+        For now, I can just experiment at the command line:
+            >>> ScaleDelayError( 1.2, 10 )
+            0.02357022603955186
+            >>> ScaleDelayError( 1.2, 15 )
+            0.3064129385141705
+            >>> ScaleDelayError( 1.3, 10 )
+            0.3030417785168033
+        Looks like it is working!
+
+    *   Next up: use ScaleDelayError with minimize().
+        -   The function must accept a single sequence, not multiple
+            arguments:
+                def ScaleDelayError(ScaleNDelay):
+                    scale   = ScaleNDelay[0]
+                    delay   = ScaleNDelay[1]
+        -   Code for minimize() is simple:
+                from scipy.optimize import minimize
+                x0  = [1.2, 10]
+                bnds = ( (0.8, 1.4), (-10, 10) )
+                res = minimize(ScaleDelayError, x0,
+                                method='SLSQP',
+                                bounds=bnds)
+        -   A little playing around gives the right answer:
+                >>> res
+                     fun: 0.017120749618516888
+                     jac: array([ 0.0076538, -0.0075018])
+                 message: 'Optimization terminated successfully.'
+                    nfev: 20
+                     nit: 4
+                    njev: 4
+                  status: 0
+                 success: True
+                       x: array([ 1.20192649, 10.        ])
+        -   Rearrange time_scaling.py to plot the mapped and resampled x1
+            from the inferred scale and delay.
+                see time_scaling_c.png
+            Notice the very slight error in the scale (i.e., 1.202 Vs 1.2)
+            affects the interpolated samples on the edges of the pulse.
+            Somehow this gives less error: 0.017 Vs 0.024. Interesting.
+
+                                            Wednesday, May 30, 2018 (10:25 AM)
+    *   Add this technique to compare_two_powers.py to determine the
+        scale and delay between the heart rates.
+        -   Trouble. It seems to lie in different vector lengths
+                >>> len(x1)
+                4304
+                >>> len(x2)
+                4301
+            Do they really need to be the same length? Look carefully:
+                def ScaleDelayError(ScaleNDelay):
+                # x1 and x2 must exist in calling namespace
+                    scale   = ScaleNDelay[0]
+                    delay   = ScaleNDelay[1]
+                    nPts    = len(x1)
+                    t1      = arange(nPts)
+                    t1s     = scale*t1 + delay
+                    x1r     = interp(t1, t1s, x1)
+                    err     = x1r - x2
+                    RMSError    = sqrt(average( err**2 ))
+                    return RMSError
+            Should nPts come from x1 or x2? t1 is formed from x1's length
+            and scaled onto an imaginary t2 to form t1s. Then the pair
+            t1s and x1 are passed to interp, so they must be of the same
+            length. However, the result, x1r, is subtracted from x2, so x2
+            MUST be of the same length. Perhaps I should resample onto t2:
+                t2 = arange(len(x2)
+                x1r     = interp(t2, t1s, x1)
+            Of course! How can it be otherwise?
+        -   Got it working:
+                Optimization terminated successfully.
+                scale = 1.000, delay =  14.8
+                >>> scale - 1.0
+                0.00039489179379059713
+            so scale = 1.000395, not exactly 1. There is a 0.04% scaling error
+            which represents 1.4 seconds per hour. It would be like a watch
+            that runs one minute faster every two days (i.e., after a week, it
+            runs 3 minutes fast; after a month it runs 12 minutes fast; etc...).
+            That is actually a lot bigger than I expected.
+            Which is it? The code was run with this:
+                x1  = edge_hr
+                x2  = zwift_hr
+            This says edge data in contained in zwift with a 14.8-sec delay
+            and "stretched" by 0.04%. That means the Zwift clock is running
+            FASTER than the Edge clock (it counts more samples over the
+            same time segment causing the event to appear longer).
+
+    *   At this point, I have removed the delay and scaling error as measured
+        by the heart rates. I can now measure the delay between the power
+        meters, which comes somehow from the nature of the transducer.
+        -   I imagine this requires some form of resampling. A little thought
+            gives,
+                zwift_t_s       = scale*zwift_t + HRDelay
+                zwift_power_r   = interp(edge_t, zwift_t_s, zwift_power)
+                zwift_hr_r      = interp(edge_t, zwift_t_s, zwift_hr )
+        -   Measure the delay (and theoretically zero scaling error)
+            between the edge (Kickr) and resampled Zwift (PowerTap)
+            power meter signals. I think the PowerTap is delayed
+            in the Kickr, so:
+                x1  = zwift_power_r
+                x2  = edge_power
+                x0  = [1.0, 1.0]
+                bnds = ( (0.95, 1.05), (-3, 3) )
+                res = minimize(ScaleDelayError, x0, method='SLSQP',
+                                bounds=bnds)
+                print res.message
+                print 'scale = %5.3f, Kickr Delay = %5.1f' \
+                    % (res.x[0], res.x[1])
+            results in,
+                scale = 1.000, Kickr Delay =   0.4
+                >>> res.x[0] - 1.0
+                1.0183737519708913e-05
+            So the scaling error is extremely small (27 hours per second),
+            as expected. And the Kickr has a 0.4-second delay relative to the
+            PowerTap--smaller than previously estimated based on a single
+            sample.
+
+    *   Now I can remove the delay in the Kickr power so that it can be
+        cross-plotted and submitted to linear regression.
+            # resample the resampled zwift_power to eliminate its delay
+            zwift_t_s_s     = res.x[0]*edge_t + res.x[1]
+            zwift_power_r_r = interp(edge_t, zwift_t_s_s, zwift_power_r)
+        so zwift_power_r_r can be cross-plotted against edge_power.
+        -   The rest of the code is already there
+                see powertapc1_vs_kickr_a.png
+                see powertapc1_vs_kickr_b.png
+            slope = 0.911, offset = 12
+            In spite of removing delay and scaling errors, the event is
+            still quite dynamic, and this may influence the regression.
+            The relationship does not appear to change over time.
+        -   Look up the PowerTap values at various Kickr levels:
+                >>> slope*100 + offset
+                104.68296347185823
+                >>> slope*150 + offset
+                149.09688885169584
+                >>> slope*200 + offset
+                193.51081423153346
+            I would consider this adequate agreement. Of course, it represents
+            an 11% discrepancy over the range of 100-200W (endurance to
+            aerobic capacity for Kim) while having near-perfect agreement
+            at her FTP of 160W.
+
+
+                                            Wednesday, June 6, 2018 (12:52 PM)
++   I need to investigate my power balance over my entire history with
+    Shadowfax to see if my right knee has weakened substantially.
+
+    *   How do I acquire and process power balance?
+        -   Run zone_detect.py on 2018-06-01-11-13-49.fit. then inspect:
+                >>> signals.keys()
+                ['distance',
+                 'temperature',
+                 'power',
+                 'altitude',
+                 'position_long',
+                 'heart_rate',
+                 'position_lat',
+                 'speed',
+                 'cadence']
+            Balance does not show up as a signal. And yet WKO4 shows it
+            exists in the file:
+                see balance_a.png
+            Perhaps it is the way activity_tools.extract_activity_signals()
+            works:
+                # ignore non-numeric data fields
+                if isinstance(field_data, (int, long, float)):
+                    if field_name not in data_lists.keys():
+                        data_lists[field_name] = [ (dt.total_seconds(), \
+                                                    field_data)         ]
+                    else:
+                        data_lists[field_name].append( (dt.total_seconds(), \
+                                                        field_data)         )
+        -   Try this:
+                # ignore non-numeric data fields
+                if isinstance(field_data, (int, long, float)):
+                    if field_name not in data_lists.keys():
+                        data_lists[field_name] = [ (dt.total_seconds(), \
+                                                    field_data)         ]
+                    else:
+                        data_lists[field_name].append( (dt.total_seconds(), \
+                                                        field_data)         )
+                else:
+                    if field_name not in nonnumeric_lists.keys():
+                        nonnumeric_lists[field_name] = [ (dt.total_seconds(), \
+                                                    field_data)         ]
+                    else:
+                        nonnumeric_lists[field_name].append(
+                                (dt.total_seconds(), \
+                                field_data)         )
+            But it doesn't work. nonnumeric_lists is an empty dictionary.
+            Yet WKO4 lists it among "sensor data" along with Front Gear
+            and Rear Gear.
+        -   I suspect it is in a different type of record. Use scratch.py
+            ("crack the record.type").
+                >>> record_types
+                set(['activity',
+                     'device_info',
+                     'device_settings',
+                     'event',
+                     'file_creator',
+                     'file_id',
+                     'lap',
+                     'session',
+                     'sport',
+                     'unknown',
+                     'user_profile',
+                     'zones_target'])
+                                            Thursday, June 7, 2018 (10:01 AM)
+        -   I considered writing some huge for-loop to search all the record
+            types. But this morning I suspect record.get_valid_field_names().
+            Does it ignore balance? It is defined in records.py thus:
+                def get_valid_field_names(self):
+                    return [f.name for f in self.fields \
+                            if f.name != UNKNOWN_FIELD_NAME \
+                            and f.data is not None]
+            and, earlier in the file,
+                UNKNOWN_FIELD_NAME = 'unknown'
+            But reading the code is not getting me anywhere.
+        -   Can I contact the author? I know this is an old version of
+            fitparse.
+                https://github.com/dtcooper
+                David Cooper
+                http://dtcooper.com/
+                    I am a senior software engineer at Eventbrite.
+                    You can reach me at david@dtcooper.com.
+            Email him:
+                Mr. Cooper:
+                I am using the old version of FitParse, so far with success in
+                several projects. But I am having trouble with a new project:
+                extract power balance from my historical data to see if my right
+                leg has weakened due to knee issues.
+                The problem is that record.get_valid_field_names() does not
+                return power balance even though I know it is in the data file
+                (see plot; WKO4 finds it along with Di2 gear settings and other
+                "sensor data" signals--power, heart rate, cadence, etc... The
+                .fit file is attached also).
+                Do you have any ideas on how I might proceed?
+                I am using the old version because it works (so far), and I
+                could not easily figure out the new version (which does not even
+                have an activity class).
+                Thanks in advance.
+                Will Spicher
+        -   Another method of interest is record.as_dict():
+                def as_dict(self, with_ommited_fields=False):
+                    d = dict((k, v) for k, v in self.iteritems() \
+                            if k != UNKNOWN_FIELD_NAME)
+                    if with_ommited_fields:
+                        for k in self.type.field_names:
+                            d.setdefault(k, None)
+                    return d
+            So I could call it with
+                d = record.as_dict(with_ommited_fields=True)
+            but the key would just equate to 'unknown'.
+        -   The record type 'unknown' looks interesting. How do I iterate
+            over the record types and inspect the fields of each one?
+            Suppose a field has a name like
+                >>> s = 'power Balance'
+                >>> 'Balance' in s
+                True
+                >>> 'balance' in s
+                False
+                >>> 'balance' in s.lower()
+                True
+            I can detect this and print a message. Create search_records.py
+            to implement this scheme. Like this:
+                records = activity.records
+                record_types = set()
+                for record in records:
+                    if record.type.name != 'record':
+                        #print record.type.name
+                        record_types.add(record.type.name)
+                for RType in record_types:
+                    records = activity.get_records_by_type(RType)
+                    valid_field_names = record.get_valid_field_names()
+                    for name in valid_field_names:
+                        if 'balance' in name.lower():
+                            print 'balance found in %s field within %s ' \
+                                    + 'record type' \
+                                    % (name, RType)
+            But it returns nothing. Make it more verbose to make sure it
+            is working. There was a flaw. Fixed. Overwhelming output if
+            type 'record' included. Set it to print a '.' at every record
+            it inspects.
+                type = file_creator
+                . .
+                type = unknown
+                . . . . . . . . . . . . . . . . . . . . . . ....
+                type = user_profile
+                . .
+                type = zones_target
+                . .
+                type = record
+                . . . . . . . . . . . . . . . . . . . . . . ....
+                type = device_info
+                . . . . . . . . . . . . . . . . . . . .
+                type = session
+                . .
+                type = file_id
+                . .
+                type = activity
+                . .
+                type = device_settings
+                . .
+                type = sport
+                . .
+                type = lap
+                . . . . . . . . . . . .
+                type = event
+                . . . . . . . . . . . . . . . . . . . . . . ....
+            Balance is nowhere to be found in this manner.
+                                                Friday, June 8, 2018 (8:40 AM)
+        -   No reply from Cooper. I begin to wonder if balance is buried within
+            the record.
+            >   I found a specification for the .fit file format:
+                    https://www.thisisant.com/resources/fit/
+                It is contained in the SDK, FitSDKRelease_20.66.00.zip.
+                Not much of use in there yet.
+            >   Modify search_records.py so I can stop on a record and
+                inspect at the command line. Use a breakpoint in PyScripter.
+                Browse
+                    C:\Python27\Lib\site-packages\fitparse\records.py
+                for methods.
+                :   A little more info about 30 seconds in via
+                        [Dbg]>>> rec = record.as_dict(with_ommited_fields=True)
+                        [Dbg]>>> rec
+                        {'altitude': 181.60000000000002,
+                         'cadence': 86,
+                         'compressed_speed_distance': None,
+                         'cycle_length': None,
+                         'distance': 139.73,
+                         'grade': None,
+                         'heart_rate': 100,
+                         'position_lat': 485585809,
+                         'position_long': -1067983782,
+                         'power': 154,
+                         'resistance': None,
+                         'speed': 6.737,
+                         'temperature': 26,
+                         'time_from_course': None,
+                         'timestamp': datetime.datetime(2018, 6, 1, 11, 14, 17)}
+                        [Dbg]>>> p = record.get_data('power')
+                        [Dbg]>>> p
+                        154
+                        [Dbg]>>> u = record.get_units('power')
+                        [Dbg]>>> u
+                        'watts'
+            >   records.py contains an interesting line:
+                    class FieldType(...
+                        # Higher level fields as defined in Profile.xls
+                Where is Profile.xls? I can't remember where I put the
+                folder fitparse_1.0.1. Found it in,
+                    D:\Users\Owner\Documents\OneDrive\2018\computers\
+                Poking around, I found a copy:
+                    S:\will\documents\bike\python-fitparse-master\misc
+                        \FIT-SDK-1.2\Profile.xls
+                It defines the same record fields found above:
+                    timestamp
+                    position_lat
+                    position_long
+                    altitude
+                    heart_rate
+                    cadence
+                    distance
+                    speed
+                    power
+                    compressed_speed_distance
+                    grade
+                    resistance
+                    time_from_course
+                    cycle_length
+                    temperature
+                So evidence mounts that I am using an obsolete version
+                of the FIT-SDK.
+                Have a look in FitSDKRelease_20.66.00.zip\Profile.xlsx
+                    253 timestamp                       date_time
+                    0   position_lat                    sint32
+                    1   position_long                   sint32
+                    2   altitude                        uint16
+                    3   heart_rate                      uint8
+                    4   cadence                         uint8
+                    5   distance                        uint32
+                    6   speed                           uint16
+                    7   power                           uint16
+                    8   compressed_speed_distance       byte
+                    9   grade                           sint16
+                    10  resistance                      uint8
+                    11  time_from_course                sint32
+                    12  cycle_length                    uint8
+                    13  temperature sint8
+                    17  speed_1s    uint8
+                    18  cycles  uint8
+                    19  total_cycles    uint32
+                    28  compressed_accumulated_power    uint16
+                    29  accumulated_power   uint32
+                    30  left_right_balance  left_right_balance
+                    31  gps_accuracy    uint8
+                    32  vertical_speed  sint16
+                    33  calories    uint16
+                    39  vertical_oscillation    uint16
+                    40  stance_time_percent uint16
+                    41  stance_time uint16
+                    42  activity_type   activity_type
+                    43  left_torque_effectiveness   uint8
+                    44  right_torque_effectiveness  uint8
+                    45  left_pedal_smoothness   uint8
+                    46  right_pedal_smoothness  uint8
+                    47  combined_pedal_smoothness   uint8
+                    48  time128 uint8
+                    49  stroke_type stroke_type
+                    50  zone    uint8
+                    51  ball_speed  uint16
+                    52  cadence256  uint16
+                    53  fractional_cadence  uint8
+                    54  total_hemoglobin_conc   uint16
+                    55  total_hemoglobin_conc_min   uint16
+                    56  total_hemoglobin_conc_max   uint16
+                    57  saturated_hemoglobin_percent    uint16
+                    58  saturated_hemoglobin_percent_min    uint16
+                    59  saturated_hemoglobin_percent_max    uint16
+                    62  device_index    device_index
+                    67  left_pco    sint8
+                    68  right_pco   sint8
+                    69  left_power_phase    uint8
+                    70  left_power_phase_peak   uint8
+                    71  right_power_phase   uint8
+                    72  right_power_phase_peak  uint8
+                    73  enhanced_speed  uint32
+                    78  enhanced_altitude   uint32
+                    81  battery_soc uint8
+                    82  motor_power uint16
+                    83  vertical_ratio  uint16
+                    84  stance_time_balance uint16
+                    85  step_length uint16
+                    91  absolute_pressure   uint32
+                    92  depth   uint32
+                    93  next_stop_depth uint32
+                    94  next_stop_time  uint32
+                    95  time_to_surface uint32
+                    96  ndl_time    uint32
+                    97  cns_load    uint8
+                    98  n2_load uint16
+                And there it is. left_right_balance of type left_right_balance,
+                whatever that is. Somehow FitParse is tied to a very old
+                version of FIT-SDK.
+            >   Look within
+                    C:\Python27\Lib\site-packages\fitparse\profile.def
+                The record message type is,
+                    MessageType(20, 'record', {
+                        0: Field('position_lat', FieldTypeBase(5),
+                                'semicircles', None, None),  # base type: sint32
+                        1: Field('position_long', FieldTypeBase(5),
+                                'semicircles', None, None),  # base type: sint32
+                        2: Field('altitude', FieldTypeBase(4),
+                                'm', 5, 500),  # base type: uint16
+                        3: Field('heart_rate', FieldTypeBase(2),
+                                'bpm', None, None),  # base type: uint8
+                        4: Field('cadence', FieldTypeBase(2),
+                                'rpm', None, None),  # base type: uint8
+                        5: Field('distance', FieldTypeBase(6),
+                                'm', 100, None),  # base type: uint32
+                        6: Field('speed', FieldTypeBase(4),
+                                'm/s', 1000, None),  # base type: uint16
+                        7: Field('power', FieldTypeBase(4),
+                                'watts', None, None),  # base type: uint16
+                        8: Field('compressed_speed_distance',
+                                FieldType('record-compressed_speed_distance'),
+                                'm/s,\nm', None, None),  # base type: byte
+                        9: Field('grade', FieldTypeBase(3),
+                                '%', 100, None),  # base type: sint16
+                        10: Field('resistance', FieldTypeBase(2),
+                                None, None, None),  # base type: uint8
+                        11: Field('time_from_course', FieldTypeBase(5),
+                                's', 1000, None),  # base type: sint32
+                        12: Field('cycle_length', FieldTypeBase(2),
+                                'm', 100, None),  # base type: uint8
+                        13: Field('temperature', FieldTypeBase(1),
+                                'C', None, None),  # base type: sint8
+                        253: Field('timestamp', FieldType('date_time'),
+                                's', None, None),  # base type: uint32
+                    })
+                This file is loaded in records.py via
+                    execfile('profile.def')
+                Could I just add a line to handle left_right_balance? Even
+                if I could, the type is far from defining. The
+                FieldTypeBase is defined in records.py:
+                    # Definitions from FIT SDK 1.2
+                    FieldTypeBase(0, 'enum', 0xFF, 'B', False)
+                    FieldTypeBase(1, 'sint8', 0x7F, 'b', False)
+                    FieldTypeBase(2, 'uint8', 0xFF, 'B', False)
+                    FieldTypeBase(3, 'sint16', 0x7FFF, 'h', False)
+                    FieldTypeBase(4, 'uint16', 0xFFFF, 'H', False)
+                    FieldTypeBase(5, 'sint32', 0x7FFFFFFF, 'i', False)
+                    FieldTypeBase(6, 'uint32', 0xFFFFFFFF, 'I', False)
+                    FieldTypeBase(7, 'string', lambda x:
+                        all([ord(c) == '\x00' for c in x]), '%ds', True)
+                    FieldTypeBase(8, 'float32', math.isnan, 'f', False)
+                    FieldTypeBase(9, 'float64', math.isnan, 'd', False)
+                    FieldTypeBase(10, 'uint8z', 0, 'B', False)
+                    FieldTypeBase(11, 'uint16z', 0, 'H', False)
+                    FieldTypeBase(12, 'uint32z', 0, 'I', False)
+                    FieldTypeBase(13, 'byte', lambda x:
+                        all([ord(c) == '\xFF' for c in x]), '%ds', True)
+                But not all fields use the FieldTypeBase. Some use the
+                FieldType:
+                        8: Field('compressed_speed_distance',
+                                FieldType('record-compressed_speed_distance'),
+                                'm/s,\nm', None, None),  # base type: byte
+                        253: Field('timestamp',
+                                FieldType('date_time'),
+                                's', None, None),  # base type: uint32
+                This is defined in records.py:
+                    class FieldType(namedtuple('FieldType',
+                                        ('name', 'base', 'converter'))):
+                        # Higher level fields as defined in Profile.xls
+                        #
+                        # converter is a dict or a func. If type is uint*z,
+                        #   then converter should
+                        # look through the value as a bit array and return
+                        #   all found values
+                Look for the type definition in Profile.xlsx. Found:
+                    left_right_balance  uint8
+                            mask    0x7F    % contribution
+                            right   0x80    data corresponds to right if set,
+                                            otherwise unknown
+                So it appears to be an unsigned 8-bit integer where the
+                first 7 bits give the value as a fraction, and the last
+                bit indicates it corresponds to the right side.
+                                            Saturday, June 9, 2018 (8:03 AM)
+        -   Still no reply from Cooper. I'll give this a shot.
+            >   Create a copy of fitparse that I can modify:
+                    .\fitparse_mod\
+                A copy of the original is still in
+                    D:\Users\Owner\Documents\OneDrive\2018
+                        \computers\fitparse_old\
+                Modify my files and copy to overwrite them in
+                    C:\Python27\Lib\site-packages\fitparse\
+                If I get into trouble, just restore the originals.
+            >   Add a line to MessageType(20, 'record', ...) in profile.def:
+                    14: Field('left_right_balance', FieldTypeBase(2),
+                                '%', None, None),  # base type: uint8
+                The Field class is defined in records.py. For now I am just
+                trying to extract the uint8 without processing its bits.
+                Apply no scaling.
+                :   No modifications to records.py.
+            >   No luck. Use search_records.py to inspect at 30 secondsL
+                    [Dbg]>>> rec = record.as_dict(with_ommited_fields=True)
+                    [Dbg]>>> rec
+                    {'altitude': 181.39999999999998,
+                     'cadence': 79,
+                     'compressed_speed_distance': None,
+                     'cycle_length': None,
+                     'distance': 158.17,
+                     'grade': None,
+                     'heart_rate': 102,
+                     'left_right_balance': None,
+                     'position_lat': 485587928,
+                     'position_long': -1067983750,
+                     'power': 151,
+                     'resistance': None,
+                     'speed': 5.897,
+                     'temperature': 26,
+                     'time_from_course': None,
+                     'timestamp': datetime.datetime(2018, 6, 1, 11, 14, 20)}
+                    [Dbg]>>> rec['left_right_balance']
+            >   The Pretty Girl had an apostrophe: balance may be an event
+                message, not a record. After all, I cannot know power balance
+                except at every full revolution of the crank. This is probably
+                also how gear settings work because gear CHANGES are events.
+                And yet they are listed in WKO4 among "sensor data":
+                    see balance_b.png
+                                                Sunday, June 10, 2018 (8:54 AM)
+                :   Look in Profile.xlsx for other occurences of "balance".
+                    #   activity -> record:
+                            Field name: left_right_balance
+                            Field Type: left_right_balance
+                        But there was no data found in these.
+                    #   activity -> session:
+                            Field name: left_right_balance
+                            Field Type: left_right_balance_100
+                        But there are only two session records found in
+                        the file.
+                    #   activity -> lap:
+                            Field name: left_right_balance
+                            Field Type: left_right_balance_100
+                        But there are only 12 lap records found in
+                        the file.
+                    #   activity -> event: There are no "balance" fields
+                        within event-type records.
+            >   I think it has to be in the records. Somehow I am not
+                getting it. Is it because I am not defining the type
+                correctly?
+                I begin to suspect FieldTypeBase.convert():
+                    def convert(self, raw_data):
+                        if callable(self.invalid):
+                            if self.invalid(raw_data):
+                                return None
+                        else:
+                            if raw_data == self.invalid:
+                                return None
+                        if self.name == 'string':
+                            raw_data = raw_data.rstrip('\x00')
+                        return raw_data
+                It just WANTS to return None!
+                :   Research collections.namedtuple. What is self.invalid?
+                        https://docs.python.org/2/library
+                            /collections.html#collections.namedtuple
+                    No mention of namedtuple.invalid. I can't figure out
+                    where it comes from. Wait! It is the third fieldname
+                    given to the namedtuple constructor.
+                                            Monday, June 11, 2018 (9:23 AM)
+                    in profile.def, only the first argument is supplied:
+                        3: Field('heart_rate',
+                                    FieldTypeBase(2),
+                                    'bpm', None, None),  # base type: uint8
+                        14: Field('left_right_balance',
+                                    FieldTypeBase(2),
+                                    '%', None, None),  # base type: uint8
+                    records.py has a comment:
+                            # Yields a singleton if called with just a num
+                    What is a singleton?
+                        http://code.activestate.com/recipes
+                            /52558-the-singleton-pattern
+                            -implemented-with-python/
+                        "A singleton is a class that makes sure only one
+                        instance of it is ever created. Typically such classes
+                        are used to manage resources that by their very nature
+                        can only exist once."
+                    OK, but what is invalid set to? Try a breakpoint at
+                        14: Field('left_right_balance', FieldTypeBase(2),
+                                    '%', None, None),  # base type: uint8
+                    and step into the subroutine. After the line,
+                            instance = FieldTypeBase._instances.get(num)
+                    inspect the instance being returned:
+                        [Dbg]>>> cls
+                        <class 'fitparse.records.FieldTypeBase'>
+                        [Dbg]>>> num
+                        2
+                        [Dbg]>>> instance
+                        FieldTypeBase(num=2, name='uint8', invalid=255,
+                            struct_fmt='B', is_variable_size=False)
+                    So is invalid set to 255? How did that happen?
+                    Step back out to profile.def and try this:
+                        [Dbg]>>> f = Field('heart_rate', FieldTypeBase(2),
+                                            'bpm', None, None)
+                        [Dbg]>>> f
+                        Field(name='heart_rate',
+                            type=FieldTypeBase(num=2, name='uint8',
+                                    invalid=255, struct_fmt='B',
+                                    is_variable_size=False),
+                            units='bpm', scale=None, offset=None)
+                        [Dbg]>>> f.name
+                        'heart_rate'
+                        [Dbg]>>> f.convert(100)
+                        100
+                        [Dbg]>>> f.convert(255)
+                        [Dbg]>>> f.convert(255) == None
+                        True
+                        [Dbg]>>> f.convert(255) is None
+                        True
+                        [Dbg]>>> f = Field('left_right_balance',
+                                    FieldTypeBase(2), '%', None, None)
+                        [Dbg]>>> f.convert(100)
+                        100
+                        [Dbg]>>> f.convert(255) == None
+                        True
+                    So invalid is getting set to 255, and convert() returns
+                    None if it encounters 255; otherwise it returns the
+                    given number. Notice line 253 in records.py:
+                        FieldTypeBase(2, 'uint8', 0xFF, 'B', False)
+                    0xFF is hexadecimal 255. This line gets called BEFORE
+                    profile.def is executed inline.
+            >   I think I may have found the problem.
+                    see balance_c.png
+                In Profile.xlsx->Messages, column B is the "Field Def #".
+                These numbers correspond to the dictionary keys used in
+                profile.def:
+                    MessageType(20, 'record', {
+                        0: Field('position_lat', FieldTypeBase(5), 'semic...
+                        1: Field('position_long', FieldTypeBase(5), 'semi...
+                        2: Field('altitude', FieldTypeBase(4), 'm', 5, 50...
+                        3: Field('heart_rate', FieldTypeBase(2), 'bpm', N...
+                        4: Field('cadence', FieldTypeBase(2), 'rpm', None...
+                        5: Field('distance', FieldTypeBase(6), 'm', 100, ...
+                        6: Field('speed', FieldTypeBase(4), 'm/s', 1000, ...
+                        7: Field('power', FieldTypeBase(4), 'watts', None...
+                        8: Field('compressed_speed_distance', FieldType('...
+                        9: Field('grade', FieldTypeBase(3), '%', 100, Non...
+                        10: Field('resistance', FieldTypeBase(2), None, N...
+                        11: Field('time_from_course', FieldTypeBase(5), '...
+                        12: Field('cycle_length', FieldTypeBase(2), 'm', ...
+                        13: Field('temperature', FieldTypeBase(1), 'C', N...
+                        14: Field('left_right_balance', FieldTypeBase(2),...
+                        253: Field('timestamp', FieldType('date_time'), '...
+                    })
+                However, I entered '14' (the next available integer) whereas
+                the entry in Profile.xlsx for left_right_balance is 30.
+                Correct it.
+                IT WORKED! search_records.py prints many instances of,
+                "balance found in left_right_balance field within record
+                record type"!
+                :   And now, what do I have? Add the option to not resample
+                    in activity_tools.extract_activity_signals.
+                        signals = extract_activity_signals(activity,
+                                                resample=False)
+                        >>> signals['left_right_balance'][100:105]
+                        [(115.0, 173),
+                        (116.0, 179),
+                        (117.0, 169),
+                        (118.0, 172),
+                        (119.0, 172)]
+                    Recall, these are unsigned 8-bit integers (max value = 256).
+                    And recall the note in Profile.xlsx:
+                            mask    0x7F    % contribution
+                            right   0x80    data corresponds to right if set,
+                                            otherwise unknown
+                    Honestly, I cannot tell what this means.
+                    0x7F is 127, and 0x80 is 128. Fiddle around a bit
+                    (so to speak):
+                        >>> print "{0:b}".format(0x7F)
+                        01111111
+                        >>> print "{0:b}".format(0x80)
+                        10000000
+                        >>> print "{0:b}".format(172)
+                        10101100
+                        >>> 172 & 127
+                        44
+                        >>> print "{0:b}".format(172 & 0x7F)
+                        00101100
+                    So I can mask the raw data with 0x7F using bitwise AND
+                    to obtain the right-crank contribution. I think. Does
+                    44 mean 44%? Or perhaps 44/127 = 35%
+            >   I think I can assume I have the right idea with masking.
+                Then I can write a converter, obtain the value, and
+                compare it with WKO4 data to see if I have the right formula.
+                That  is, if 44 means 44% right, then the sample in WKO4
+                should say "56/44". What would the converter look like?
+                Get ideas from records.py.
+                    def _convert_balance(raw_data):
+                        right = raw_data & 0x80
+                        value = raw_data & 0x7F
+                        if right:
+                            return value
+                        else:
+                            return 100-value
+                Are all of the right bits set?  Here's a trick:
+                    >>> all([c > 127 for c in signals['left_right_balance'] ])
+                    True
+                Yes, they are. I don't have to worry about getting
+                100-value. Add the converter to records.py. Then add the
+                following to profile.def:
+                    FieldType('left_right_balance',
+                        FieldTypeBase(2), _convert_balance)
+                Change the entry in profile.def
+                    MessageType(20, 'record', {
+                        ...
+                        30: Field('left_right_balance',
+                                FieldType('left_right_balance'), '%',
+                                None, None),  # base type: uint8
+                        ...
+                Try it. Scratch contains,
+                    from datetime import datetime
+                    from fitparse import Activity
+                    from activity_tools import extract_activity_signals
+                    FileLoc = r'S:\\will\\...\\will\\'
+                    fitfilepath = FileLoc + r'2018-06-01-11-13-49.fit'
+                    activity    = Activity(fitfilepath)
+                    signals     = extract_activity_signals(activity,
+                                        resample=False)
+                Then look:
+                    >>> signals['left_right_balance'][100:105]
+                    [(115.0, 45),
+                    (116.0, 51),
+                    (117.0, 41),
+                    (118.0, 44),
+                    (119.0, 44)]
+                The converter appears to have been applied.
+                But I still do not know what the numbers mean.
+                    >>> signals['power'][100:105]
+                    [(103.0, 154),
+                    (104.0, 146),
+                    (105.0, 156),
+                    (106.0, 156),
+                    (107.0, 160)]
+                corresponds to entries in WKO4 at 1:44-1:48. Hmmm...
+                                            Tuesday, June 12, 2018 (8:30 AM)
+                103 seconds would be 1:43, so, for some reason, I have to
+                add a second. In that case, 115 would correspond to 1:56
+                in WKO4, where I find the values
+                55/45, 49/51, 59/41, 56/44, 56/44. And the right-side
+                values correspond exactly!
+                IT WORKS!  I HAVE CRACKED THE CODE!
+        -   Validate. If I am extracting balance correctly, I should be able
+            to reproduce the power-balance scatter plot in balance_a.png.
+            Implement in plot_balance.py.
+            >   Currently, I extract signals without resampling. Of course,
+                this is why I have to resample:
+                    >>> len( signals['power'])
+                    11545
+                    >>> len( signals['left_right_balance'])
+                    10471
+                Fortunately, balance is now of a unit that can be interpolated
+                and therefore resampled.
+            >   Done...quite easily.
+                    see balance_d.png
+                        balance_e.png
+                The thick lines apparently come from time gaps that get
+                interpolated during resampling. I am guessing the low-power
+                value is when I stop pedaling, and the high-power value is
+                when I start up again. I think I can neglect these points
+                as occupying very little time.
+            >   What is a good metric to describe this ride? From the plot,
+                the answer should be in the neighborhood of 46%. Perhaps
+                a power-weighted average?
+                    >>> sum(power*balance) / sum(power)
+                    47.34741346061569
+                Perhaps a bit high due to the very-high-power points. But
+                I think it is reasonable enough. Garmin Connect gives this
+                ride 53/47. WKO4 gives it 54/46. Both give only integer
+                precision. Strava ignores balance completely.
+                    >>> average(balance)
+                    50.048878787878785
+                I don't know why WKO4 gives 54/46.
+            >   Actually, I think the interpolated lines are pulling the
+                power-weighted average up. I will have to create a resampling
+                scheme that leaves time gaps but fills in data where either
+                power or balance exist. Perhaps use a set() for time values.
+                Got it.
+                    see balance_f.png
+                and,
+                    >>> sum(power*balance) / sum(power)
+                    46.626449040405596
+                and 46.6 truncates to the integer 46. It looks like I was
+                right, though it was only worth
+                (47.347-46.626)/47.347*100 = 1.5%.
+            >   Add the power-weighted average to the plot via
+                    PAvgBalance = sum(power*balance) / sum(power)
+                    plt.title('Balance Vs Power over Time (sec)\n' \
+                        + 'power-weighted average = %4.1f' % (PAvgBalance) )
+                which prints
+                    'Balance Vs Power over Time (sec)
+                    power-weighted average = 46.6'
+        -   Email David Cooper:
+                Mr. Cooper:
+                In my last email I neglected to tell you how much I appreciate
+                your making FitParse available. Thank you so much.
+                I was able to figure out how to extract balance thanks to good
+                code with comments that directed my attention to Profile.xlsx
+                (in the new FIT-SDK). After quite a bit of fumbling around, I
+                added a couple lines to profile.def as well as a converter
+                function to records.py (rather tricky for me with a bit mask).
+                Then I was able to duplicate the balance-Vs-power crossplot that
+                WKO4 gives me (plot attached).
+                I include these bits of code in hopes that perhaps someone else
+                can benefit from it, though I doubt it since you are on to a
+                totally different version of FitParse.
+                Anyway, thanks again!
+                Will Spicher
+
+                                            Wednesday, June 13, 2018 (9:03 AM)
+    *   Time now to iterate over all .fit files in my folder, extract
+        balance, and plot it over time.
+        -   How do I iterate over all .fit files in my folder?
+            >   google("iterate over files in folder python")
+                One entry
+                    import os
+                    for filename in os.listdir(directory):
+                        if filename.endswith(".asm") \
+                            or filename.endswith(".py"):
+                            # print(os.path.join(directory, filename))
+                            continue
+                        else:
+                            continue
+                another:
+                    import os
+                    for fn in os.listdir('.'):
+                         if os.path.isfile(fn):
+                            print (fn)
+                It looks like os.listdir() is the tool.
+                    https://docs.python.org/2/library/os.html
+            >   Implement in balance_over_time.py.
+                It works.
+        -   Where is all my data?
+            >   Some in
+                    D:\old_data\desktop\documents\TrainingPeaks\activities\
+                but it only goes back to 2/12/2015. Move these into
+                    ...\OneDrive\bike\activities\will\
+                BTW, the OneDrive folder can be found via a system variable:
+                    C:\>echo %OneDrive%
+                    S:\will\documents\OneDrive
+            >   Yet my WKO4 data goes back to 4/5/2013. Where are the rest
+                of the .fit files? I searched all three hard drives on i7Win10
+                and both drives on the laptop. It is not there. Period.
+            >   The Quarq Elsa RS was installed in Shadowfax on 2/11/2015.
+                Thus, I have all the data I need--or, at least, can use
+                for balance analysis.
+        -   Before I iterate over the data files, what information do I
+            want to extract from each one?
+            >   Modify search_records.py to list all fields in each type:
+                    record type: user_profile
+                        position_setting
+                        speed_setting
+                        default_max_heart_rate
+                        weight
+                        language
+                        power_setting
+                        gender
+                        age
+                        friendly_name
+                        height
+                        default_max_biking_heart_rate
+                        temperature_setting
+                        hr_setting
+                        elev_setting
+                        activity_class
+                        dist_setting
+                        resting_heart_rate
+                        weight_setting
+                    record type: unknown
+                    record type: file_creator
+                        software_version
+                    record type: zones_target
+                        hr_calc_type
+                        functional_threshold_power
+                        max_heart_rate
+                        pwr_calc_type
+                    record type: record
+                        distance
+                        left_right_balance
+                        temperature
+                        power
+                        heart_rate
+                        timestamp
+                        altitude
+                        position_long
+                        position_lat
+                        speed
+                        cadence
+                    record type: device_info
+                        product
+                        battery_voltage
+                        cum_operating_time
+                        software_version
+                        timestamp
+                        device_index
+                        hardware_version
+                        battery_status
+                        device_type
+                        serial_number
+                        manufacturer
+                    record type: session
+                        event_type
+                        total_timer_time
+                        first_lap_index
+                        avg_power
+                        avg_heart_rate
+                        total_elapsed_time
+                        num_laps
+                        sport
+                        start_position_long
+                        event
+                        max_cadence
+                        message_index
+                        sub_sport
+                        total_calories
+                        nec_long
+                        trigger
+                        total_cycles
+                        swc_long
+                        timestamp
+                        start_time
+                        swc_lat
+                        start_position_lat
+                        max_speed
+                        total_distance
+                        avg_cadence
+                        total_descent
+                        total_ascent
+                        max_power
+                        max_heart_rate
+                        avg_speed
+                        nec_lat
+                    record type: file_id
+                        garmin_product
+                        serial_number
+                        type
+                        time_created
+                        manufacturer
+                    record type: activity
+                        num_sessions
+                        event_type
+                        total_timer_time
+                        timestamp
+                        local_timestamp
+                        type
+                        event
+                    record type: device_settings
+                        utc_offset
+                    record type: sport
+                        sport
+                        sub_sport
+                        name
+                    record type: lap
+                        event_type
+                        total_timer_time
+                        avg_power
+                        avg_heart_rate
+                        total_elapsed_time
+                        lap_trigger
+                        end_position_long
+                        sport
+                        start_position_long
+                        event
+                        max_cadence
+                        message_index
+                        total_calories
+                        total_cycles
+                        end_position_lat
+                        timestamp
+                        start_time
+                        start_position_lat
+                        max_speed
+                        total_distance
+                        avg_cadence
+                        total_descent
+                        total_ascent
+                        max_power
+                        max_heart_rate
+                        avg_speed
+                    record type: event
+                        event_type
+                        hr_high_alert
+                        timestamp
+                        timer_trigger
+                        data
+                        event
+                        event_group
+                It looks like the session record(s) might contain something
+                useful. Add more code to print fields from the single
+                session record:
+                    session record fields:
+                       timestamp:  2018-06-01 15:49:20   s
+                       start_time:  2018-06-01 11:13:49   None
+                       start_position_lat:  485575125   semicircles
+                       start_position_long:  -1067993894   semicircles
+                       total_elapsed_time:  14832.012   s
+                       total_timer_time:  11548.518   s
+                       total_distance:  80799.53   m
+                       total_cycles:  13891   cycles
+                       nec_lat:  486860673   semicircles
+                       nec_long:  -1064151678   semicircles
+                       swc_lat:  485575125   semicircles
+                       swc_long:  -1068051909   semicircles
+                       message_index:  0   None
+                       total_calories:  1824   kcal
+                       avg_speed:  6.997   m/s
+                       max_speed:  15.302   m/s
+                       avg_power:  159   watts
+                       max_power:  787   watts
+                       total_ascent:  410   m
+                       total_descent:  414   m
+                       first_lap_index:  0   None
+                       num_laps:  11   None
+                       event:  lap   None
+                       event_type:  stop   None
+                       sport:  cycling   None
+                       sub_sport:  road   None
+                       avg_heart_rate:  136   bpm
+                       max_heart_rate:  152   bpm
+                       avg_cadence:  77   rpm
+                       max_cadence:  114   rpm
+                       trigger:  activity_end   None
+                I think I want to save
+                       start_time:  2018-06-01 11:13:49   None
+                       total_timer_time:  11548.518   s
+                       total_distance:  80799.53   m
+                       avg_speed:  6.997   m/s
+                       avg_power:  159   watts
+                       avg_heart_rate:  136   bpm
+                       max_heart_rate:  152   bpm
+                                            Thursday, June 14, 2018 (8:07 AM)
+            >   So I need some kind of data structure to hold the value
+                and unit for each metric
+                    array index
+                    file name
+                    power-weighted average balance: value, '%'
+                    start_time:  2018-06-01 11:13:49   None
+                    total_timer_time:  11548.518   s
+                    total_distance:  80799.53   m
+                    avg_speed:  6.997   m/s
+                    avg_power:  159   watts
+                    avg_heart_rate:  136   bpm
+                    max_heart_rate:  152   bpm
+                Eventually, I want to be able to click a point, get the
+                array index, and print the info for that point. So that
+                implies a list or a dictionary where the array index is the
+                key. So is each entry a dictionary with each field a
+                value-unit tuple?
+                    datalist[i] = {
+                        'filename'          :  (filename, None  ),
+                        'balance'           :  (balance, '%'    ),
+                        'start_time'        :  (start_time, None),
+                        'total_timer_time'  :  ( , 's'          ),
+                        'total_distance'    :  ( , 'm'          ),
+                        'avg_speed'         :  ( , 'm/s'        ),
+                        'avg_power'         :  ( , 'watts'      ),
+                        'avg_heart_rate'    :  ( , 'bpm'        ),
+                        'max_heart_rate'    :  ( , 'bpm'        )}
+        -   I think I've got it working.
+            >   Preliminary estimates with 50 files at a time suggest
+                the 911 files will take about 47 minutes to process.
+            >   Problem with activity.parse() on 2015-09-13-10-36-51.fit.
+                The 151st file. A 4.5-hour E2 to Jubilee.
+                    Traceback (most recent call last):
+                      File "D:\Users\Owner\Documents\OneDrive\2018\fitfiles
+                        \plot_balance.py", line 16, in <module>
+                        signals     = extract_activity_signals(activity,
+                                resample='existing')
+                      File "D:\Users\Owner\Documents\OneDrive\2018\fitfiles
+                            \activity_tools.py", line 13, in
+                            extract_activity_signals
+                        activity.parse()
+                      File "C:\Python27\lib\site-packages\fitparse
+                            \activity.py", line 7, in parse
+                        return_value =
+                            super(Activity, self).parse(*args, **kwargs)
+                      File "C:\Python27\lib\site-packages\fitparse
+                            \base.py", line 75, in parse
+                        e.__class__.__name__, e,
+                    FitParseError: Unexpected exception while parsing
+                        (TypeError: __new__() takes exactly 6
+                        arguments (2 given))
+                WKO4 does not list balance for this file. It does not have
+                gear data either. Oh well. Make a subfolder, 'parse_problems',
+                and move it in there and start over.
+            >   Problem with 2017-05-26-10-40-59.fit. Same Error. #652.
+                Southeast E2. 2.5 hours.
+            >   Problem with 2017-05-27-12-33-37.fit. Same Error. #652.
+                Zwift E2.
+            >   Process files [650:] to eliminate any other problems before
+                processing the whole batch.
+            >   907 FIT files survive. Process all. It worked!
+                    825 entries written to datalist.pkl
+                    execution time = 31:13
+            >   There is a post-processing problem with 2016-07-09-13-52-59.fit.
+                    >>> entry
+                    {'avg_heart_rate': (0.0, 'bpm'),
+                     'avg_power': (0.0, 'watts'),
+                     'avg_speed': (0.0, 'm/s'),
+                     'balance': 50.427500306781866,
+                     'filename': '2016-07-09-13-52-59.fit',
+                     'max_heart_rate': (0.0, 'bpm'),
+                     'start_time': (datetime.date(2018, 6, 14), None),
+                     'total_distance': (0.0, 'm'),
+                     'total_timer_time': (0.0, 's')}
+                A workout note says, 'Edge crashed. Lost 1st hour.'
+                search_records.py shows this file has no session records.
+                Remove in scratch.py:
+                    badfiles    = [ '2016-07-09-13-52-59.fit' ]
+                    DataFileName    = 'datalist.pkl'
+                    import pickle
+                    DataFile    = open( DataFileName, 'rb')
+                    datalist    = pickle.load(DataFile)
+                    DataFile.close()
+                    print '%i entries extracted from %s' \
+                        % (len(datalist), DataFileName)
+                    for entry in datalist:
+                        if entry['filename'] in badfiles:
+                            datalist.remove(entry)
+                    DataFile    = open( DataFileName, 'wb')
+                    pickle.dump(datalist, DataFile)
+                    DataFile.close()
+                    print '%i entries written to %s' \
+                        % (len(datalist), DataFileName)
+                It worked.
+            >   Process again from 'datalist.pkl'.
+                IT WORKED!!!
+                    see balance_g.png
+                Now what the hell does THAT mean?!?  In the summer of 2016
+                it rose above 50% and oscillated between 46% and 50% the rest
+                of the time.
+
+                                                Monday, June 18, 2018 (9:00 AM)
+    *   After Aug, 2016, did my right leg weaken? Or did it stay the same
+        while my left leg got stronger? How can I determine this.
+        -   Approach.
+            >   FTP looks to be available (line 2339 above) in
+                    record type: zones_target
+                        field: functional_threshold_power
+                Perhaps simply add this to the plot?
+            >   I could determine the actual power created by each leg:
+                    RPwr = power * RBalance/100
+                One approach would be the average power for the ride. But
+                then hard and easy rides would produce a lot more vertical
+                scatter in the plot.
+            >   Actually, consider a little reason: By Feb, 2017, balance
+                degrades to 45%. This represents a 20% loss (50/50 to 55/45)
+                in six months.
+                :   At the most, my FTP would may have increased 5%
+                    during that time. There is no way my right leg maintained
+                    the same power; it MUST have weakened substantially. But
+                    it did rise back to 48% by 4/2017 before settling around
+                    47% by 12/2017.
+                :   ATPCycling2018.xlsx has a record of my FTP tests. Look
+                    up an eyeball average in the plot.
+                         date           FTP     plot
+                        01/22/2014      174
+                        02/26/2014      179
+                        12/16/2014      235
+                        02/06/2015      243     47.0
+                        04/04/2015      248     48.0
+                        08/14/2015      237     48.5
+                        09/19/2015      251     50.0
+                        05/23/2016      252     50.0
+                        09/03/2016      257     50.0
+                        03/09/2017      270     47.5
+                    Look up the actual interval from WKO4. There is no
+                    balance data. Apparently, WKO3 would not import it.
+                :   What about 3/9/17? 2017-03-09-12-25-12.fit. The file
+                    has a power-weighted average balance of 48.4%--better
+                    than the 47.5 plot average.
+                                                Tuesday, June 19, 2018 (9:50 AM)
+                    Browsing Profile.xlsx, I see the lap record has a field
+                    left_right_balance. Its type is
+                        left_right_balance_100: uint16
+                            mask    0x3FFF  % contribution scaled by 100
+                            right   0x8000  data corresponds to right if set,
+                                            otherwise unknown
+            >   Obviously, the thing to do would be to modify detect_laps.py
+                to extract and print this. I am not sure it is a
+                power-weighted average, but, for laps of any interest, I can
+                assume I am pedaling at a constant power and balance.
+                :   Modify profile.def for the lap field:
+                        FieldType('left_right_balance_100', FieldTypeBase(4),
+                                    _convert_balance_100)  # base type: uint16
+                        MessageType(19, 'lap', {
+                            ...
+                            34: Field('left_right_balance',
+                                        FieldType('left_right_balance_100'),
+                                        '%', None, None),  # base type: uint16
+                            ...
+                :   Add the converter to records.py:
+                        def _convert_balance_100(raw_data):
+                            right = raw_data & 0x8000
+                            value = raw_data & 0x3FFF
+                            if right:
+                                return value
+                            else:
+                                return 100-value
+                :   Copy the new versions of records.py and profile.def to
+                        C:\Python27\Lib\site-packages\fitparse\
+                :   Modify detect_laps.py. Add extraction of FTP via
+                    zones_target -> functional_threshold_power. Use this to
+                    set the interval-detection threshold to 0.72*FTP.
+                :   Recall this program is most conveniently run by
+                    drag-dropping a FIT file on interval_laps.bat.
+                    see balance_h.png which illustrates the technique.
+                :   It looks like balance is scaled by 100 so that a percentage
+                    is derived by dividing it by 100.
+                :   Run:
+                        file received:
+                        file received:
+                        D:\...\will\2017-03-09-12-25-12.fit
+                        calling python on D:\...\2017-03-09-12-25-12.fit
+                        command line args: ['D:\\...\\2017-03-09-12-25-12.fit']
+                        executing Wills version of profile.def
+                        FTP setting = 257 None
+                        processing laps above 185 watts...
+                                             avg     avg     avg     max     avg
+                             lap    time   power     cad      HR      HR     bal
+                               1   20:01     284      87     175     186    48.1
+                               3   35:01     200      88     154     165    48.3
+                         AVERAGE   55:03     230      87     161     186    48.2
+                    IT WORKS!!!
+                :   So this FTP test had a balance of 48.1%, an 8% difference
+                    between right and left leg power.
+                :   Use this technique to fill in the table:
+                         date           FTP     plot    interval
+                        01/22/2014      174
+                        02/26/2014      179
+                        12/16/2014      235
+                        02/06/2015      243     47.0
+                        04/04/2015      248     48.0    48.5
+                        08/14/2015      237     48.5    49.3
+                        09/19/2015      251     50.0    49.2
+                        05/23/2016      252     50.0    50.5
+                        09/03/2016      257     50.0    50.8
+                        03/09/2017      270     47.5    48.1
+                    Now THIS is interesting! I went from 50.8% at 257W
+                    to 48.1% at 270W. What does that mean?
+                        power   bal     right   left
+                        257     50.8    130     126
+                        270     48.1    130     140
+                    So my right leg stayed the same while my left leg got
+                    stronger.
+                :   Add the FTP test intervals to the plot:
+                        see balance_i.png
+                    The FTP tests fall within the local variability but
+                    toward the top (stronger right leg).
+
+
+                                        Saturday, September 29, 2018 (9:49 AM)
++   New project: An endurance summary, similar to detect_laps.py.
+    This should be fairly simple, but I am interested in adding a new
+    feature: when I drag-drop a .FIT file onto the batch file, I want a
+    window to appear that allows me to choose which analysis to run. That
+    way I have one batch file for drag-dropping files.
+
+    *   For now, clone endurance_summary.py from detect_laps.py.
+        -   First check. Using scratch.py, inspect the fields of a lap
+            record with,
+                from datetime import datetime
+                from fitparse import Activity
+                FileLoc = r'S:\\will\\...\\activities\\will\\'
+                fitfilepath = FileLoc + r'2018-09-28-09-52-01.fit'
+                activity = Activity(fitfilepath)
+                activity.parse()
+                records = activity.records
+                record_types = set()
+                for record in records:
+                    if record.type.name != 'record':
+                        #print record.type.name
+                        record_types.add(record.type.name)
+                records = activity.get_records_by_type('lap')
+                for record in records:
+                    print record.type.name
+                    print record.get_valid_field_names()
+                    break
+            This results in,
+                ['timestamp'
+                'start_time'
+                'start_position_lat'
+                'start_position_long'
+                'end_position_lat'
+                'end_position_long'
+                'total_elapsed_time'
+                'total_timer_time'
+                'total_distance'
+                'total_cycles'
+                'message_index'
+                'total_calories'
+                'avg_speed'
+                'max_speed'
+                'avg_power'
+                'max_power'
+                'total_ascent'
+                'total_descent'
+                'left_right_balance'
+                'event'
+                'event_type'
+                'avg_heart_rate'
+                'max_heart_rate'
+                'avg_cadence'
+                'max_cadence'
+                'lap_trigger'
+                'sport']
+            The problem is, normalized power is NOT in the lap fields!
+                                            Tuesday, October 2, 2018 (8:57 AM)
+            I suppose I will have to use the lap's time stamps to retrieve
+            the power signal's time segment. I can calculate the average
+            and compare that to the lap's metric for the average to verify
+            I'm doing it correctly.
+                                        Wednesday, October 3, 2018 (8:57 AM)
+            within activity_tools.py->extract_activity_signals(), the time
+            vector is built from the time stamp on each record:
+                    field_data  = record.get_data('timestamp')    # datetime
+                    if FirstIter:
+                        t0  = field_data    # datetime
+                        t   = t0
+                        FirstIter   = False
+                    else:
+                        t   = field_data    # datetime
+                    dt  = t-t0
+                    time_values.add( dt.total_seconds() )
+            But a lap record contains several fields for time:
+                 * timestamp: 2017-01-02 16:38:04 s
+                 * start_time: 2017-01-02 16:12:43
+                 * total_elapsed_time: 1521.275 s
+                 * total_timer_time: 1339.275 s
+            I am guessing total_timer_time is "moving time", and
+            total_elapsed_time is just that. But these measure the duration
+            of the lap. I want the start and end time relative to the
+            entire signal!  So what is the difference between timestamp and
+            start_time? Collect these.
+                    >>> for d in lap_start_time: print d
+                    ...
+                    2018-09-28 09:52:01
+                    2018-09-28 10:09:50
+                    2018-09-28 10:33:19
+                    2018-09-28 11:10:36
+                    2018-09-28 12:04:34
+                    2018-09-28 12:37:53
+                    2018-09-28 12:54:26
+                    >>> for d in lap_timestamp: print d
+                    ...
+                    2018-09-28 10:09:50
+                    2018-09-28 10:32:17
+                    2018-09-28 11:09:56
+                    2018-09-28 11:59:45
+                    2018-09-28 12:32:29
+                    2018-09-28 12:54:26
+                    2018-09-28 13:00:38
+            rearrange:
+                    lap_start_time      lap_timestamp
+                1       09:52:01         10:09:50
+                2       10:09:50         10:32:17
+                3       10:33:19         11:09:56
+                4       11:10:36         11:59:45
+                5       12:04:34         12:32:29
+                6       12:37:53         12:54:26
+                7       12:54:26         13:00:38
+            Interesting! I think the start_time corresponds to the first
+            sample in the lap, and the timestamp corresponds to the end
+            of the lap. Sometimes the end of one lap corresponds exactly
+            to the beginning of the next (e.g., laps 1 and 6), as when I
+            press the button while in motion. It looks like I can compare these
+            with time-zero (t0) using
+                dtBeg   = lap_start_time - t0
+                tBeg    = dtBeg.total_seconds()
+                dtEnd   = lap_timestamp  - t0
+                tEnd    = dtEnd.total_seconds()
+            then get the list of indices into the time vector via
+                ii = nonzero( logical_and( time_vector >= tBeg,  \
+                                           time_vector <  tEnd   )[0]
+            (see line 330 above about logical_and()).
+            If this works, I should be able to measure the lap's duration
+            and compare it with total_elapsed_time.
+        -   I need to make t0 available. In activity_tools.py add metadata
+            to the signals dictionary:
+                data_signals['metadata']    = {}
+                data_signals['metadata']['timestamp']   = t0
+        -   Measure lap duration via
+                dur = (lap_timestamp[i] - lap_start_time[i]).total_seconds()
+            Include in formatted print:
+                                      lap
+                     lap    time      dur
+                       0   16:19    17:49
+                       1   18:55    22:27
+                       2   30:40    36:37
+                       3   40:58    49:09
+                       4   26:48    27:55
+                       5   16:29    16:33
+                       6    6:03     6:12
+            Why are the measured durations longer? Because the lap metric
+            (1st column) comes from total_timer_time.
+            Try using total_elapsed_time.
+                                     lap
+                     lap    time     dur
+                       0   17:49   17:49
+                       1   19:12   22:27
+                       2   32:03   36:37
+                       3   46:15   49:09
+                       4   31:36   27:55
+                       5   21:56   16:33
+                       6    6:03    6:12
+            Hmmm...I STILL measure longer durations. Not always: look
+            at lap 4 and 5.
+                                            Thursday, October 4, 2018 (9:20 AM)
+        -   I am going to have to inspect all available information.
+            >   How do I extract the time from a datetime object?
+                    >>> t0 = signals['metadata']['timestamp']
+                    >>> t0
+                    datetime.datetime(2018, 9, 28, 9, 52, 1)
+                    >>> t0.time()
+                    datetime.time(9, 52, 1)
+                    >>> print t0.time()
+                    09:52:01
+                    >>> print '%s %10s' % ( 'signal timestamp: ', t0.time() )
+                    signal timestamp:    09:52:01
+            >   code:
+                    names1 = [    '', 'timer', 'elpsd', 'start', ' time', 'lap']
+                    names2 = [ 'lap', ' time', ' time', ' time', 'stamp', 'dur']
+                    print "%10s"*6 % tuple(names1)
+                    print "%10s"*6 % tuple(names2)
+                    for i in range(nLaps):
+                        dur = (   lap_timestamp[i]
+                                - lap_start_time[i]).total_seconds()
+                        mm = timer_time[i] // 60
+                        ss = timer_time[i]  % 60
+                        fmt = '%10d'+'%8i:%02i'+'%8i:%02i' \
+                            +'%10s'+'%10s'+'%8i:%02i'
+                        print fmt \
+                                % ( i,
+                                    timer_time[i]   // 60,   timer_time[i] % 60,
+                                    elapsed_time[i] // 60, elapsed_time[i] % 60,
+                                    lap_start_time[i].time(),
+                                    lap_timestamp[i].time(),
+                                    dur // 60, dur % 60 )
+            >   Got it.
+                        signal timestamp:  09:52:01
+                               timer     elpsd      start       time     lap
+                       lap      time      time       time      stamp     dur
+                         0     16:19     17:49   09:52:01   10:09:50   17:49
+                         1     18:55     19:12   10:09:50   10:32:17   22:27
+                         2     30:40     32:03   10:33:19   11:09:56   36:37
+                         3     40:58     46:15   11:10:36   11:59:45   49:09
+                         4     26:48     31:36   12:04:34   12:32:29   27:55
+                         5     16:29     21:56   12:37:53   12:54:26   16:33
+                         6      6:03      6:03   12:54:26   13:00:38    6:12
+                :   Lap-0 time stamp matches lap-1 start, and duration matches
+                    elapsed time.
+                :   Lap-4 timer time is less than both duration and elapsed
+                    time, though elapsed time exceeds duration. But notice
+                    lap-5 start time is 33:19 after lap-4 start, and this is
+                    still greater than lap-4 elapsed time.
+                        >>> dt = (    lap_start_time[5]
+                                    - lap_start_time[4]).total_seconds()
+                        >>> print '%5i:%2i' % ( dt // 60, dt % 60 )
+                           33:19
+                    Theory: start_time coincides with the first moving-time
+                    sample while elapsed time only measures to the last
+                    moving-time sample (even though this seems to contradict
+                    the term "elapsed time").
+                    So, for lap-4, the order is
+                        timer_time      26:48
+                        duration        27:55
+                        elapsed_time    31:36
+                        start-to-start  33:19
+                :   Lap-5 duration slightly exceeds timer-time though it
+                    is much less than elapsed time.
+                    Lap-5 start time to lap-6 start time is 16:33, which
+                    matches lap-5 duration. But lap-6 start_time matches
+                    lap-5 timestamp.
+                    So, for lap-5 the order is,
+                        timer_time                      16:29
+                        duration == start-to-start      16:33
+                        elapsed_time                    21:56
+                    How can elapsed time exceed duration and start-to-start?
+                    Is this consistent with my theory? If the elapsed time
+                    begins when I hit the lap button while stopped, then
+                    the start time will begin later. So, yes, elapsed time
+                    would exceed these values.
+                :   So what does timestamp tell me? Expanded theory:
+                    #   start_time measures the first moving sample after
+                        the lap button is pressed;
+                    #   timestamp measures the last moving sample before
+                        the lap button is pressed;
+                    #   elapsed time measures the total time between
+                        lap-button presses.
+                    #   timertime measures the moving time within the lap.
+                        If this is true, it should coincide with the number
+                        of signal samples between button presses.
+                :   Lap-6 duration EXCEEDS elapsed time. How can that be?
+                    But it is the final lap. Did I actually press the button?
+                    Or did I just save the ride? This was on 9/28, and I
+                    took a picture of the normalized power:
+                        see np_laps_28sep18_a.jpg
+                    It shows lap-6 (as "lap 7" due to 1-based index). The
+                    times agree with timertime. Thus, I DID press the button,
+                    which means the clock was still running.
+                :   But that raises an important question: do I have to press
+                    the lap button at the end of the ride to get metrics for
+                    the final lap?
+                    There is another ride:
+                        See np_laps_02oct18_a.jpg
+                    I am certain I did NOT press the lap button at the end.
+                    Check WKO4. It gives a 10th lap with timertime of 8:09 and
+                    having NP 95W. Its results are,
+                                        signal timestamp:  16:14:25
+                               timer     elpsd     start      time       lap
+                       lap      time      time      time     stamp       dur
+                         0     10:14     10:14  16:14:25  16:24:40     10:15
+                         1      8:03      8:03  16:24:40  16:32:43      8:03
+                         2      9:38      9:38  16:32:43  16:42:21      9:38
+                         3     10:21     10:21  16:42:21  16:52:43     10:22
+                         4     10:27     10:27  16:52:43  17:03:11     10:28
+                         5     10:05     10:05  17:03:11  17:13:16     10:05
+                         6      8:35      8:35  17:13:16  17:21:52      8:36
+                         7     10:47     10:47  17:21:52  17:32:39     10:47
+                         8      7:36      7:36  17:32:39  17:40:16      7:37
+                         9      8:08      8:08  17:40:16  17:48:30      8:14
+                    It includes the 10th lap.
+                    Also, this is an indoor ride, so most lap-button presses
+                    are on the fly (i.e., moving). So duration, timer time,
+                    and elapsed time all agree--except the last lap, which
+                    shows a longer duration, as did the other file.
+
+    *   New check: Can I correctly identify the samples within a lap?
+        If so, this should agree with the lap's timertime.
+        -   The first approach will require tracking the timestamps for
+            the samples. Add this to the signals returned by
+            activity_tools.py -> extract_activity_signals().
+            Hmmm...not sure I want to go that way. It looks easier if I
+            reference everything to t0 with (t-t0).total_seconds().
+            I can convert the start_time and timestamp with
+                tBeg = (lap_start_time[i] - t0).total_seconds()
+                tEnd = (lap_timestamp[i]  - t0).total_seconds()
+            then find and count the samples between these two times with
+                time_vector = signals['time']
+                ii = nonzero( logical_and( time_vector >= tBeg,  \
+                                           time_vector <  tEnd)  )[0]
+                nPts = ii.size
+            (see line 2845 above.)
+            IT WORKS!!
+        -   For the indoor ride:
+                signal timestamp:  16:14:25
+                       timer     elpsd     start      time       lap
+               lap      time      time      time     stamp       dur   samples
+                 0     10:14     10:14  16:14:25  16:24:40     10:15     10:15
+                 1      8:03      8:03  16:24:40  16:32:43      8:03      8:03
+                 2      9:38      9:38  16:32:43  16:42:21      9:38      9:38
+                 3     10:21     10:21  16:42:21  16:52:43     10:22     10:22
+                 4     10:27     10:27  16:52:43  17:03:11     10:28     10:28
+                 5     10:05     10:05  17:03:11  17:13:16     10:05     10:05
+                 6      8:35      8:35  17:13:16  17:21:52      8:36      8:36
+                 7     10:47     10:47  17:21:52  17:32:39     10:47     10:47
+                 8      7:36      7:36  17:32:39  17:40:16      7:37      7:37
+                 9      8:08      8:08  17:40:16  17:48:30      8:14      8:10
+        -   For the outdoor ride:
+                    signal timestamp:  09:52:01
+                       timer     elpsd     start      time       lap
+               lap      time      time      time     stamp       dur   samples
+                 0     16:19     17:49  09:52:01  10:09:50     17:49     16:22
+                 1     18:55     19:12  10:09:50  10:32:17     22:27     18:57
+                 2     30:40     32:03  10:33:19  11:09:56     36:37     30:42
+                 3     40:58     46:15  11:10:36  11:59:45     49:09     41:02
+                 4     26:48     31:36  12:04:34  12:32:29     27:55     26:48
+                 5     16:29     21:56  12:37:53  12:54:26     16:33     16:30
+                 6      6:03      6:03  12:54:26  13:00:38      6:12      6:04
+        -   EXCELLENT AGREEMENT!!
+
+                                            Friday, October 5, 2018 (7:27 AM)
+    *   Compute normalized power.
+        -   I am going to have to deal with nonmoving time, during which
+            the power is zero. That is because I need a running 30-second
+            average before taking the 4th power, and this should not include
+            samples that precede a long rest gap.
+            >   First question: are time samples all integers, as they
+                should be?
+                    >>> time_vector.size
+                    9389
+                    >>> time_fp = time_vector - time_vector.astype('int')
+                    >>> time_fp.max()
+                    0.0
+                    >>> time_fp
+                    array([0., 0., 0., ..., 0., 0., 0.])
+                Yes, they are integers. Though, they are not forced to be
+                by the datetime implementation:
+                    >>> datetime.now()
+                    datetime.datetime(2018, 10, 5, 7, 41, 0, 859000)
+                    >>> print datetime.now()
+                    2018-10-05 07:41:09.837000
+                    >>> n = datetime.now()
+                    >>> n1 = datetime.now()
+                    >>> dt = n1 - n
+                    >>> dt.total_seconds()
+                    24.508
+                The last field is "microseconds".
+                    >>> n.microsecond
+                    633000
+                    >>> n1.microsecond
+                    141000
+        -   Resampling considerations. I need a constant-increment power
+            signal where missing samples are filled with zeros.
+            The variable-increment time vector
+            can be cast as integers and used as indices.
+                >>> y = zeros(20)
+                >>> x = arange(5)*3
+                >>> z = arange(5)*10
+                >>> y[x] = z
+                >>> y
+                array([ 0.,  0.,  0., 10.,  0.,  0., 20.,
+                        0.,  0., 30.,  0.,  0., 40.,
+                        0.,  0.,  0.,  0.,  0.,  0.,  0.])
+            Or, more specifically:
+                >>> n = int(time_vector[-1]+1)
+                >>> n
+                11309
+                >>> p = zeros(n)
+                >>> ii = time_vector.astype('int')
+                >>> ii.size
+                9389
+                >>> p.size
+                11309
+                >>> p[ii] = signals['power']
+            IT WORKS!!
+                                            Sunday, October 7, 2018 (8:57 AM)
+        -   Now I need a backward moving-average filter. Clone from the forward
+            filter in zone_detect.py.
+        -   I need to verify that I can compute the lap average power correctly
+            from the variable-increment power signal.
+                                            Monday, October 8, 2018 (8:15 AM)
+            Code:
+                for i in range(nLaps):
+                    # count samples in this lap
+                    tBeg = (lap_start_time[i] - t0).total_seconds()
+                    tEnd = (lap_timestamp[i]  - t0).total_seconds()
+                    ii = nonzero( logical_and( time_idx >= tBeg,  \
+                                               time_idx <  tEnd)  )[0]
+                    nPts = ii.size
+                    lap_avg_hr[i]       = average(heart_rate_vi[ii])
+                    lap_avg_power[i]    = average(power_vi[ii])
+                    lap_norm_power[i]   = 0.0
+                    # duration from lap metrics
+                    dur = (   lap_timestamp[i]
+                            - lap_start_time[i]).total_seconds()
+                    mm = timer_time[i] // 60
+                    ss = timer_time[i]  % 60
+                    fmt = '%10d'+'%7i:%02i'+'%10i'+'%10i'+'%10i'+'%10i'+'%10i'
+                    print fmt \
+                            % ( i,
+                                mm // 60, ss % 60,
+                                avg_power[i],
+                                lap_avg_power[i],
+                                lap_norm_power[i],
+                                avg_heart_rate[i],
+                                lap_avg_hr[i] )
+            results in:
+                         timer    lap    avg power   avg   lap
+                   lap    time  power  power    NP    HR    HR
+                     0    0:19    133    132     0   127   126
+                     1    0:55    171    170     0   139   139
+                     2    0:40    181    180     0   139   139
+                     3    0:58    171    170     0   138   138
+                     4    0:48    175    174     0   143   142
+                     5    0:29    178    177     0   141   141
+                     6    0:03     79     77     0   133   132
+            It seems to be working correctly.
+        -   Now to compute normalized power.
+            >   The formula is
+                    np = average( p30**4 )**(0.25)
+                which gives 176.1W for the entire ride.
+                However, Garmin gives 185W, and WKO4 gives 183W.
+                I suspect the error comes from me including non-moving
+                time while the software does not. However, when I start
+                pedaling after a rest longer than 30 seconds, I want p30
+                to be zero...right? So the moving average really SHOULD
+                be computed from a continuous signal. But then I can
+                compute the average from moving-time points via
+                    np = average( p30[time_idx]**4 )**(0.25)
+                which gives 184.5W. Looks like I nailed it.
+            >   For each lap, I will have to use the moving-time indices
+                to compute the average. Since p30 is continuously sampled,
+                I think it looks like this:
+                    tEnd = (lap_timestamp[i]  - t0).total_seconds()
+                    ii = nonzero( logical_and( time_idx >= tBeg,  \
+                                               time_idx <  tEnd)  )[0]
+                    np_lap[i] = average( p30[time_idx[ii]]**4 )**(0.25)
+                :   I should first verify this technique works for average
+                    power. So change it from
+                        lap_avg_power[i]    = average(power_vi[ii])
+                    to,
+                        lap_avg_power[i]    = average(power[time_idx[ii]])
+                    Yes, the new values match.
+            >   results
+                             lap     avg    norm     avg     max
+                     lap    time   power   power      HR      HR
+                       0   16:19     133     154     127     143
+                       1   18:55     171     183     139     146
+                       2   30:40     181     194     139     148
+                       3   40:58     171     189     138     155
+                       4   26:48     175     186     143     150
+                       5   16:29     178     187     141     151
+                       6    6:03      79     112     133     148
+                Correct, with small discrepancies. And that is saying much
+                with the amibiguities about moving time.
+
+    *   Plotting
+        -   There is some problem with the datetime x axis. x wraps around
+            zero. I suspect it is because time_ci is an integer array in,
+                x = [base + dt.timedelta(seconds=t) for t in time_ci]
+            Try casting as float:
+                x = [base + dt.timedelta(seconds=t)
+                        for t in time_ci.astype('float')]
+            It works.
+        -   I don't like the vertical lines on the lap results, but it is
+            good enough for now.
+
+    *   Drag-drop support.
+        -   Get the drag-dropped file:
+                fitfilepath = sys.argv[1]
+        -   Clone the batch file, endurance_summary.bat, from
+            interval_laps.bat.
+        -   It can't find the configuration file, cyclingconfig_will.txt.
+            It needs the absolute path.
+        -   Got it working.
+
+    *   Ride-level results
+        -   Create a line 'all' for the whole ride:
+                           lap     avg    norm     avg     max
+                 lap      time   power   power      HR      HR
+                   0     16:19     133     154     127     143
+                   1     18:55     171     183     139     146
+                   2     30:40     181     194     139     148
+                   3     40:58     171     189     138     155
+                   4     26:48     175     186     143     150
+                   5     16:29     178     187     141     151
+                   6      6:03      79     112     133     148
+                 all   2:36:29     166     184     184     155
+                                        Wednesday, October 10, 2018 (8:39 AM)
+        -   However, I want more information: efficiency factor and Pw:HR.
+            >   efficiency factor (EF) uses divides normalized power by
+                average heart rate:
+                    https://www.trainingpeaks.com/blog
+                        /efficiency-factor-and-decoupling/
+            >   Aerobic Decoupling (Pw:HR) computes the percentage change
+                in EF from the first half to the second half:
+                    https://help.trainingpeaks.com/hc/en-us/articles
+                        /204071724-Aerobic-Decoupling-Pw-Hr-and-Pa-HR
+                            -and-Efficiency-Factor-EF-
+                "A smaller change in EF (less than 5%) from the first half
+                to the second half may indicate improving aerobic endurance."
+        -   Add EF to the lap results.
+            >   couldn't remember how to format a float. The 'f' comes AFTER
+                the '%8.2':
+                    >>> print '%8.2f' % all_ef
+                        1.33
+                See
+                    https://docs.python.org/2/library
+                        /stdtypes.html#string-formatting
+            >   Got it.
+                               lap     avg    norm     avg     max
+                     lap      time   power   power      HR      HR      EF
+                       0     16:19     133     154     127     143    1.22
+                       1     18:55     171     183     139     146    1.32
+                       2     30:40     181     194     139     148    1.40
+                       3     40:58     171     189     138     155    1.37
+                       4     26:48     175     186     143     150    1.31
+                       5     16:29     178     187     141     151    1.33
+                       6      6:03      79     112     133     148    0.85
+                     all   2:36:29     166     184     184     155    1.33
+        -   Add Pw:HR (Aerobic Decoupling).
+            >   code:
+                    iiH1            = ii[0:nPts/2]
+                    h1_norm_power   = average( p30[time_idx[iiH1]]**4 )**(0.25)
+                    h1_avg_hr       = average(heart_rate_vi[iiH1])
+                    h1ef            = h1_norm_power / h1_avg_hr
+                    iiH2            = ii[nPts/2:]
+                    h2_norm_power   = average( p30[time_idx[iiH2]]**4 )**(0.25)
+                    h2_avg_hr       = average(heart_rate_vi[iiH2])
+                    h2ef            = h2_norm_power / h2_avg_hr
+                    all_pw_hr       = (h1ef-h2ef)/(h1ef)*100.0
+                This breaks the moving time in half (not elapsed time).
+                It expresses decoupling as a positive number even though
+                it is a decrease in efficiency factor.
+            >   Print ride-level results separate from lap results.
+                    lap results:
+                                   lap     avg    norm     avg     max
+                         lap      time   power   power      HR      HR      EF
+                           0     16:19     133     154     127     143    1.22
+                           1     18:55     171     183     139     146    1.32
+                           2     30:40     181     194     139     148    1.40
+                           3     40:58     171     189     138     155    1.37
+                           4     26:48     175     186     143     150    1.31
+                           5     16:29     178     187     141     151    1.33
+                           6      6:03      79     112     133     148    0.85
+                    ride-level results:
+                                moving     avg    norm     avg             Pw:
+                         seg      time   power   power      HR      EF      HR
+                         all   2:36:29     166     184     138    1.33     4.2
+        -   Add a ride-level entry without the end laps. That is, assume
+            the first and last laps are warmup and cooldown, respectively.
+            >   Code is quite simple:
+                    tBeg = (lap_start_time[1] - t0).total_seconds()
+                    tEnd = (lap_timestamp[-2] - t0).total_seconds()
+                Everything else is the same.
+            >   Results for today's indoor endurance ride
+                (2018-10-10-13-52-16.fit):
+                    lap results:
+                                   lap     avg    norm     avg     max
+                         lap      time   power   power      HR      HR      EF
+                           0     10:55     153     168     114     129    1.48
+                           1     11:05     172     183     127     137    1.44
+                           2     11:36     185     198     135     143    1.47
+                           3     11:14     180     191     136     145    1.41
+                           4     11:08     175     185     135     142    1.37
+                           5      7:46     180     186     135     140    1.39
+                           6     13:08     183     189     132     142    1.44
+                           7      7:09     199     205     139     146    1.48
+                           8      3:59     108     151     133     150    1.14
+                           9      8:48     186     187     136     140    1.38
+                          10      9:14     185     191     139     144    1.38
+                          11     10:02     190     191     141     147    1.36
+                          12      4:07      53      88     126     143    0.70
+                    ride-level results:
+                                moving     avg    norm     avg             Pw:
+                         seg      time   power   power      HR      EF      HR
+                         all   2:00:22     172     186     132    1.40     3.8
+                        1-11   1:45:18     179     190     135    1.41     2.1
+                IT WORKS!!!
+
+
+                                        Thursday, November 29, 2018 (8:48 AM)
++   NEW PROJECT: Use wxPython to create a dialog with a suite of custom analyses
+    applied to a .FIT file that is drag-dropped onto the dialog.
+    Many times I have wanted to look at another analysis of a .FIT file
+    but didn't because it didn't have drag-drop support.
+
+    *   Time to get this project under version control with GIT. Follow
+                D:\Users\Owner\Documents\OneDrive\2018\notesparser
+                    \data\notes.txt
+        for techniques.
+        -   Right-click in the main folder and select "create GIT repository
+            here."
+        -   Create the new repository on GitHub. No license, and no readme.
+                    https://github.com/guitarsenall/FitFiles.git
+        -   Link the two together.
+            >   Create README.md.
+            >   Consult the TortoiseGIT help. I think I need to clone.
+                Hmmm...not sure. Google.
+                        https://help.github.com/articles
+                            /adding-an-existing-project-to-github
+                            -using-the-command-line/
+                I am on the right track.
+            >   commit.
+            >   At this point, I can probably do a push. Try it.
+                    see tortoise_git_push_a.png
+                Success. Check GitHub. README.md is there.
+            >   Move this file, analysis_notes.txt, into the data folder.
+                Also, move all images and data-related files there.
+            >   Add .py and .txt files.
+            >   Commit & push.
+                :   Push will not work. The destination remote name is empty.
+                    Why? Click "manage". It brings up the settings dialog
+                    set to the Git->remote tab. Go see how this entry looks
+                    for the NotesParser project...like this:
+                        see tortoise_git_push_b.png
+                :   Add the URL. Remote is set to "origin".
+                    Press "Add New/Save". "origin" is added to the Remote
+                    list. It now looks correct. Press OK.
+                    Try a push. It now looks correct with Destination
+                    set to Remote and "origin" selected.
+                        see tortoise_git_push_c.png
+                    Try it. Success. Check GitHub.
+                    IT WORKED!
+
+                                            Friday, November 30, 2018 (7:36 AM)
+    *   Assemble some GUI controls and/or info.
+        -   Another example in the demo I like is
+                More Windows Controls -> FileBrowseButton
+        -   For the text control, I want to be able to set the font to a
+            fixed-width font. An example of a control with font setting is,
+                More Windows Controls -> ExpandoTextCtrl
+        -   Initial idea for a layout: use a vertical boxsizer to hold
+            several horizontal boxsizers containing:
+                Box1: Filename and FileBrowseButton
+                Box2: Analysis choice control for single-file analyses.
+                    With few analyses, a ListBox might be a better choice:
+                        Core Windows Controls -> ListBox
+                Box3: Filename and FileBrowseButton for second file.
+                    Perhaps this could be grayed out until a two-file analysis
+                    is chosen.
+                Box4: The big RUN button
+                Box5: The text control containing analysis output.
+        -   google("how to make wxpython controls grayed out")
+            >   Apparently a wxPython object has a Disable() method:
+                        https://stackoverflow.com/questions/8202280
+                            /wxpython-disabling-buttons
+            >   Another approach might be object.Enable(False):
+                        http://wxpython-users.1045709.n5.nabble.com
+                            /wxPython-Grey-out-a-control-td2282901.html
+            >   Apparently, controls inherit Disable() and Enable()
+                from the Window class (I followed the class hierarchy
+                for FileBrowseButton):
+                        https://wxpython.org/Phoenix/docs/html/wx.Window.html
+
+    *   Create fitfileanalyses.py
+        Begin coding, cloning from notestohtml.py.
+        -   I liked the way the contents control worked in notestohtml.py.
+            But I deleted it. Find a previous version that had it via
+            the TortoiseGIT log window. Right-click on an old version,
+            select "compare with working tree". Sweet!
+            >   Commit & push.
+                                        Saturday, December 1, 2018 (7:35 AM)
+            >   Found a way to set its font. Got intial GUI working.
+        -   Convert to a FileDropTarget.
+            >   The wxPython demo has a sample file-drop under
+                    Clipboard and DnD -> DragAndDrop
+                The code subclasses wx.FileDropTarget.
+            >   Wait. What about the file browser?
+                    More Windows Controls -> FileBrowseButton
+                Does it already support DnD? No. And this encapsulates
+                the text control and button into one supercontrol, which
+                will make it difficult to work with.
+                                            Monday, December 3, 2018 (6:30 AM)
+            >   Got it working.
+                Commit & push.
+        -   Add the analysis list as a choice control.
+                see fitfileanalyses_gui_a.png
+        -   Add the configuration file.
+            >   Update the config files.
+                Commit & push.
+            >   Some requirements
+                :   I would like this to autofill in response to setting the
+                    path to the .FIT file. Just detect the name 'will' or
+                    'kim' in the path.
+                :   I would like it disabled if the chosen analysis does
+                    not require it.
+                :   I have a dilemma with the path: that of the .FIT file
+                    Vs that of the configuration file.
+                    #   Actually, I can have a copy in the .FIT file folder
+                        and autoload it when I load a .FIT file.
+                        But then I have to maintain two configuration files
+                        per athlete.
+                    #   Perhaps stick to an analysis directory and maintain
+                        the full path to the file. But if I do that, then
+                        how will I set the analysis directory? Also,
+                        I might have two .FIT files from two different
+                        directories.
+
+                                            Tuesday, December 4, 2018 (2:30 PM)
+    *   Add analyses.
+        -   I am ready to launch an analysis, beginning with
+            endurance_summary.py.
+            >   However, I want endurance_summary.py to continue to function!
+                And I don't want to simply copy all that code; I want it to
+                remain in endurance_summary.py so that I can import it and use
+                it as a function. I will need a device described in the book
+                (page 213, listing10-4.py):
+                    # hello4.py
+                    def hello():
+                        print "Hello, world!"
+                    def test():
+                        hello()
+                    if __name__ == '__main__': test()
+                Make it so.
+            >   Function format. I want it to be called thus:
+                    def endurance_summary( FITFileName, Config=None ):
+                        if Config is None:
+                            # find config file based on path
+                        # read config file
+                so that the config file is an optional keyword.
+
+
+
+d:
+cd D:\Users\Owner\Documents\OneDrive\2018\notesparser\wxPython-demo-4.0.3\demo
+python demo.py
+
+
+
+TO DO:
++   fitfileanalyses
+    *   configuration file
++   zone detection
+    *   Can I plot the variable-increment data and avoid the vertical lines
+        to zero?
+
+D:\Users\Owner\Documents\OneDrive\2018\fitfiles\cyclingconfig_will.txt
+
+dt = (lap_start_time[6] - lap_start_time[5]).total_seconds()
+print '%5i:%2i' % ( dt // 60, dt % 60 )
+
+dt = []
+for i in range(6): dt.append (lap_start_time[i+1] - lap_start_time[i]).total_seconds()
+
+[ dt.total_seconds() for dt in  ]
+
