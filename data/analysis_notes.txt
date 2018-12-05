@@ -3494,6 +3494,51 @@ files from my Garmin Edge 810.
                             # find config file based on path
                         # read config file
                 so that the config file is an optional keyword.
+            >   Implement the '__main__' test.
+                I nailed it on the first try!
+                                        Wednesday, December 5, 2018 (9:07 AM)
+                experiment with importing and executing endurance_summary.py
+                within scratch.py. Got it.
+            >   Big question: how do I redirect output to my output text
+                control?
+                :   The book (p399) has an interesting form of the print
+                    statement:
+                        log = open('logfile.txt', 'w')
+                        print >> log, 'some logging information'
+                    It makes me wonder if I can do something like this:
+                        if log is None:
+                            log = STDOUT
+                    so that it continues to work as is. Read more about
+                    the logging module first. I don't like it. The logging
+                    module precedes every line with stuff like
+                    "INFO:root:"
+                    Read more about the print statement. Apparently, it
+                    writes "to a given stream, with sys.stdout being the
+                    default." Stream, huh?
+                :   Google("wx.textctrl as stream")
+                        https://wxpython.org/Phoenix/docs/html/wx.TextCtrl.html
+                    The web page is missing information but implies I can
+                    use the wx.TextCtrl as a stream. It says
+                    "See StreamToTextRedirector for more details." Googling
+                    this leads to,
+                        https://wxpython.org/Phoenix/docs/html
+                            /wx.LogTextCtrl.html
+                    but I fear that will have the line prefixes.
+                    Another hit:
+                        https://stackoverflow.com/questions/35994782
+                            /redirect-sys-stdout-to-a-wx-textctrl-widget
+                    From the question, I learn wx.TextCtrl has a method
+                    AppendText(). Interesting.
+
+
+                :   Page 263 has more info on "file-like objects" and
+                    "standard streams" (sys.stdin, sys.stdout, sys.stderr).
+                    I get the impression that my "stream" simply has to
+                    implement a write() method.
+                        print >> MyStream, 'some text'
+                    should result in
+                        MyStream.write('some text')
+                    I should be able to test this in scratch.py
 
 
 
@@ -3505,7 +3550,10 @@ python demo.py
 
 TO DO:
 +   fitfileanalyses
-    *   configuration file
+    *   endurance_summery
+        -   Use '__main__' to prevent execution when importing endurance_summary.py.
+        -   Allow for auto-finding the config file.
+        -   Error and exception handling
 +   zone detection
     *   Can I plot the variable-increment data and avoid the vertical lines
         to zero?

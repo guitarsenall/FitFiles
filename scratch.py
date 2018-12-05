@@ -1,6 +1,12 @@
 
 # scratch.py
 
+# experiment with endurance_summary.py
+from endurance_summary import endurance_summary
+fitfilepath = r'S:\will\documents\OneDrive\bike\activities\will\\' \
+            + r'2018-12-03-17-46-09.fit'
+endurance_summary(fitfilepath, ConfigFile=None)
+
 
 ## remove bad entries from datalist
 #badfiles    = [ '2016-07-09-13-52-59.fit' ]
@@ -96,24 +102,24 @@
 #            intervals.append( interval.copy() )
 #        OnState = False
 
-# crack the record.type
-from datetime import datetime
-from fitparse import Activity
-FileLoc = r'S:\\will\\documents\\OneDrive\\bike\\activities\\will\\'
-fitfilepath = FileLoc + r'2018-09-28-09-52-01.fit'  # long ride
-activity = Activity(fitfilepath)
-activity.parse()
-records = activity.records
-record_types = set()
-for record in records:
-    if record.type.name != 'record':
-        #print record.type.name
-        record_types.add(record.type.name)
-records = activity.get_records_by_type('lap')
-for record in records:
-    print record.type.name
-    print record.get_valid_field_names()
-    break
+## crack the record.type
+#from datetime import datetime
+#from fitparse import Activity
+#FileLoc = r'S:\\will\\documents\\OneDrive\\bike\\activities\\will\\'
+#fitfilepath = FileLoc + r'2018-09-28-09-52-01.fit'  # long ride
+#activity = Activity(fitfilepath)
+#activity.parse()
+#records = activity.records
+#record_types = set()
+#for record in records:
+#    if record.type.name != 'record':
+#        #print record.type.name
+#        record_types.add(record.type.name)
+#records = activity.get_records_by_type('lap')
+#for record in records:
+#    print record.type.name
+#    print record.get_valid_field_names()
+#    break
 
 ## import and plot signals saved as
 ##   SignalMap   = { 'EdgeSignals'   : EdgeSignals,
