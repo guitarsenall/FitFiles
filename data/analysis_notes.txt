@@ -3538,7 +3538,24 @@ files from my Garmin Edge 810.
                         print >> MyStream, 'some text'
                     should result in
                         MyStream.write('some text')
-                    I should be able to test this in scratch.py
+                    I should be able to test this in scratch.py:
+                        class MyStream():
+                            def write(self, data):
+                                print 'MyStream.write(): ', data
+                        mystream = MyStream()
+                        print >> mystream, 'some text'
+                    It worked!!
+                        >>>
+                        MyStream.write():  some text
+                        >>>
+                    I think this means I can pass a subclassed text control
+                    to endurance_summary:
+                        class StreamTextControl(wx.TextCtrl):
+                            def write(self, data):
+                                self.AppendText(data)
+                        MyTextControl = StreamTextControl()
+                        endurance_summary( FITFileName, Config=configfile,
+                                OutStream=MyTextControl)
 
 
 

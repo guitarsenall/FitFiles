@@ -1,11 +1,18 @@
 
 # scratch.py
 
-# experiment with endurance_summary.py
-from endurance_summary import endurance_summary
-fitfilepath = r'S:\will\documents\OneDrive\bike\activities\will\\' \
-            + r'2018-12-03-17-46-09.fit'
-endurance_summary(fitfilepath, ConfigFile=None)
+# experiment with a streaming object for print statement
+class MyStream():
+    def write(self, data):
+        print 'MyStream.write(): ', data
+mystream = MyStream()
+print >> mystream, 'some text'
+
+## experiment with endurance_summary.py
+#from endurance_summary import endurance_summary
+#fitfilepath = r'S:\will\documents\OneDrive\bike\activities\will\\' \
+#            + r'2018-12-03-17-46-09.fit'
+#endurance_summary(fitfilepath, ConfigFile=None)
 
 
 ## remove bad entries from datalist
