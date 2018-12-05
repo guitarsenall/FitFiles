@@ -3548,7 +3548,8 @@ files from my Garmin Edge 810.
                         >>>
                         MyStream.write():  some text
                         >>>
-                    I think this means I can pass a subclassed text control
+                    Commit & push.
+                :   I think this means I can pass a subclassed text control
                     to endurance_summary:
                         class StreamTextControl(wx.TextCtrl):
                             def write(self, data):
@@ -3556,7 +3557,23 @@ files from my Garmin Edge 810.
                         MyTextControl = StreamTextControl()
                         endurance_summary( FITFileName, Config=configfile,
                                 OutStream=MyTextControl)
-
+                    Experiment with this in scratch.py.
+                        import sys
+                        class MyStream():
+                            def write(self, data):
+                                print 'MyStream.write(): ', data,
+                        mystream = MyStream()
+                        from endurance_summary import endurance_summary
+                        fitfilepath = r'S:\will\...\2018-12-03-17-46-09.fit'
+                        endurance_summary(fitfilepath, ConfigFile=None,
+                                            OutStream=mystream)
+                    IT WORKS!!  For some reason, 'MyStream.write():' gets
+                    printed at the end of every line. However, removing it,
+                        class MyStream():
+                            def write(self, data):
+                                print data,
+                    works perfectly.
+                    Commit & push.
 
 
 d:

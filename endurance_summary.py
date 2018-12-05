@@ -9,6 +9,7 @@ of the endurance ride omitting the first and last laps (warmup and cooldown).
 '''
 
 import os
+import sys
 
 #
 # create running 30-second average power from which normalized power
@@ -32,7 +33,7 @@ def BackwardMovingAverage( x, window=30, SampleRate=1.0 ):
 #           endurance_summary function def                 #
 ############################################################
 
-def endurance_summary(FitFilePath, ConfigFile=None):
+def endurance_summary(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
 
     (FilePath, FitFileName) = os.path.split(FitFilePath)
 
@@ -40,8 +41,8 @@ def endurance_summary(FitFilePath, ConfigFile=None):
         # attempt to find appropriate config file
         if 'will' in FilePath.split('\\'):
             ConfigFile = FilePath + r'\cyclingconfig_will.txt'
-            print 'ConfigFile:'
-            print ConfigFile
+            print >> OutStream, 'ConfigFile:'
+            print >> OutStream, ConfigFile
         elif 'kim' in FilePath.split('\\'):
             ConfigFile = FilePath + r'\cyclingconfig_kim.txt'
     if (ConfigFile is None) or (not os.path.exists(ConfigFile)):
@@ -59,8 +60,8 @@ def endurance_summary(FitFilePath, ConfigFile=None):
 #    ConfigFile  = ConfigFilePath + 'cyclingconfig_will.txt'
     config      = ConfigParser()
     config.read(ConfigFile)
-    print 'reading config file ' + ConfigFile
-    print '-'*20 + ' ' + ConfigFile + ' ' + '-'*20
+    print >> OutStream, 'reading config file ' + ConfigFile
+    print >> OutStream, '-'*20 + ' ' + ConfigFile + ' ' + '-'*20
     WeightEntry     = config.getfloat( 'user', 'weight' )
     WeightToKg      = config.getfloat( 'user', 'WeightToKg' )
     weight          = WeightEntry * WeightToKg
@@ -69,14 +70,14 @@ def endurance_summary(FitFilePath, ConfigFile=None):
     ThresholdPower  = config.getfloat( 'power', 'ThresholdPower' )
     EnduranceHR     = config.getfloat( 'power', 'EnduranceHR'    )
     ThresholdHR     = config.getfloat( 'power', 'ThresholdHR'    )
-    print 'WeightEntry   : ', WeightEntry
-    print 'WeightToKg    : ', WeightToKg
-    print 'weight        : ', weight
-    print 'age           : ', age
-    print 'EndurancePower: ', EndurancePower
-    print 'ThresholdPower: ', ThresholdPower
-    print 'EnduranceHR   : ', EnduranceHR
-    print 'ThresholdHR   : ', ThresholdHR
+    print >> OutStream, 'WeightEntry   : ', WeightEntry
+    print >> OutStream, 'WeightToKg    : ', WeightToKg
+    print >> OutStream, 'weight        : ', weight
+    print >> OutStream, 'age           : ', age
+    print >> OutStream, 'EndurancePower: ', EndurancePower
+    print >> OutStream, 'ThresholdPower: ', ThresholdPower
+    print >> OutStream, 'EnduranceHR   : ', EnduranceHR
+    print >> OutStream, 'ThresholdHR   : ', ThresholdHR
 
     # power zones from "Cyclist's Training Bible", 5th ed., by Joe Friel, p51
     FTP = ThresholdPower
@@ -138,7 +139,7 @@ def endurance_summary(FitFilePath, ConfigFile=None):
             if 'functional_threshold_power' in field_name:
                 field_data = record.get_data(field_name)
                 field_units = record.get_units(field_name)
-                print 'FTP setting = %i %s' % (field_data, field_units)
+                print >> OutStream, 'FTP setting = %i %s' % (field_data, field_units)
                 FTP = field_data
 
 
@@ -175,9 +176,9 @@ def endurance_summary(FitFilePath, ConfigFile=None):
 
             ## Print what we've got!
             #if field_units:
-            #    print " * %s: %s %s" % (field_name, field_data, field_units)
+            #    print >> OutStream, " * %s: %s %s" % (field_name, field_data, field_units)
             #else:
-            #    print " * %s: %s" % (field_name, field_data)
+            #    print >> OutStream, " * %s: %s" % (field_name, field_data)
 
             if 'timestamp' in field_name:
                 lap_timestamp.append( field_data )
@@ -224,7 +225,7 @@ def endurance_summary(FitFilePath, ConfigFile=None):
     heart_rate_ci[time_idx] = heart_rate_vi
 
     t0 = signals['metadata']['timestamp']
-    print 'signal timestamp: ', t0.time()
+    print >> OutStream, 'signal timestamp: ', t0.time()
 
     # plot lap results as continuous time signals
     lap_avg_hr_c        = zeros(nScans)
@@ -237,7 +238,7 @@ def endurance_summary(FitFilePath, ConfigFile=None):
     #
     # compute lap metrics
     #
-    print 'lap results:'
+    print >> OutStream, 'lap results:'
     nLaps   = len(elapsed_time)
     vi_time_vector  = signals['time']
 
@@ -254,8 +255,8 @@ def endurance_summary(FitFilePath, ConfigFile=None):
     names1  = [    '', '  lap', '  avg', ' norm', 'avg',  'max',    '' ]
     names2  = [ 'lap', ' time', 'power', 'power', ' HR',  ' HR', ' EF' ]
     fmt     = "%8s"+"%10s"+"%8s"*5
-    print fmt % tuple(names1)
-    print fmt % tuple(names2)
+    print >> OutStream, fmt % tuple(names1)
+    print >> OutStream, fmt % tuple(names2)
 
     for i in range(nLaps):
         # count samples in this lap
@@ -274,7 +275,7 @@ def endurance_summary(FitFilePath, ConfigFile=None):
         mm = timer_time[i] // 60
         ss = timer_time[i]  % 60
         fmt = '%8d'+'%7i:%02i'+'%8i'*4 + '%8.2f'
-        print fmt \
+        print >> OutStream, fmt \
                 % ( i,
                     mm, ss,
                     avg_power[i],
@@ -291,12 +292,12 @@ def endurance_summary(FitFilePath, ConfigFile=None):
     #
     # ride-level results
     #
-    print 'ride-level results:'
+    print >> OutStream, 'ride-level results:'
     names1  = [    '', 'moving', '  avg', ' norm', 'avg',    '',  'Pw:' ]
     names2  = [ 'seg', '  time', 'power', 'power', ' HR', ' EF',  ' HR' ]
     fmt     = "%8s"+"%10s"+"%8s"*5
-    print fmt % tuple(names1)
-    print fmt % tuple(names2)
+    print >> OutStream, fmt % tuple(names1)
+    print >> OutStream, fmt % tuple(names2)
 
     # whole ride
     tBeg = (lap_start_time[0] - t0).total_seconds()
@@ -324,7 +325,7 @@ def endurance_summary(FitFilePath, ConfigFile=None):
     h2ef            = h2_norm_power / h2_avg_hr
     all_pw_hr       = (h1ef-h2ef)/(h1ef)*100.0
     fmt = '%8s'+'%4i:%02i:%02i'+'%8i'*3 + '%8.2f' + '%8.1f'
-    print fmt \
+    print >> OutStream, fmt \
             % ( 'all',
                 hh, mm, ss,
                 all_avg_power,
@@ -359,7 +360,7 @@ def endurance_summary(FitFilePath, ConfigFile=None):
     h2ef            = h2_norm_power / h2_avg_hr
     mid_pw_hr       = (h1ef-h2ef)/(h1ef)*100.0
     fmt = '%5i-%02i'+'%4i:%02i:%02i'+'%8i'*3 + '%8.2f' + '%8.1f'
-    print fmt \
+    print >> OutStream, fmt \
             % ( 1, nLaps-2,
                 hh, mm, ss,
                 mid_avg_power,
