@@ -3574,6 +3574,17 @@ files from my Garmin Edge 810.
                                 print data,
                     works perfectly.
                     Commit & push.
+                :   Now try it in fitfileanalyses.py.
+                    #   Do I need a constructor so I can call,
+                            OutputTextCtl = StreamTextControl(bkg,
+                                    style=wx.TE_MULTILINE |wx.HSCROLL)
+                        Browse demo for examples. Not sure yet. Perhaps it
+                        will simply inherit __init__() from
+                        wx.TextCtrl. Continue programming for now.
+                        WHOA! I TOTALLY CAN'T BELIEVE THAT JUST WORKED!
+                            see fitfileanalyses_gui_b.png
+                        Commit & push.
+
 
 
 d:

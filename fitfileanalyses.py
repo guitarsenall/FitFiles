@@ -113,6 +113,7 @@ def LoadConfigFile(event):
 
 
 def LaunchAnalysis(event):
+    from endurance_summary import endurance_summary
     AnalysesChoice  = AnalysesCtl.GetSelection()
     AnalysesChoice  = AnalysesCtl.GetString(AnalysesChoice)
     print 'Launch Analysis called with analysis: ' + AnalysesChoice
@@ -128,6 +129,8 @@ def LaunchAnalysis(event):
             dlg.Destroy()
             return
         print 'Running endurance summary on ' + FITFileName
+        ConfigFile  = ConfigFileCtl.GetLabel()
+        endurance_summary( FITFileName, ConfigFile, OutStream=OutputTextCtl )
     else:
         print 'Analysis not yet supported: ' + AnalysesChoice
         dlg = wx.MessageDialog(win,
@@ -138,6 +141,12 @@ def LaunchAnalysis(event):
         dlg.ShowModal()
         dlg.Destroy()
         return
+
+
+class StreamTextControl(wx.TextCtrl):
+    ''' make a text control streamable for print statement '''
+    def write(self, data):
+        self.AppendText(data)
 
 
 ###########################################
@@ -215,7 +224,7 @@ hBox5.Add(LaunchButton, proportion=1, flag=wx.LEFT, border=5)
 hBox5.Add(CloseButton, proportion=1, flag=wx.LEFT, border=5)
 
 # output text
-OutputTextCtl = wx.TextCtrl(bkg, style=wx.TE_MULTILINE | wx.HSCROLL)
+OutputTextCtl = StreamTextControl(bkg, style=wx.TE_MULTILINE | wx.HSCROLL)
 OutputTextCtl.SetValue( 'This will be the output window' )
 font1 = wx.Font(10, wx.MODERN, wx.NORMAL, wx.NORMAL, False, u'Courier New')
 OutputTextCtl.SetFont(font1)
