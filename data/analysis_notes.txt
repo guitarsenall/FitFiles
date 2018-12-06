@@ -3584,6 +3584,12 @@ files from my Garmin Edge 810.
                         WHOA! I TOTALLY CAN'T BELIEVE THAT JUST WORKED!
                             see fitfileanalyses_gui_b.png
                         Commit & push.
+                                        Thursday, December 6, 2018 (7:04 AM)
+        -   Zone detection (zone_detect.py).
+            >   Add same adaptations as endurance_summary.py.
+                Got it running.
+                    see fitfileanalyses_zonedetect_a.png
+                Commit & push.
 
 
 
@@ -3595,10 +3601,17 @@ python demo.py
 
 TO DO:
 +   fitfileanalyses
+    *   General
+        -   Don't flush the OutputTextCtrl unless a new .FIT file is loaded.
+        -   Reconcile LoadFitFile() and OnDropFiles(). They should do the
+            same thing.
+        -   Display full file paths.
+        -   Encapsulate heart-rate and power zones for plotting axes.
     *   endurance_summery
-        -   Use '__main__' to prevent execution when importing endurance_summary.py.
-        -   Allow for auto-finding the config file.
         -   Error and exception handling
+        -   CLOSE button does not close the plot window.
+    *   zone_detect
+        -   Formatted print of time in zones
 +   zone detection
     *   Can I plot the variable-increment data and avoid the vertical lines
         to zero?

@@ -50,6 +50,10 @@ class MyFileDropTarget(wx.FileDropTarget):
         txt = "\n%d file(s) dropped at %d,%d:\n" % (len(filenames), x, y)
         txt += '\n'.join(filenames)
         (FilePath, FileName) = os.path.split(filenames[0])
+        OutStr = [ "CWD: %s" % os.getcwd() ]
+        OutStr.append( 'PATH: %s' % FilePath )
+        OutStr.append( 'FILE: %s' % FileName )
+        OutputTextCtl.SetValue( '\n'.join(OutStr) )
         os.chdir(FilePath)
         win.SetStatusText(os.getcwd(), number=0)
         SetFileNameText(FileName)
@@ -104,7 +108,7 @@ def LoadConfigFile(event):
         OutStr = [ "CWD: %s" % os.getcwd() ]
         OutStr.append( 'PATH: %s' % FilePath )
         OutStr.append( 'FILE: %s' % FileName )
-        OutputTextCtl.SetValue( '\n'.join(OutStr) )
+        print >> OutputTextCtl, '\n'.join(OutStr)
         for s in OutStr:
             print s  #OutStr
         ConfigFileCtl.SetLabel(FileName)
@@ -114,6 +118,7 @@ def LoadConfigFile(event):
 
 def LaunchAnalysis(event):
     from endurance_summary import endurance_summary
+    from zone_detect import zone_detect
     AnalysesChoice  = AnalysesCtl.GetSelection()
     AnalysesChoice  = AnalysesCtl.GetString(AnalysesChoice)
     print 'Launch Analysis called with analysis: ' + AnalysesChoice
@@ -130,7 +135,27 @@ def LaunchAnalysis(event):
             return
         print 'Running endurance summary on ' + FITFileName
         ConfigFile  = ConfigFileCtl.GetLabel()
+        OutStr  = 'Launching Analysis: %s\n' % AnalysesChoice
+        #OutputTextCtl.SetValue( OutStr )
+        print >> OutputTextCtl, ''
         endurance_summary( FITFileName, ConfigFile, OutStream=OutputTextCtl )
+    elif AnalysesChoice == 'Zone Detection':
+        FITFileName = FileNameCtl.GetLabel()
+        if not os.path.exists(FITFileName):
+            dlg = wx.MessageDialog(win,
+                        'A valid .FIT file must be entered.',
+                        'WARNING',
+                        wx.OK | wx.ICON_INFORMATION
+                        )
+            dlg.ShowModal()
+            dlg.Destroy()
+            return
+        print 'Running zone detection on ' + FITFileName
+        ConfigFile  = ConfigFileCtl.GetLabel()
+        OutStr  = 'Launching Analysis: %s\n' % AnalysesChoice
+        #OutputTextCtl.SetValue( OutStr )
+        print >> OutputTextCtl, ''
+        zone_detect( FITFileName, ConfigFile, OutStream=OutputTextCtl )
     else:
         print 'Analysis not yet supported: ' + AnalysesChoice
         dlg = wx.MessageDialog(win,
@@ -193,7 +218,7 @@ AnalysesCtl = wx.Choice(bkg, choices = analyses_labels)
 AnalysesCtl.SetSelection(0)
 def AnalysesEventChoice(event):
     OutStr  = 'AnalysesEventChoice: %s\n' % event.GetString()
-    OutputTextCtl.SetValue( OutStr )
+    # OutputTextCtl.SetValue( OutStr )
     print OutStr
 bkg.Bind(wx.EVT_CHOICE, AnalysesEventChoice, AnalysesCtl)
 hBox3 = wx.BoxSizer()
@@ -225,7 +250,7 @@ hBox5.Add(CloseButton, proportion=1, flag=wx.LEFT, border=5)
 
 # output text
 OutputTextCtl = StreamTextControl(bkg, style=wx.TE_MULTILINE | wx.HSCROLL)
-OutputTextCtl.SetValue( 'This will be the output window' )
+OutputTextCtl.SetValue( 'Analysis output area\n' )
 font1 = wx.Font(10, wx.MODERN, wx.NORMAL, wx.NORMAL, False, u'Courier New')
 OutputTextCtl.SetFont(font1)
 
