@@ -67,8 +67,7 @@ def zone_detect(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     ConfigFile  = 'cyclingconfig_will.txt'
     config      = ConfigParser()
     config.read(ConfigFile)
-    #print 'reading config file ' + ConfigFile
-    print >> OutStream,  '-'*20 + ' ' + ConfigFile + ' ' + '-'*20
+    print 'reading config file ' + ConfigFile
     WeightEntry     = config.getfloat( 'user', 'weight' )
     WeightToKg      = config.getfloat( 'user', 'WeightToKg' )
     weight          = WeightEntry * WeightToKg
@@ -194,7 +193,7 @@ def zone_detect(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     Wn          = cutoff / (SampleRate/2)
     PadLen      = int(SampleRate/cutoff)
     b, a        = signal.butter(poles, Wn, btype='lowpass')
-    lpfpower    = signal.filtfilt(b, a, power, padlen=PadLen)
+    # lpfpower    = signal.filtfilt(b, a, power, padlen=PadLen)
 
 
     #   calculate zone midpoints for plotting
@@ -325,6 +324,17 @@ def zone_detect(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     ax.legend()
     fig2.tight_layout()
     plt.show()
+
+    # formatted print of histogram
+    print >> OutStream, 'Power Zone Histogram:'
+    for i in range(7):
+        dur = ZoneCounts[i]/SampleRate
+        pct = dur / sum( ZoneCounts/SampleRate ) * 100
+        hh  = dur // 3600
+        mm  = (dur % 3600) // 60
+        ss  = (dur % 3600) % 60
+        print >> OutStream, '    Zone %i: %2i:%02i:%02i (%i%%)' \
+                            % (i+1, hh, mm, ss, pct)
 
 # end zone_detect()
 

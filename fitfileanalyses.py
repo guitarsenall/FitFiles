@@ -54,6 +54,7 @@ class MyFileDropTarget(wx.FileDropTarget):
         OutStr.append( 'PATH: %s' % FilePath )
         OutStr.append( 'FILE: %s' % FileName )
         OutputTextCtl.SetValue( '\n'.join(OutStr) )
+        print >> OutputTextCtl, '\n'
         os.chdir(FilePath)
         win.SetStatusText(os.getcwd(), number=0)
         SetFileNameText(FileName)
@@ -81,6 +82,7 @@ def LoadFitFile(event):
         OutStr.append( 'PATH: %s' % FilePath )
         OutStr.append( 'FILE: %s' % FileName )
         OutputTextCtl.SetValue( '\n'.join(OutStr) )
+        print >> OutputTextCtl, '\n'
         for s in OutStr:
             print s  #OutStr
         SetFileNameText(FileName)
@@ -109,6 +111,7 @@ def LoadConfigFile(event):
         OutStr.append( 'PATH: %s' % FilePath )
         OutStr.append( 'FILE: %s' % FileName )
         print >> OutputTextCtl, '\n'.join(OutStr)
+        print >> OutputTextCtl, '\n'
         for s in OutStr:
             print s  #OutStr
         ConfigFileCtl.SetLabel(FileName)
@@ -121,7 +124,7 @@ def LaunchAnalysis(event):
     from zone_detect import zone_detect
     AnalysesChoice  = AnalysesCtl.GetSelection()
     AnalysesChoice  = AnalysesCtl.GetString(AnalysesChoice)
-    print 'Launch Analysis called with analysis: ' + AnalysesChoice
+    print >> OutputTextCtl, '-'*20 + ' ' + AnalysesChoice + ' ' + '-'*20
     if AnalysesChoice == 'Endurance Laps':
         FITFileName = FileNameCtl.GetLabel()
         if not os.path.exists(FITFileName):

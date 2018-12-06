@@ -61,7 +61,6 @@ def endurance_summary(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     config      = ConfigParser()
     config.read(ConfigFile)
     print >> OutStream, 'reading config file ' + ConfigFile
-    print >> OutStream, '-'*20 + ' ' + ConfigFile + ' ' + '-'*20
     WeightEntry     = config.getfloat( 'user', 'weight' )
     WeightToKg      = config.getfloat( 'user', 'WeightToKg' )
     weight          = WeightEntry * WeightToKg
@@ -131,7 +130,7 @@ def endurance_summary(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
 
 
     # get the FTP
-    FTP = 270.0 #assume if not present
+    # FTP = 270.0 #assume if not present
     records = activity.get_records_by_type('zones_target')
     for record in records:
         valid_field_names = record.get_valid_field_names()

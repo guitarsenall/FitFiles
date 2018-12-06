@@ -3590,6 +3590,18 @@ files from my Garmin Edge 810.
                 Got it running.
                     see fitfileanalyses_zonedetect_a.png
                 Commit & push.
+            >   formatted print of zone histogram
+                    print >> OutStream, 'Power Zone Histogram:'
+                    for i in range(7):
+                        dur = ZoneCounts[i]/SampleRate
+                        pct = dur / sum( ZoneCounts/SampleRate ) * 100
+                        hh  = dur // 3600
+                        mm  = (dur % 3600) // 60
+                        ss  = (dur % 3600) % 60
+                        print >> OutStream, 'Zone %i: %2i:%02i:%02i (%i%%)' \
+                                            % (i+1, hh, mm, ss, pct)
+                Commit & push.
+
 
 
 
