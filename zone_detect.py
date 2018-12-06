@@ -67,7 +67,7 @@ def zone_detect(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     ConfigFile  = 'cyclingconfig_will.txt'
     config      = ConfigParser()
     config.read(ConfigFile)
-    print 'reading config file ' + ConfigFile
+    print >> OutStream, 'reading config file ' + ConfigFile
     WeightEntry     = config.getfloat( 'user', 'weight' )
     WeightToKg      = config.getfloat( 'user', 'WeightToKg' )
     weight          = WeightEntry * WeightToKg
@@ -333,8 +333,13 @@ def zone_detect(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
         hh  = dur // 3600
         mm  = (dur % 3600) // 60
         ss  = (dur % 3600) % 60
-        print >> OutStream, '    Zone %i: %2i:%02i:%02i (%i%%)' \
+        print >> OutStream, '    Zone %i: %2i:%02i:%02i (%2i%%)' \
                             % (i+1, hh, mm, ss, pct)
+    dur = sum(ZoneCounts)/SampleRate
+    hh  = dur // 3600
+    mm  = (dur % 3600) // 60
+    ss  = (dur % 3600) % 60
+    print >> OutStream, '     total: %2i:%02i:%02i' % (hh, mm, ss)
 
 # end zone_detect()
 

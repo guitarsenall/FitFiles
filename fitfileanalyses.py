@@ -34,11 +34,13 @@ def AutoFillConfigFile(FilePath):
     if 'will' in FilePath.split('\\'):
         WillConfigFilename = 'cyclingconfig_will.txt'
         if os.path.exists(WillConfigFilename):
-            ConfigFileCtl.SetLabel(WillConfigFilename)
+            FullPath = FilePath + '\\' + WillConfigFilename
+            ConfigFileCtl.SetLabel(FullPath)
     elif 'kim' in FilePath.split('\\'):
         KimConfigFilename = 'cyclingconfig_kim.txt'
         if os.path.exists(KimConfigFilename):
-            ConfigFileCtl.SetLabel(KimConfigFilename)
+            FullPath = FilePath + '\\' + KimConfigFilename
+            ConfigFileCtl.SetLabel(FullPath)
 
 class MyFileDropTarget(wx.FileDropTarget):
     def __init__(self, window):
@@ -47,8 +49,6 @@ class MyFileDropTarget(wx.FileDropTarget):
         #self.log = log
 
     def OnDropFiles(self, x, y, filenames):
-        txt = "\n%d file(s) dropped at %d,%d:\n" % (len(filenames), x, y)
-        txt += '\n'.join(filenames)
         (FilePath, FileName) = os.path.split(filenames[0])
         OutStr = [ "CWD: %s" % os.getcwd() ]
         OutStr.append( 'PATH: %s' % FilePath )
@@ -57,7 +57,7 @@ class MyFileDropTarget(wx.FileDropTarget):
         print >> OutputTextCtl, '\n'
         os.chdir(FilePath)
         win.SetStatusText(os.getcwd(), number=0)
-        SetFileNameText(FileName)
+        SetFileNameText(filenames[0])
         AutoFillConfigFile(FilePath)
         return True
 
@@ -85,7 +85,7 @@ def LoadFitFile(event):
         print >> OutputTextCtl, '\n'
         for s in OutStr:
             print s  #OutStr
-        SetFileNameText(FileName)
+        SetFileNameText(paths[0])
         win.SetStatusText(os.getcwd(), number=0)
         AutoFillConfigFile(FilePath)
     dlg.Destroy()
@@ -114,7 +114,7 @@ def LoadConfigFile(event):
         print >> OutputTextCtl, '\n'
         for s in OutStr:
             print s  #OutStr
-        ConfigFileCtl.SetLabel(FileName)
+        ConfigFileCtl.SetLabel(paths[0])
         win.SetStatusText(os.getcwd(), number=0)
     dlg.Destroy()
 
@@ -182,7 +182,7 @@ class StreamTextControl(wx.TextCtrl):
 ###########################################
 
 app = wx.App()
-win = wx.Frame(None, title="Fit File Analysis Suite", size=(600, 400))
+win = wx.Frame(None, title="Fit File Analysis Suite", size=(800, 600))
 stBar   = win.CreateStatusBar(number=1, style=wx.STB_DEFAULT_STYLE, id=-1,
                                 name='stBar')
 win.SetStatusText(os.getcwd(), number=0)
@@ -267,6 +267,21 @@ vbox.Add(hBox5, proportion=0, flag=wx.EXPAND | wx.ALL, border=5)
 vbox.Add(OutputTextCtl, proportion=1,
          flag=wx.EXPAND | wx.LEFT | wx.BOTTOM | wx.RIGHT, border=5)
 bkg.SetSizer(vbox)
+
+# attempt to load file specified in command line
+import sys
+print 'command line args: ', sys.argv[1:]
+fitfilepath = sys.argv[1]
+if os.path.exists(fitfilepath):
+    (FilePath, FileName) = os.path.split(fitfilepath)
+    OutStr = [ "CWD: %s" % os.getcwd() ]
+    OutStr.append( 'PATH: %s' % FilePath )
+    OutStr.append( 'FILE: %s' % FileName )
+    OutputTextCtl.SetValue( '\n'.join(OutStr) )
+    print >> OutputTextCtl, '\n'
+    SetFileNameText(fitfilepath)
+    win.SetStatusText(os.getcwd(), number=0)
+    AutoFillConfigFile(FilePath)
 
 win.Show()
 app.MainLoop()

@@ -3601,6 +3601,16 @@ files from my Garmin Edge 810.
                         print >> OutStream, 'Zone %i: %2i:%02i:%02i (%i%%)' \
                                             % (i+1, hh, mm, ss, pct)
                 Commit & push.
+        -   Drag-drop support.
+            >   Clone fitfileanalyses.bat from endurance_summary.bat.
+            >   Edit fitfileanalyses.py to process the command-line argument.
+                Nailed it in first attempt!
+                    see fitfileanalyses_gui_c.png
+            >   Display full file paths.
+            >   Perhaps some way to change the current working directory?
+                #   Idea: set to path of chosen config file. Actually, it
+                    already does!
+                Commit & push.
 
 
 
@@ -3617,16 +3627,18 @@ TO DO:
         -   Don't flush the OutputTextCtrl unless a new .FIT file is loaded.
         -   Reconcile LoadFitFile() and OnDropFiles(). They should do the
             same thing.
-        -   Display full file paths.
         -   Encapsulate heart-rate and power zones for plotting axes.
+        -   Encapsulate config file import.
+        -   There are two folders to search for a config file: the CWD and
+            the .FIT file path. Use both.
     *   endurance_summery
         -   Error and exception handling
         -   CLOSE button does not close the plot window.
     *   zone_detect
-        -   Formatted print of time in zones
-+   zone detection
-    *   Can I plot the variable-increment data and avoid the vertical lines
-        to zero?
+        -   Can I plot the variable-increment data and avoid the vertical lines
+            to zero?
+
+
 
 D:\Users\Owner\Documents\OneDrive\2018\fitfiles\cyclingconfig_will.txt
 
