@@ -227,13 +227,56 @@ def plot_heartrate(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     plt.plot(t_sig/60, hr_sig, 'r.-')
     plt.title('Heart Rate and Calories')
     plt.ylabel('BPM')
-
     plt.subplot(2, 1, 2)
     plt.plot(t_sig/60, running_calories, 'b.-')
     plt.xlabel('time (min)')
     plt.ylabel('calories')
-
     plt.show()
+
+    ########################################################################
+    ###         Zone Histogram                                           ###
+    ########################################################################
+
+    # heart-rate zones from "Cyclist's Training Bible" 5th ed. by Joe Friel, p50
+    FTHR = ThresholdHR
+    hZones  = { 1   : [     0    ,   0.82*FTHR ],  # 1
+                2   : [ 0.82*FTHR,   0.89*FTHR ],  # 2
+                3   : [ 0.89*FTHR,   0.94*FTHR ],  # 3
+                4   : [ 0.94*FTHR,   1.00*FTHR ],  # 4
+                5   : [ 1.00*FTHR,   1.03*FTHR ],  # 5a
+                6   : [ 1.03*FTHR,   1.06*FTHR ],  # 5b
+                7   : [ 1.07*FTHR,   1.15*FTHR ]}  # 5c
+
+    h_zone_bounds   = [     0.4*FTHR,   # better plotting
+                        hZones[2][0],
+                        hZones[3][0],
+                        hZones[4][0],
+                        hZones[5][0],
+                        hZones[6][0],
+                        hZones[7][0],
+                        hZones[7][1] ]
+
+
+    from numpy import histogram
+    ZoneCounts, ZoneBins    = histogram( hr_sig, bins=h_zone_bounds )
+
+    # formatted print of histogram
+    SampleRate  = 1.0
+    print >> OutStream, 'Heart-Rate Zone Histogram:'
+    for i in range(7):
+        dur = ZoneCounts[i]/SampleRate
+        pct = dur / sum( ZoneCounts/SampleRate ) * 100
+        hh  = dur // 3600
+        mm  = (dur % 3600) // 60
+        ss  = (dur % 3600) % 60
+        print >> OutStream, '    Zone %i: %2i:%02i:%02i (%2i%%)' \
+                            % (i+1, hh, mm, ss, pct)
+    dur = sum(ZoneCounts)/SampleRate
+    hh  = dur // 3600
+    mm  = (dur % 3600) // 60
+    ss  = (dur % 3600) % 60
+    print >> OutStream, '     total: %2i:%02i:%02i' % (hh, mm, ss)
+
 
 # end plot_heartrate()
 

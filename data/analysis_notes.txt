@@ -3616,6 +3616,55 @@ files from my Garmin Edge 810.
             >   Adapt to import and function-call. Clean up LaunchAnalysis().
             >   Import config file (currently hard-coded)
                 Commit & push.
+            >   Add zone histogram
+                #   I like it:
+                        total calories = 645
+                        Heart-Rate Zone Histogram:
+                            Zone 1:  1:16:26 (92%)
+                            Zone 2:  0:03:46 ( 4%)
+                            Zone 3:  0:01:57 ( 2%)
+                            Zone 4:  0:00:11 ( 0%)
+                            Zone 5:  0:00:00 ( 0%)
+                            Zone 6:  0:00:00 ( 0%)
+                            Zone 7:  0:00:00 ( 0%)
+                             total:  1:22:20
+                #   Perhaps calories burned in zone?
+
+
+
+
+
+            >   required signals present for chosen analysis.
+                #   signal options:
+                        timestamp
+                        position_lat
+                        position_long
+                        altitude
+                        heart_rate
+                        cadence
+                        distance
+                        speed
+                        power
+                        compressed_speed_distance
+                        grade
+                        resistance
+                        time_from_course
+                        cycle_length
+                        temperature
+                        left_right_balance
+                #   Experiment:
+                        >>> x = [ 1, 2, 3]
+                        >>> y = range(10)
+                        >>> [ z in y for z in x]
+                        [True, True, True]
+                        >>> all([ z in y for z in x])
+                        True
+                        >>> all( z in y for z in x)
+                        True
+                    This can be expanded:
+                        if not all( s in signals for s in reqsignals ):
+                            raise SomeError( 'required signals not in file')
+
 
 
 d:
@@ -3626,7 +3675,14 @@ python demo.py
 
 TO DO:
 +   fitfileanalyses
+    *   Major features
+        -   A list of channels in the file with a plot button.
+        -   The ability to signal-process a channel into a new version
+            (e.g., low-pass filtering), save to a .PKL file with the
+            same prefix. This file can be searched for when the .FIT
+            file is loaded and the derived versions made available.
     *   General
+        -   Error and exception handling
         -   Reconcile LoadFitFile() and OnDropFiles(). They should do the
             same thing.
         -   Encapsulate heart-rate and power zones for plotting axes.
@@ -3636,7 +3692,6 @@ TO DO:
             the .FIT file path. Use both.
         -   The CLOSE button should close MatPlotLib windows.
     *   endurance_summery
-        -   Error and exception handling
         -   CLOSE button does not close the plot window.
     *   zone_detect
         -   Can I plot the variable-increment data and avoid the vertical lines
@@ -3644,11 +3699,12 @@ TO DO:
     *   plot_heartrate
         -   Add sex to config file and formula
         -   grid lines at endurance and threshold HRs.
-        -   Add zone histogram
-            >   Calories burned in zone?
         -   Cleanup
             >   from pylab import * (line 129)
-
+        -   Create new plot window (currently overplots same one).
+        -   Update to modern methods
+            >   activity_tools.py
+            >   plotting
 
 
 D:\Users\Owner\Documents\OneDrive\2018\fitfiles\cyclingconfig_will.txt
