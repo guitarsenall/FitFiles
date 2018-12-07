@@ -119,46 +119,42 @@ def LoadConfigFile(event):
     dlg.Destroy()
 
 
+analyses_labels = [ 'Endurance Laps',
+                    'Zone Detection',
+                    'Interval Laps',
+                    'Heart Rate',
+                    'Compare Two Powers']
+from endurance_summary import endurance_summary
+from zone_detect import zone_detect
+from plot_heartrate import plot_heartrate
+
 def LaunchAnalysis(event):
-    from endurance_summary import endurance_summary
-    from zone_detect import zone_detect
     AnalysesChoice  = AnalysesCtl.GetSelection()
     AnalysesChoice  = AnalysesCtl.GetString(AnalysesChoice)
     print >> OutputTextCtl, '-'*20 + ' ' + AnalysesChoice + ' ' + '-'*20
+    FITFileName = FileNameCtl.GetLabel()
+    ConfigFile  = ConfigFileCtl.GetLabel()
+    if not os.path.exists(FITFileName):
+        dlg = wx.MessageDialog(win,
+                    'A valid .FIT file must be entered.',
+                    'WARNING',
+                    wx.OK | wx.ICON_INFORMATION
+                    )
+        dlg.ShowModal()
+        dlg.Destroy()
+        return
     if AnalysesChoice == 'Endurance Laps':
-        FITFileName = FileNameCtl.GetLabel()
-        if not os.path.exists(FITFileName):
-            dlg = wx.MessageDialog(win,
-                        'A valid .FIT file must be entered.',
-                        'WARNING',
-                        wx.OK | wx.ICON_INFORMATION
-                        )
-            dlg.ShowModal()
-            dlg.Destroy()
-            return
         print 'Running endurance summary on ' + FITFileName
-        ConfigFile  = ConfigFileCtl.GetLabel()
-        OutStr  = 'Launching Analysis: %s\n' % AnalysesChoice
-        #OutputTextCtl.SetValue( OutStr )
         print >> OutputTextCtl, ''
         endurance_summary( FITFileName, ConfigFile, OutStream=OutputTextCtl )
     elif AnalysesChoice == 'Zone Detection':
-        FITFileName = FileNameCtl.GetLabel()
-        if not os.path.exists(FITFileName):
-            dlg = wx.MessageDialog(win,
-                        'A valid .FIT file must be entered.',
-                        'WARNING',
-                        wx.OK | wx.ICON_INFORMATION
-                        )
-            dlg.ShowModal()
-            dlg.Destroy()
-            return
         print 'Running zone detection on ' + FITFileName
-        ConfigFile  = ConfigFileCtl.GetLabel()
-        OutStr  = 'Launching Analysis: %s\n' % AnalysesChoice
-        #OutputTextCtl.SetValue( OutStr )
         print >> OutputTextCtl, ''
         zone_detect( FITFileName, ConfigFile, OutStream=OutputTextCtl )
+    elif AnalysesChoice == 'Heart Rate':
+        print 'Running heartrate analysis on ' + FITFileName
+        print >> OutputTextCtl, ''
+        plot_heartrate( FITFileName, ConfigFile, OutStream=OutputTextCtl )
     else:
         print 'Analysis not yet supported: ' + AnalysesChoice
         dlg = wx.MessageDialog(win,
@@ -211,14 +207,9 @@ hBox2.Add(FileNameCtl, proportion=1, flag=wx.EXPAND)
 hBox2.Add(loadButton, proportion=0, flag=wx.LEFT, border=5)
 
 # Analyses Choice
-analyses_labels = [ 'Endurance Laps',
-                    'Zone Detection',
-                    'Interval Laps',
-                    'Heart Rate',
-                    'Compare Two Powers']
 AnalysesText = wx.StaticText(bkg, label = "Choose analysis to run:" )
 AnalysesCtl = wx.Choice(bkg, choices = analyses_labels)
-AnalysesCtl.SetSelection(0)
+AnalysesCtl.SetSelection(0)     # 'Endurance Laps'
 def AnalysesEventChoice(event):
     OutStr  = 'AnalysesEventChoice: %s\n' % event.GetString()
     # OutputTextCtl.SetValue( OutStr )
@@ -270,18 +261,19 @@ bkg.SetSizer(vbox)
 
 # attempt to load file specified in command line
 import sys
-print 'command line args: ', sys.argv[1:]
-fitfilepath = sys.argv[1]
-if os.path.exists(fitfilepath):
-    (FilePath, FileName) = os.path.split(fitfilepath)
-    OutStr = [ "CWD: %s" % os.getcwd() ]
-    OutStr.append( 'PATH: %s' % FilePath )
-    OutStr.append( 'FILE: %s' % FileName )
-    OutputTextCtl.SetValue( '\n'.join(OutStr) )
-    print >> OutputTextCtl, '\n'
-    SetFileNameText(fitfilepath)
-    win.SetStatusText(os.getcwd(), number=0)
-    AutoFillConfigFile(FilePath)
+if len(sys.argv) >= 2:
+    print 'command line args: ', sys.argv[1:]
+    fitfilepath = sys.argv[1]
+    if os.path.exists(fitfilepath):
+        (FilePath, FileName) = os.path.split(fitfilepath)
+        OutStr = [ "CWD: %s" % os.getcwd() ]
+        OutStr.append( 'PATH: %s' % FilePath )
+        OutStr.append( 'FILE: %s' % FileName )
+        OutputTextCtl.SetValue( '\n'.join(OutStr) )
+        print >> OutputTextCtl, '\n'
+        SetFileNameText(fitfilepath)
+        win.SetStatusText(os.getcwd(), number=0)
+        AutoFillConfigFile(FilePath)
 
 win.Show()
 app.MainLoop()

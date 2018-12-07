@@ -353,8 +353,13 @@ executing it until one of its functions is called.
 
 if __name__ == '__main__':
     import sys
-    print 'command line args: ', sys.argv[1:]
-    fitfilepath = sys.argv[1]
-    zone_detect(fitfilepath, ConfigFile=None)
+    if len(sys.argv) >= 2:
+        print 'command line args: ', sys.argv[1:]
+        fitfilepath = sys.argv[1]
+        zone_detect(fitfilepath, ConfigFile=None)
+    else:
+        raise IOError('Need a .FIT file')
 
+    #FitFilePath = r'S:\will\documents\OneDrive\bike\activities\will\\' \
+    #            + r'2018-12-02-20-29-34.fit'
 

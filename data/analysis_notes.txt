@@ -3611,8 +3611,11 @@ files from my Garmin Edge 810.
                 #   Idea: set to path of chosen config file. Actually, it
                     already does!
                 Commit & push.
-
-
+                                            Friday, December 7, 2018 (9:07 AM)
+        -   Heart Rate (plot_heartrate.py)
+            >   Adapt to import and function-call. Clean up LaunchAnalysis().
+            >   Import config file (currently hard-coded)
+                Commit & push.
 
 
 d:
@@ -3624,19 +3627,27 @@ python demo.py
 TO DO:
 +   fitfileanalyses
     *   General
-        -   Don't flush the OutputTextCtrl unless a new .FIT file is loaded.
         -   Reconcile LoadFitFile() and OnDropFiles(). They should do the
             same thing.
         -   Encapsulate heart-rate and power zones for plotting axes.
+            >   Can I pass an axes object to a function for a plot target?
         -   Encapsulate config file import.
         -   There are two folders to search for a config file: the CWD and
             the .FIT file path. Use both.
+        -   The CLOSE button should close MatPlotLib windows.
     *   endurance_summery
         -   Error and exception handling
         -   CLOSE button does not close the plot window.
     *   zone_detect
         -   Can I plot the variable-increment data and avoid the vertical lines
             to zero?
+    *   plot_heartrate
+        -   Add sex to config file and formula
+        -   grid lines at endurance and threshold HRs.
+        -   Add zone histogram
+            >   Calories burned in zone?
+        -   Cleanup
+            >   from pylab import * (line 129)
 
 
 

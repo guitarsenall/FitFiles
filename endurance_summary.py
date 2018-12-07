@@ -415,9 +415,12 @@ executing it until one of its functions is called.
 
 if __name__ == '__main__':
     import sys
-    print 'command line args: ', sys.argv[1:]
-    fitfilepath = sys.argv[1]
-    endurance_summary(fitfilepath, ConfigFile=None)
+    if len(sys.argv) >= 2:
+        print 'command line args: ', sys.argv[1:]
+        fitfilepath = sys.argv[1]
+        endurance_summary(fitfilepath, ConfigFile=None)
+    else:
+        raise IOError('Need a .FIT file')
 
 
 ## workout summary
