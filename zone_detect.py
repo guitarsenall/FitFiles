@@ -89,9 +89,24 @@ def zone_detect(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     from fitparse import Activity
     from activity_tools import extract_activity_signals
 
+    required_signals    = [ 'power',
+                            'heart_rate' ]
 
+    # get the signals
     activity    = Activity(FitFilePath)
     signals     = extract_activity_signals(activity)
+
+    if not all( s in signals.keys() for s in required_signals ):
+        msg = 'required signals not in file'
+        print >> OutStream, msg
+        print >> OutStream, 'Signals required:'
+        for s in required_signals:
+            print >> OutStream, '   ' + s
+        print >> OutStream, 'Signals contained:'
+        for s in signals.keys():
+            print >> OutStream, '   ' + s
+        raise IOError(msg)
+
 
     # up-sample by 5x so that zone-skipping is not needed
     SampleRate  = 5.0

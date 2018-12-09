@@ -41,6 +41,8 @@ def AutoFillConfigFile(FilePath):
         if os.path.exists(KimConfigFilename):
             FullPath = FilePath + '\\' + KimConfigFilename
             ConfigFileCtl.SetLabel(FullPath)
+    else:
+        ConfigFileCtl.SetLabel('')
 
 class MyFileDropTarget(wx.FileDropTarget):
     def __init__(self, window):
@@ -146,11 +148,23 @@ def LaunchAnalysis(event):
     if AnalysesChoice == 'Endurance Laps':
         print 'Running endurance summary on ' + FITFileName
         print >> OutputTextCtl, ''
-        endurance_summary( FITFileName, ConfigFile, OutStream=OutputTextCtl )
+        try:
+            endurance_summary( FITFileName, ConfigFile, OutStream=OutputTextCtl )
+        except IOError, ErrorObj:
+            dlg = wx.MessageDialog(win, ErrorObj.message, AnalysesChoice,
+                        wx.OK | wx.ICON_INFORMATION )
+            dlg.ShowModal()
+            dlg.Destroy()
     elif AnalysesChoice == 'Zone Detection':
         print 'Running zone detection on ' + FITFileName
         print >> OutputTextCtl, ''
-        zone_detect( FITFileName, ConfigFile, OutStream=OutputTextCtl )
+        try:
+            zone_detect( FITFileName, ConfigFile, OutStream=OutputTextCtl )
+        except IOError, ErrorObj:
+            dlg = wx.MessageDialog(win, ErrorObj.message, AnalysesChoice,
+                        wx.OK | wx.ICON_INFORMATION )
+            dlg.ShowModal()
+            dlg.Destroy()
     elif AnalysesChoice == 'Heart Rate':
         print 'Running heartrate analysis on ' + FITFileName
         print >> OutputTextCtl, ''

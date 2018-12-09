@@ -1,18 +1,25 @@
 
 # scratch.py
 
-# experiment with a streaming object for print statement
-# used in endurance_summary()
-import sys
-class MyStream():
-    def write(self, data):
-        print data,     # 'MyStream.write(): ', data
-mystream = MyStream()     # MyStream() or sys.stdout
-#print >> mystream, 'some text'
-from endurance_summary import endurance_summary
-fitfilepath = r'S:\will\documents\OneDrive\bike\activities\will\\' \
-            + r'2018-12-03-17-46-09.fit'
-endurance_summary(fitfilepath, ConfigFile=None, OutStream=mystream)
+# experiment with exceptions
+try:
+    x = 2/0
+except Exception, e:
+    print 'error trapped'
+    ErrObj = e
+
+## experiment with a streaming object for print statement
+## used in endurance_summary()
+#import sys
+#class MyStream():
+#    def write(self, data):
+#        print data,     # 'MyStream.write(): ', data
+#mystream = MyStream()     # MyStream() or sys.stdout
+##print >> mystream, 'some text'
+#from endurance_summary import endurance_summary
+#fitfilepath = r'S:\will\documents\OneDrive\bike\activities\will\\' \
+#            + r'2018-12-03-17-46-09.fit'
+#endurance_summary(fitfilepath, ConfigFile=None, OutStream=mystream)
 
 
 ## remove bad entries from datalist

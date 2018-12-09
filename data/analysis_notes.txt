@@ -3629,12 +3629,7 @@ files from my Garmin Edge 810.
                             Zone 7:  0:00:00 ( 0%)
                              total:  1:22:20
                 #   Perhaps calories burned in zone?
-
-
-
-
-
-            >   required signals present for chosen analysis.
+            >   required signals need to be present for chosen analysis.
                 #   signal options:
                         timestamp
                         position_lat
@@ -3652,7 +3647,7 @@ files from my Garmin Edge 810.
                         cycle_length
                         temperature
                         left_right_balance
-                #   Experiment:
+                #   Experiment with all():
                         >>> x = [ 1, 2, 3]
                         >>> y = range(10)
                         >>> [ z in y for z in x]
@@ -3663,8 +3658,20 @@ files from my Garmin Edge 810.
                         True
                     This can be expanded:
                         if not all( s in signals for s in reqsignals ):
-                            raise SomeError( 'required signals not in file')
-
+                            raise IOError( 'required signals not in file')
+                #   This doesn't do the trick. The traceback is written
+                    to the Python terminal. I need to intercept the error
+                    somehow. This seems to work well:
+                        try:
+                            endurance_summary( FITFileName, ConfigFile,
+                                                OutStream=OutputTextCtl )
+                        except IOError, ErrorObj:
+                            dlg = wx.MessageDialog(win, ErrorObj.message,
+                                        AnalysesChoice,
+                                        wx.OK | wx.ICON_INFORMATION )
+                            dlg.ShowModal()
+                            dlg.Destroy()
+                #   Commit & push
 
 
 d:
@@ -3682,14 +3689,17 @@ TO DO:
             same prefix. This file can be searched for when the .FIT
             file is loaded and the derived versions made available.
     *   General
+        -   There are two folders to search for a config file: the CWD and
+            the .FIT file path. Use both.
+        -   OnDropFiles() is not loading the correct config file. I think
+            it has something to do with os.chdir(FilePath).
+            >   This should get fixed when I maintain the two folders.
         -   Error and exception handling
         -   Reconcile LoadFitFile() and OnDropFiles(). They should do the
             same thing.
         -   Encapsulate heart-rate and power zones for plotting axes.
             >   Can I pass an axes object to a function for a plot target?
         -   Encapsulate config file import.
-        -   There are two folders to search for a config file: the CWD and
-            the .FIT file path. Use both.
         -   The CLOSE button should close MatPlotLib windows.
     *   endurance_summery
         -   CLOSE button does not close the plot window.
