@@ -3672,6 +3672,38 @@ files from my Garmin Edge 810.
                             dlg.ShowModal()
                             dlg.Destroy()
                 #   Commit & push
+                                            Monday, December 10, 2018 (8:41 AM)
+            >   Update plot_heartrate.py to use the same approaches as the
+                newer analyses.
+                #   Use activity_tools.extract_activity_signals()
+                    Interesting error:
+                        >>> D:\...\plot_heartrate.py:17: SyntaxWarning:
+                            import * only allowed at module level
+                          def plot_heartrate(FitFilePath, ConfigFile=None,
+                                OutStream=sys.stdout):
+                        SyntaxError: import * is not allowed in function
+                            'plot_heartrate' because it contains a nested
+                            function with free variables (plot_heartrate.py,
+                            line 130)
+                    It used to let me get away with this as a warning.
+                    Besides, what is the difference between pylab and
+                    matplotlib?
+                        https://stackoverflow.com/questions/11469336
+                            /what-is-the-difference-between-pylab-and-pyplot
+                    points to,
+                        https://matplotlib.org/faq/usage_faq.html
+                    which has a section titled, "Matplotlib, pyplot and pylab:
+                    how are they related?", which says,
+                        "The pyplot interface is generally preferred for
+                        non-interactive plotting (i.e., scripting). The pylab
+                        interface is convenient for interactive calculations and
+                        plotting, as it minimizes typing."
+                    And I see the conventional way to import stuff is,
+                        import matplotlib.pyplot as plt
+                        import numpy as np
+                    Go with it.
+                    Commit & push.
+
 
 
 d:

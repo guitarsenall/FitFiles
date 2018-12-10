@@ -94,7 +94,7 @@ def extract_activity_signals(activity, resample='constant', verbose=False):
 
     if resample == 'constant':
         nPts            = long( dt.total_seconds() + 1 )
-        const_time      = np.arange(nPts)  # sample interval of 1 sec
+        const_time      = np.arange(nPts).astype(float)  # sample interval of 1 sec
         data_signals    = {}
         data_signals['metadata']    = {}
         data_signals['metadata']['timestamp']   = t0
@@ -109,7 +109,7 @@ def extract_activity_signals(activity, resample='constant', verbose=False):
         return data_signals
     elif resample == 'existing':
         # interpolate values at all existing time points
-        time_vector     = np.array(list(time_values))
+        time_vector     = np.array(list(time_values)).astype(float)
         data_signals    = {}
         data_signals['metadata']    = {}
         data_signals['metadata']['timestamp']   = t0

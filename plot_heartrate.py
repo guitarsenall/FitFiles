@@ -58,74 +58,88 @@ def plot_heartrate(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
 
     from datetime import datetime
     from fitparse import Activity
+    from activity_tools import extract_activity_signals
 
-    activity = Activity(FitFilePath)
-    activity.parse()
+    required_signals    = [ 'heart_rate' ]
 
-    # Records of type 'record' (I know, confusing) are the entries in an
-    # activity file that represent actual data points in your workout.
-    records = activity.get_records_by_type('record')
-    current_record_number = 0
+    # get the signals
+    activity    = Activity(FitFilePath)
+    signals     = extract_activity_signals(activity)
 
-    time_list = []
-    heartrate_list  = []
-    FirstIter   = True
+    if not all( s in signals.keys() for s in required_signals ):
+        msg = 'required signals not in file'
+        print >> OutStream, msg
+        print >> OutStream, 'Signals required:'
+        for s in required_signals:
+            print >> OutStream, '   ' + s
+        print >> OutStream, 'Signals contained:'
+        for s in signals.keys():
+            print >> OutStream, '   ' + s
+        raise IOError(msg)
 
-    for record in records:
+    time_signal         = signals['time']
+    heartrate_signal    = signals['heart_rate']
 
-        # Print record number
-        current_record_number += 1
-        if verbose:
-            print >> OutStream,  (" Record #%d " % current_record_number).center(40, '-')
-
-        # Get the list of valid fields on this record
-        valid_field_names = record.get_valid_field_names()
-
-        for field_name in valid_field_names:
-            # Get the data and units for the field
-            field_data = record.get_data(field_name)
-            field_units = record.get_units(field_name)
-
-            if verbose:
-                # Print what we've got!
-                if field_units:
-                    print >> OutStream,  " * %s: %s %s" % (field_name, field_data, field_units)
-                else:
-                    print >> OutStream,  " * %s: %s" % (field_name, field_data)
-
-            if 'timestamp' in field_name:
-                if FirstIter:
-                    t0  = field_data    # datetime
-                    t   = t0
-                    FirstIter   = False
-                else:
-                    t   = field_data    # datetime
-
-
-            if 'heart_rate' in field_name:
-                dt  = t-t0
-                time_list.append(dt.total_seconds())
-                heartrate_list.append(field_data)
+#    # Records of type 'record' (I know, confusing) are the entries in an
+#    # activity file that represent actual data points in your workout.
+#    records = activity.get_records_by_type('record')
+#    current_record_number = 0
+#
+#    time_list = []
+#    heartrate_list  = []
+#    FirstIter   = True
+#
+#    for record in records:
+#
+#        # Print record number
+#        current_record_number += 1
+#        if verbose:
+#            print >> OutStream,  (" Record #%d " % current_record_number).center(40, '-')
+#
+#        # Get the list of valid fields on this record
+#        valid_field_names = record.get_valid_field_names()
+#
+#        for field_name in valid_field_names:
+#            # Get the data and units for the field
+#            field_data = record.get_data(field_name)
+#            field_units = record.get_units(field_name)
+#
+#            if verbose:
+#                # Print what we've got!
+#                if field_units:
+#                    print >> OutStream,  " * %s: %s %s" % (field_name, field_data, field_units)
+#                else:
+#                    print >> OutStream,  " * %s: %s" % (field_name, field_data)
+#
+#            if 'timestamp' in field_name:
+#                if FirstIter:
+#                    t0  = field_data    # datetime
+#                    t   = t0
+#                    FirstIter   = False
+#                else:
+#                    t   = field_data    # datetime
+#
+#
+#            if 'heart_rate' in field_name:
+#                dt  = t-t0
+#                time_list.append(dt.total_seconds())
+#                heartrate_list.append(field_data)
 
     # plot the heart rate
     import numpy as np
-    from pylab import *
-    time_signal         = array(time_list)
-    heartrate_signal    = array(heartrate_list)
-    plot(time_signal/60.0, heartrate_signal, 'r.-')
-    xlabel('time (min)')
-    ylabel('heart rate (BPM)')
-    title('heart rate')
-    grid(True)
-    show()
+    import matplotlib.pyplot as plt
+#    time_signal         = array(time_list)
+#    heartrate_signal    = array(heartrate_list)
+    plt.plot(time_signal/60.0, heartrate_signal, 'r.-')
+    plt.xlabel('time (min)')
+    plt.ylabel('heart rate (BPM)')
+    plt.title('heart rate')
+    plt.grid(True)
+    plt.show()
 
     # file for holding the signals (dictionary via pickle)
     SignalMap   = { 'time_signal'       : time_signal,
                     'heartrate_signal'  : heartrate_signal }
-#    import pickle
-#    SignalsFile = open( 'signals.pkl', 'wb')
-#    pickle.dump(SignalMap, SignalsFile)
-#    SignalsFile.close()
 
     ########################################################################
     ###         Compute Calories                                         ###
@@ -156,27 +170,6 @@ def plot_heartrate(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
         T   = Exercise duration time in hours
     '''
 
-    ## import the signals
-    #import pickle
-    #SignalsFile = open( 'signals.pkl', 'rb')
-    #SignalMap   = pickle.load(SignalsFile)
-    #SignalsFile.close()
-    #
-    #print 'signal map fields: ', SignalMap.keys()
-    # ['heartrate_signal', 'time_signal']
-
-
-    from pylab import *
-
-
-# these should come from ConfigFile now:
-#    weight  = 188.0*0.45359237  # lb->kg
-#    age     = 50.0
-#    EnduranceHR     = 140.0                         # BPM
-#    EndurancePower  = 190.0                         # watts
-#    ThresholdHR     = 170.0                         # BPM
-#    ThresholdPower  = 271.0                         # watts
-
     #   calibration at endurance
     EnduranceBurn   = EndurancePower*3600/1e3/60    # Cal/min
     EnduranceCoef   = EnduranceBurn                     \
@@ -191,11 +184,11 @@ def plot_heartrate(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
                         + 0.1988*weight + 0.2017*age)   \
                     * 4.184
 
-    hr_sig      = SignalMap['heartrate_signal']
-    t_sig       = SignalMap['time_signal']
-    dt_sig      = append( array([1.0]), t_sig[1:] - t_sig[0:-1] )
+    hr_sig      = signals['heart_rate']
+    t_sig       = signals['time']
+    dt_sig      = np.append( np.array([1.0]), t_sig[1:] - t_sig[0:-1] )
     nPts        = t_sig.size
-    calories    = zeros(nPts)
+    calories    = np.zeros(nPts)
 
     for i, dt, HR in zip( range(nPts), dt_sig, hr_sig ):
 
@@ -218,7 +211,7 @@ def plot_heartrate(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
                         * coef
         calories[i] = dt * CalPerMin / 60
 
-    running_calories    = cumsum( calories )
+    running_calories    = np.cumsum( calories )
 
     print >> OutStream,  'total calories = %i' % running_calories[nPts-1]
 
@@ -257,8 +250,7 @@ def plot_heartrate(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
                         hZones[7][1] ]
 
 
-    from numpy import histogram
-    ZoneCounts, ZoneBins    = histogram( hr_sig, bins=h_zone_bounds )
+    ZoneCounts, ZoneBins    = np.histogram( hr_sig, bins=h_zone_bounds )
 
     # formatted print of histogram
     SampleRate  = 1.0
