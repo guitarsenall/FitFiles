@@ -3703,7 +3703,8 @@ files from my Garmin Edge 810.
                         import numpy as np
                     Go with it.
                     Commit & push.
-
+                #   Change the heart rate plot to have HMS time axis and
+                    HR zone vertical axis.
 
 
 d:

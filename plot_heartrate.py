@@ -80,66 +80,8 @@ def plot_heartrate(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     time_signal         = signals['time']
     heartrate_signal    = signals['heart_rate']
 
-#    # Records of type 'record' (I know, confusing) are the entries in an
-#    # activity file that represent actual data points in your workout.
-#    records = activity.get_records_by_type('record')
-#    current_record_number = 0
-#
-#    time_list = []
-#    heartrate_list  = []
-#    FirstIter   = True
-#
-#    for record in records:
-#
-#        # Print record number
-#        current_record_number += 1
-#        if verbose:
-#            print >> OutStream,  (" Record #%d " % current_record_number).center(40, '-')
-#
-#        # Get the list of valid fields on this record
-#        valid_field_names = record.get_valid_field_names()
-#
-#        for field_name in valid_field_names:
-#            # Get the data and units for the field
-#            field_data = record.get_data(field_name)
-#            field_units = record.get_units(field_name)
-#
-#            if verbose:
-#                # Print what we've got!
-#                if field_units:
-#                    print >> OutStream,  " * %s: %s %s" % (field_name, field_data, field_units)
-#                else:
-#                    print >> OutStream,  " * %s: %s" % (field_name, field_data)
-#
-#            if 'timestamp' in field_name:
-#                if FirstIter:
-#                    t0  = field_data    # datetime
-#                    t   = t0
-#                    FirstIter   = False
-#                else:
-#                    t   = field_data    # datetime
-#
-#
-#            if 'heart_rate' in field_name:
-#                dt  = t-t0
-#                time_list.append(dt.total_seconds())
-#                heartrate_list.append(field_data)
-
     # plot the heart rate
     import numpy as np
-    import matplotlib.pyplot as plt
-#    time_signal         = array(time_list)
-#    heartrate_signal    = array(heartrate_list)
-    plt.plot(time_signal/60.0, heartrate_signal, 'r.-')
-    plt.xlabel('time (min)')
-    plt.ylabel('heart rate (BPM)')
-    plt.title('heart rate')
-    plt.grid(True)
-    plt.show()
-
-    # file for holding the signals (dictionary via pickle)
-    SignalMap   = { 'time_signal'       : time_signal,
-                    'heartrate_signal'  : heartrate_signal }
 
     ########################################################################
     ###         Compute Calories                                         ###
@@ -186,7 +128,8 @@ def plot_heartrate(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
 
     hr_sig      = signals['heart_rate']
     t_sig       = signals['time']
-    dt_sig      = np.append( np.array([1.0]), t_sig[1:] - t_sig[0:-1] )
+    dt_sig      = np.append( np.array([1.0]),
+                             t_sig[1:] - t_sig[0:-1] )
     nPts        = t_sig.size
     calories    = np.zeros(nPts)
 
@@ -215,17 +158,6 @@ def plot_heartrate(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
 
     print >> OutStream,  'total calories = %i' % running_calories[nPts-1]
 
-    # plot heart rate and calories
-    plt.subplot(2, 1, 1)
-    plt.plot(t_sig/60, hr_sig, 'r.-')
-    plt.title('Heart Rate and Calories')
-    plt.ylabel('BPM')
-    plt.subplot(2, 1, 2)
-    plt.plot(t_sig/60, running_calories, 'b.-')
-    plt.xlabel('time (min)')
-    plt.ylabel('calories')
-    plt.show()
-
     ########################################################################
     ###         Zone Histogram                                           ###
     ########################################################################
@@ -248,8 +180,6 @@ def plot_heartrate(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
                         hZones[6][0],
                         hZones[7][0],
                         hZones[7][1] ]
-
-
     ZoneCounts, ZoneBins    = np.histogram( hr_sig, bins=h_zone_bounds )
 
     # formatted print of histogram
@@ -269,6 +199,36 @@ def plot_heartrate(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     ss  = (dur % 3600) % 60
     print >> OutStream, '     total: %2i:%02i:%02i' % (hh, mm, ss)
 
+
+    ###########################################################
+    ###             plotting                                ###
+    ###########################################################
+
+    # plot heart rate and calories
+    import matplotlib.pyplot as plt
+    import matplotlib.dates as md
+    from matplotlib.dates import date2num, DateFormatter
+    import datetime as dt
+    base = dt.datetime(2014, 1, 27, 0, 0, 0)
+    x = [base + dt.timedelta(seconds=t) for t in t_sig]
+    x = date2num(x) # Convert to matplotlib format
+    fig1, ax0 = plt.subplots()
+    ax0.plot_date( x, hr_sig, 'r-', linewidth=3 );
+    ax0.set_yticks( h_zone_bounds, minor=False)
+    ax0.grid(True)
+    ax0.set_title('heart rate, BPM')
+    ax0.set_title('Heart Rate Analysis')
+    fig1.autofmt_xdate()
+    fig1.tight_layout()
+    plt.show()
+
+    #    plt.plot(t_sig/60, hr_sig, 'r.-')
+    #    plt.title('Heart Rate and Calories')
+    #    plt.ylabel('BPM')
+    #    plt.subplot(2, 1, 2)
+    #    plt.plot(t_sig/60, running_calories, 'b.-')
+    #    plt.xlabel('time (min)')
+    #    plt.ylabel('calories')
 
 # end plot_heartrate()
 
