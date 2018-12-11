@@ -42,7 +42,7 @@ def ForwardBoxcarAverage( x, window=30, SampleRate=1.0 ):
 
 
 ############################################################
-#           endurance_summary function def                 #
+#               zone_detect function def                   #
 ############################################################
 
 def zone_detect(FitFilePath, ConfigFile=None, OutStream=sys.stdout):

@@ -3741,8 +3741,13 @@ files from my Garmin Edge 810.
                 IT WORKS!
                     see fitfileanalyses_gui_d.png
                 Commit & push
-        -   Intervals ()
-
+        -   Intervals (interval_laps.py)
+            >   Use the TortoiseGIT menu to rename detect_laps.py
+                to interval_laps.py. The file gets a '+' badge as if it
+                had just been added.
+            >   Got it working.
+                    see fitfileanalyses_gui_e.png
+                Commit & push
 
 
 d:

@@ -134,8 +134,10 @@ analyses_labels = [ 'Endurance Laps',
 from endurance_summary import endurance_summary
 from zone_detect import zone_detect
 from plot_heartrate import plot_heartrate
+from interval_laps import interval_laps
 
 def LaunchAnalysis(event):
+
     AnalysesChoice  = AnalysesCtl.GetSelection()
     AnalysesChoice  = AnalysesCtl.GetString(AnalysesChoice)
     print >> OutputTextCtl, '-'*20 + ' ' + AnalysesChoice + ' ' + '-'*20
@@ -150,6 +152,7 @@ def LaunchAnalysis(event):
         dlg.ShowModal()
         dlg.Destroy()
         return
+
     if AnalysesChoice == 'Endurance Laps':
         print 'Running endurance summary on ' + FITFileName
         print >> OutputTextCtl, ''
@@ -160,6 +163,7 @@ def LaunchAnalysis(event):
                         wx.OK | wx.ICON_INFORMATION )
             dlg.ShowModal()
             dlg.Destroy()
+
     elif AnalysesChoice == 'Zone Detection':
         print 'Running zone detection on ' + FITFileName
         print >> OutputTextCtl, ''
@@ -170,10 +174,23 @@ def LaunchAnalysis(event):
                         wx.OK | wx.ICON_INFORMATION )
             dlg.ShowModal()
             dlg.Destroy()
+
+    elif AnalysesChoice == 'Interval Laps':
+        print 'Running interval-lap analysis on ' + FITFileName
+        print >> OutputTextCtl, ''
+        interval_laps( FITFileName, ConfigFile, OutStream=OutputTextCtl )
+
     elif AnalysesChoice == 'Heart Rate':
         print 'Running heartrate analysis on ' + FITFileName
         print >> OutputTextCtl, ''
-        plot_heartrate( FITFileName, ConfigFile, OutStream=OutputTextCtl )
+        try:
+            plot_heartrate( FITFileName, ConfigFile, OutStream=OutputTextCtl )
+        except IOError, ErrorObj:
+            dlg = wx.MessageDialog(win, ErrorObj.message, AnalysesChoice,
+                        wx.OK | wx.ICON_INFORMATION )
+            dlg.ShowModal()
+            dlg.Destroy()
+
     else:
         print 'Analysis not yet supported: ' + AnalysesChoice
         dlg = wx.MessageDialog(win,
