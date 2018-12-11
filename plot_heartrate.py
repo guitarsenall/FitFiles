@@ -230,6 +230,27 @@ def plot_heartrate(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     #    plt.xlabel('time (min)')
     #    plt.ylabel('calories')
 
+    # heart rate histogram plot
+    fig2, ax2 = plt.subplots()
+    bar_width = 0.80    # 0.35
+    opacity = 0.4
+    #error_config = {'ecolor': '0.3'}
+    zone_ints   = np.arange(7)+1
+    LogY = False
+    rects1 = ax2.bar(zone_ints+bar_width/2, ZoneCounts/SampleRate/60,
+                    bar_width, alpha=opacity, color='r', log=LogY,
+                    label='heart rate')
+    ax2.set_xlabel('Zone')
+    ax2.set_ylabel('minutes')
+    ax2.set_title('Heart Rate Zone Histogram')
+    ax2.set_xticks(zone_ints + bar_width / 2)
+    ax2.set_xticklabels(('Rec', 'End', 'Tmp', 'Thr', 'VO2', 'An', 'NM'))
+    ax2.legend()
+    fig2.tight_layout()
+    plt.show()
+
+
+
 # end plot_heartrate()
 
 ############################################################

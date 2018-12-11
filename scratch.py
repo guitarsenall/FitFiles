@@ -1,12 +1,25 @@
 
 # scratch.py
 
-# experiment with exceptions
-try:
-    x = 2/0
-except Exception, e:
-    print 'error trapped'
-    ErrObj = e
+import sys, os
+(CodePath, PyFileName)      = os.path.split(sys.argv[0])
+(FitFilePath, FitFileName)  = os.path.split(sys.argv[1])
+print 'codepath     : ', CodePath
+print 'pyfilename   : ', PyFileName
+print 'fitfilepath  : ', FitFilePath
+print 'fitfilename  : ', FitFileName
+# output:
+#    codepath     :  D:\Users\Owner\Documents\OneDrive\2018\fitfiles
+#    pyfilename   :  scratch.py
+#    fitfilepath  :  D:\Users\Owner\Documents\OneDrive\bike\activities\will
+#    fitfilename  :  2018-12-02-13-13-19.fit
+
+## experiment with exceptions
+#try:
+#    x = 2/0
+#except Exception, e:
+#    print 'error trapped'
+#    ErrObj = e
 
 ## experiment with a streaming object for print statement
 ## used in endurance_summary()

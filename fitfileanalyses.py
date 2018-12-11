@@ -30,17 +30,23 @@ wildcard = "FIT files (*.fit)|*.fit|"  \
 ###########################################
 
 def AutoFillConfigFile(FilePath):
+    CodePath    = stBar.GetStatusText()
+    (FitFilePath, FITFileName) = os.path.split( FileNameCtl.GetLabel() )
+    print 'AutoFillConfigFile called. CodePath: ' + CodePath
     # attempt to find appropriate config file
     if 'will' in FilePath.split('\\'):
-        WillConfigFilename = 'cyclingconfig_will.txt'
-        if os.path.exists(WillConfigFilename):
-            FullPath = FilePath + '\\' + WillConfigFilename
-            ConfigFileCtl.SetLabel(FullPath)
+        ConfigFilename = 'cyclingconfig_will.txt'
+        print 'searching for  ' + CodePath + '\\' + ConfigFilename
+        if os.path.exists(CodePath + '\\' + ConfigFilename):
+            ConfigFileCtl.SetLabel(CodePath + '\\' + ConfigFilename)
+        elif os.path.exists( FitFilePath + '\\' + ConfigFilename):
+            ConfigFileCtl.SetLabel(FitFilePath + '\\' + ConfigFilename)
     elif 'kim' in FilePath.split('\\'):
-        KimConfigFilename = 'cyclingconfig_kim.txt'
-        if os.path.exists(KimConfigFilename):
-            FullPath = FilePath + '\\' + KimConfigFilename
-            ConfigFileCtl.SetLabel(FullPath)
+        ConfigFilename = 'cyclingconfig_kim.txt'
+        if os.path.exists(CodePath + '\\' + ConfigFilename):
+            ConfigFileCtl.SetLabel(CodePath + '\\' + ConfigFilename)
+        elif os.path.exists( FitFilePath + '\\' + ConfigFilename):
+            ConfigFileCtl.SetLabel(FitFilePath + '\\' + ConfigFilename)
     else:
         ConfigFileCtl.SetLabel('')
 
@@ -58,7 +64,7 @@ class MyFileDropTarget(wx.FileDropTarget):
         OutputTextCtl.SetValue( '\n'.join(OutStr) )
         print >> OutputTextCtl, '\n'
         os.chdir(FilePath)
-        win.SetStatusText(os.getcwd(), number=0)
+        #win.SetStatusText(os.getcwd(), number=0)
         SetFileNameText(filenames[0])
         AutoFillConfigFile(FilePath)
         return True
@@ -71,8 +77,7 @@ def LoadFitFile(event):
         defaultFile="",
         wildcard = "Garmin files (*.fit)|*.fit|"  \
                    "All files (*.*)|*.*",
-        style=wx.FD_OPEN |
-              wx.FD_CHANGE_DIR | wx.FD_FILE_MUST_EXIST |
+        style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST |
               wx.FD_PREVIEW
         )
     if dlg.ShowModal() == wx.ID_OK:
@@ -275,6 +280,11 @@ bkg.SetSizer(vbox)
 
 # attempt to load file specified in command line
 import sys
+if len(sys.argv) >= 1:
+    (CodePath, PyFileName)      = os.path.split(sys.argv[0])
+    os.chdir(CodePath)
+    win.SetStatusText(os.getcwd(), number=0)
+    AutoFillConfigFile(CodePath)
 if len(sys.argv) >= 2:
     print 'command line args: ', sys.argv[1:]
     fitfilepath = sys.argv[1]
@@ -286,8 +296,6 @@ if len(sys.argv) >= 2:
         OutputTextCtl.SetValue( '\n'.join(OutStr) )
         print >> OutputTextCtl, '\n'
         SetFileNameText(fitfilepath)
-        win.SetStatusText(os.getcwd(), number=0)
-        AutoFillConfigFile(FilePath)
 
 win.Show()
 app.MainLoop()

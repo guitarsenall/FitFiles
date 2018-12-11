@@ -3608,7 +3608,7 @@ files from my Garmin Edge 810.
                     see fitfileanalyses_gui_c.png
             >   Display full file paths.
             >   Perhaps some way to change the current working directory?
-                #   Idea: set to path of chosen config file. Actually, it
+                :   Idea: set to path of chosen config file. Actually, it
                     already does!
                 Commit & push.
                                             Friday, December 7, 2018 (9:07 AM)
@@ -3617,7 +3617,7 @@ files from my Garmin Edge 810.
             >   Import config file (currently hard-coded)
                 Commit & push.
             >   Add zone histogram
-                #   I like it:
+                :   I like it:
                         total calories = 645
                         Heart-Rate Zone Histogram:
                             Zone 1:  1:16:26 (92%)
@@ -3628,9 +3628,9 @@ files from my Garmin Edge 810.
                             Zone 6:  0:00:00 ( 0%)
                             Zone 7:  0:00:00 ( 0%)
                              total:  1:22:20
-                #   Perhaps calories burned in zone?
+                :   Perhaps calories burned in zone?
             >   required signals need to be present for chosen analysis.
-                #   signal options:
+                :   signal options:
                         timestamp
                         position_lat
                         position_long
@@ -3647,7 +3647,7 @@ files from my Garmin Edge 810.
                         cycle_length
                         temperature
                         left_right_balance
-                #   Experiment with all():
+                :   Experiment with all():
                         >>> x = [ 1, 2, 3]
                         >>> y = range(10)
                         >>> [ z in y for z in x]
@@ -3659,7 +3659,7 @@ files from my Garmin Edge 810.
                     This can be expanded:
                         if not all( s in signals for s in reqsignals ):
                             raise IOError( 'required signals not in file')
-                #   This doesn't do the trick. The traceback is written
+                :   This doesn't do the trick. The traceback is written
                     to the Python terminal. I need to intercept the error
                     somehow. This seems to work well:
                         try:
@@ -3671,11 +3671,11 @@ files from my Garmin Edge 810.
                                         wx.OK | wx.ICON_INFORMATION )
                             dlg.ShowModal()
                             dlg.Destroy()
-                #   Commit & push
+                :   Commit & push
                                             Monday, December 10, 2018 (8:41 AM)
             >   Update plot_heartrate.py to use the same approaches as the
                 newer analyses.
-                #   Use activity_tools.extract_activity_signals()
+                :   Use activity_tools.extract_activity_signals()
                     Interesting error:
                         >>> D:\...\plot_heartrate.py:17: SyntaxWarning:
                             import * only allowed at module level
@@ -3703,8 +3703,46 @@ files from my Garmin Edge 810.
                         import numpy as np
                     Go with it.
                     Commit & push.
-                #   Change the heart rate plot to have HMS time axis and
+                :   Change the heart rate plot to have HMS time axis and
                     HR zone vertical axis.
+            >   Add a heart rate histogram plot
+        -   A little bug fix:
+            There are two folders to search for a config file: the CWD and
+            the .FIT file path. Use both.
+            OnDropFiles() is not loading the correct config file. I think
+            it has something to do with os.chdir(FilePath).
+            This should get fixed when I maintain the two folders.
+            >   Hmmm... How do I really want this to work?
+                If User loads a configuration file, that path is important.
+                I want it to be the path used to search for more configuration
+                files if new .FIT files are loaded.
+            >   I want the path to the code to be the first main directory.
+                This can be switched by the config file loader.
+                Can the batch file pass this in as an argument?
+                Yes. The first element of sys.argv contains the full path
+                to the code.
+                    import sys, os
+                    (CodePath, PyFileName)      = os.path.split(sys.argv[0])
+                    (FitFilePath, FitFileName)  = os.path.split(sys.argv[1])
+                    print 'codepath     : ', CodePath
+                    print 'pyfilename   : ', PyFileName
+                    print 'fitfilepath  : ', FitFilePath
+                    print 'fitfilename  : ', FitFileName
+                    # output:
+                    #    codepath     :  D:\...\2018\fitfiles
+                    #    pyfilename   :  scratch.py
+                    #    fitfilepath  :  D:\...\bike\activities\will
+                    #    fitfilename  :  2018-12-02-13-13-19.fit
+                                        Tuesday, December 11, 2018 (12:36 PM)
+                However, where am I going to store the directories?
+                Can I store it and retrieve it from the status bar?
+                    https://wxpython.org/Phoenix/docs/html/wx.StatusBar.html
+                This implies I can use stBar.GetStatusText() to retrieve it.
+                IT WORKS!
+                    see fitfileanalyses_gui_d.png
+                Commit & push
+        -   Intervals ()
+
 
 
 d:
@@ -3722,11 +3760,6 @@ TO DO:
             same prefix. This file can be searched for when the .FIT
             file is loaded and the derived versions made available.
     *   General
-        -   There are two folders to search for a config file: the CWD and
-            the .FIT file path. Use both.
-        -   OnDropFiles() is not loading the correct config file. I think
-            it has something to do with os.chdir(FilePath).
-            >   This should get fixed when I maintain the two folders.
         -   Error and exception handling
         -   Reconcile LoadFitFile() and OnDropFiles(). They should do the
             same thing.
@@ -3740,14 +3773,10 @@ TO DO:
         -   Can I plot the variable-increment data and avoid the vertical lines
             to zero?
     *   plot_heartrate
+        -   Make zone labels match Friel labels (e.g., 5a, 5b, 5c).
         -   Add sex to config file and formula
         -   grid lines at endurance and threshold HRs.
-        -   Cleanup
-            >   from pylab import * (line 129)
         -   Create new plot window (currently overplots same one).
-        -   Update to modern methods
-            >   activity_tools.py
-            >   plotting
 
 
 D:\Users\Owner\Documents\OneDrive\2018\fitfiles\cyclingconfig_will.txt
