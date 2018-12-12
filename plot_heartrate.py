@@ -164,22 +164,23 @@ def plot_heartrate(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
 
     # heart-rate zones from "Cyclist's Training Bible" 5th ed. by Joe Friel, p50
     FTHR = ThresholdHR
-    hZones  = { 1   : [     0    ,   0.82*FTHR ],  # 1
-                2   : [ 0.82*FTHR,   0.89*FTHR ],  # 2
-                3   : [ 0.89*FTHR,   0.94*FTHR ],  # 3
-                4   : [ 0.94*FTHR,   1.00*FTHR ],  # 4
-                5   : [ 1.00*FTHR,   1.03*FTHR ],  # 5a
-                6   : [ 1.03*FTHR,   1.06*FTHR ],  # 5b
-                7   : [ 1.07*FTHR,   1.15*FTHR ]}  # 5c
+    hZones  = { 1   : ([     0    ,   0.82*FTHR ],  ' 1' ),
+                2   : ([ 0.82*FTHR,   0.89*FTHR ],  ' 2' ),
+                3   : ([ 0.89*FTHR,   0.94*FTHR ],  ' 3' ),
+                4   : ([ 0.94*FTHR,   1.00*FTHR ],  ' 4' ),
+                5   : ([ 1.00*FTHR,   1.03*FTHR ],  '5a' ),
+                6   : ([ 1.03*FTHR,   1.06*FTHR ],  '5b' ),
+                7   : ([ 1.07*FTHR,   1.15*FTHR ],  '5c' )}
+    h_zone_bounds   = [     0.4*FTHR,       #  1 lo
+                        hZones[2][0][0],    #  2 lo
+                        hZones[3][0][0],    #  3 lo
+                        hZones[4][0][0],    #  4 lo
+                        hZones[5][0][0],    # 5a lo
+                        hZones[6][0][0],    # 5b lo
+                        hZones[7][0][0],    # 5c lo
+                        hZones[7][0][1] ]   # 5c hi
+    h_zone_labels   = [ hZones[k][1] for k in range(1,8) ]
 
-    h_zone_bounds   = [     0.4*FTHR,   # better plotting
-                        hZones[2][0],
-                        hZones[3][0],
-                        hZones[4][0],
-                        hZones[5][0],
-                        hZones[6][0],
-                        hZones[7][0],
-                        hZones[7][1] ]
     ZoneCounts, ZoneBins    = np.histogram( hr_sig, bins=h_zone_bounds )
 
     # formatted print of histogram
@@ -191,13 +192,13 @@ def plot_heartrate(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
         hh  = dur // 3600
         mm  = (dur % 3600) // 60
         ss  = (dur % 3600) % 60
-        print >> OutStream, '    Zone %i: %2i:%02i:%02i (%2i%%)' \
-                            % (i+1, hh, mm, ss, pct)
+        print >> OutStream, '    Zone %2s: %2i:%02i:%02i (%2i%%)' \
+                            % ( h_zone_labels[i], hh, mm, ss, pct)
     dur = sum(ZoneCounts)/SampleRate
     hh  = dur // 3600
     mm  = (dur % 3600) // 60
     ss  = (dur % 3600) % 60
-    print >> OutStream, '     total: %2i:%02i:%02i' % (hh, mm, ss)
+    print >> OutStream, '      total: %2i:%02i:%02i' % (hh, mm, ss)
 
 
     ###########################################################
@@ -244,7 +245,7 @@ def plot_heartrate(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     ax2.set_ylabel('minutes')
     ax2.set_title('Heart Rate Zone Histogram')
     ax2.set_xticks(zone_ints + bar_width / 2)
-    ax2.set_xticklabels(('Rec', 'End', 'Tmp', 'Thr', 'VO2', 'An', 'NM'))
+    ax2.set_xticklabels(h_zone_labels)
     ax2.legend()
     fig2.tight_layout()
     plt.show()
@@ -271,5 +272,5 @@ if __name__ == '__main__':
         raise IOError('Need a .FIT file')
 
     #FitFilePath = r'S:\will\documents\OneDrive\bike\activities\will\\' \
-    #            + r'2018-12-02-20-29-34.fit'
+    #            + r'2018-12-02-13-13-19.fit'
 

@@ -1,18 +1,36 @@
 
 # scratch.py
 
-import sys, os
-(CodePath, PyFileName)      = os.path.split(sys.argv[0])
-(FitFilePath, FitFileName)  = os.path.split(sys.argv[1])
-print 'codepath     : ', CodePath
-print 'pyfilename   : ', PyFileName
-print 'fitfilepath  : ', FitFilePath
-print 'fitfilename  : ', FitFileName
-# output:
-#    codepath     :  D:\Users\Owner\Documents\OneDrive\2018\fitfiles
-#    pyfilename   :  scratch.py
-#    fitfilepath  :  D:\Users\Owner\Documents\OneDrive\bike\activities\will
-#    fitfilename  :  2018-12-02-13-13-19.fit
+# experiment with zone data structure
+FTHR = 170.0
+hZones  = { 1   : ([     0    ,   0.82*FTHR ],  ' 1' ),
+            2   : ([ 0.82*FTHR,   0.89*FTHR ],  ' 2' ),
+            3   : ([ 0.89*FTHR,   0.94*FTHR ],  ' 3' ),
+            4   : ([ 0.94*FTHR,   1.00*FTHR ],  ' 4' ),
+            5   : ([ 1.00*FTHR,   1.03*FTHR ],  '5a' ),
+            6   : ([ 1.03*FTHR,   1.06*FTHR ],  '5b' ),
+            7   : ([ 1.07*FTHR,   1.15*FTHR ],  '5c' )}
+
+h_zone_bounds   = [     0.4*FTHR,       #  1 lo
+                    hZones[2][0][0],    #  2 lo
+                    hZones[3][0][0],    #  3 lo
+                    hZones[4][0][0],    #  4 lo
+                    hZones[5][0][0],    # 5a lo
+                    hZones[6][0][0],    # 5b lo
+                    hZones[7][0][0],    # 5c lo
+                    hZones[7][0][1] ]   # 5c hi
+
+h_zone_labels   = [ hZones[k][1] for k in range(1,8) ]
+
+
+
+#import sys, os
+#(CodePath, PyFileName)      = os.path.split(sys.argv[0])
+#(FitFilePath, FitFileName)  = os.path.split(sys.argv[1])
+#print 'codepath     : ', CodePath
+#print 'pyfilename   : ', PyFileName
+#print 'fitfilepath  : ', FitFilePath
+#print 'fitfilename  : ', FitFileName
 
 ## experiment with exceptions
 #try:

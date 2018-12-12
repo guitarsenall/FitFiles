@@ -3748,6 +3748,14 @@ files from my Garmin Edge 810.
             >   Got it working.
                     see fitfileanalyses_gui_e.png
                 Commit & push
+                                        Wednesday, December 12, 2018 (6:58 AM)
+        -   Back to Heart Rate
+            >   Make zone labels match Friel labels (e.g., 5a, 5b, 5c).
+                I thought this is rather clever:
+                    h_zone_labels = [ hZones[k][1] for k in range(1,8) ]
+                Commit & push
+
+
 
 
 d:
@@ -3778,7 +3786,6 @@ TO DO:
         -   Can I plot the variable-increment data and avoid the vertical lines
             to zero?
     *   plot_heartrate
-        -   Make zone labels match Friel labels (e.g., 5a, 5b, 5c).
         -   Add sex to config file and formula
         -   grid lines at endurance and threshold HRs.
         -   Create new plot window (currently overplots same one).
