@@ -35,7 +35,6 @@ def plot_heartrate(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     #   Parse the configuration file
     #
     from ConfigParser import ConfigParser
-    ConfigFile  = 'cyclingconfig_will.txt'
     config      = ConfigParser()
     config.read(ConfigFile)
     print >> OutStream, 'reading config file ' + ConfigFile
@@ -43,6 +42,7 @@ def plot_heartrate(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     WeightToKg      = config.getfloat( 'user', 'WeightToKg' )
     weight          = WeightEntry * WeightToKg
     age             = config.getfloat( 'user', 'age' )
+    sex             = config.get(      'user', 'sex' )
     EndurancePower  = config.getfloat( 'power', 'EndurancePower' )
     ThresholdPower  = config.getfloat( 'power', 'ThresholdPower' )
     EnduranceHR     = config.getfloat( 'power', 'EnduranceHR'    )
@@ -51,6 +51,7 @@ def plot_heartrate(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     print >> OutStream,  'WeightToKg    : ', WeightToKg
     print >> OutStream,  'weight        : ', weight
     print >> OutStream,  'age           : ', age
+    print >> OutStream,  'sex           : ', sex
     print >> OutStream,  'EndurancePower: ', EndurancePower
     print >> OutStream,  'ThresholdPower: ', ThresholdPower
     print >> OutStream,  'EnduranceHR   : ', EnduranceHR
@@ -110,21 +111,20 @@ def plot_heartrate(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
         W   = Weight in kilograms
         A   = Age
         T   = Exercise duration time in hours
+
+    However, the formula is adapted to the user's power capacity:
+        :   At EnduranceHR, CalPerMin is set to EndurancePower
+            (assuming efficiency of 1/4.184 so that calories burned
+            equal kJ expended).
+        :   At ThresholdHR, CalPerMin is set to ThresholdPower.
+        :   Between EnduranceHR and ThresholdHR, CalPerMin is
+            interpolated.
+        :   Below EnduranceHR, CalPerMin follows the formula, but
+            it is scaled onto [EnduranceHR, EndurancePower].
+        :   Above ThresholdHR, CalPerMin follows the formula, but
+            it is scaled onto [ThresholdHR, ThresholdPower].
+
     '''
-
-    #   calibration at endurance
-    EnduranceBurn   = EndurancePower*3600/1e3/60    # Cal/min
-    EnduranceCoef   = EnduranceBurn                     \
-                    / (   -55.0969 + 0.6309*EnduranceHR \
-                        + 0.1988*weight + 0.2017*age)   \
-                    * 4.184
-
-    #   calibration at threshold
-    ThresholdBurn   = ThresholdPower*3600/1e3/60    # Cal/min
-    ThresholdCoef   = ThresholdBurn                     \
-                    / (   -55.0969 + 0.6309*ThresholdHR \
-                        + 0.1988*weight + 0.2017*age)   \
-                    * 4.184
 
     hr_sig      = signals['heart_rate']
     t_sig       = signals['time']
@@ -132,6 +132,46 @@ def plot_heartrate(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
                              t_sig[1:] - t_sig[0:-1] )
     nPts        = t_sig.size
     calories    = np.zeros(nPts)
+
+    EnduranceBurn   = EndurancePower*3600/1e3/60    # Cal/min
+    ThresholdBurn   = ThresholdPower*3600/1e3/60    # Cal/min
+
+    if sex == 'male':
+
+        #   calibration at endurance
+        EnduranceCoef   = EnduranceBurn             \
+                        / ( -55.0969                \
+                            + 0.6309*EnduranceHR    \
+                            + 0.1988*weight         \
+                            + 0.2017*age)           \
+                        * 4.184
+
+        #   calibration at threshold
+        ThresholdCoef   = ThresholdBurn             \
+                        / ( -55.0969                \
+                            + 0.6309*EnduranceHR    \
+                            + 0.1988*weight         \
+                            + 0.2017*age)           \
+                        * 4.184
+
+    else:   # female
+
+        #   calibration at endurance
+        EnduranceCoef   = EnduranceBurn             \
+                        / ( -20.4022                \
+                            + 0.4472*EnduranceHR    \
+                            + 0.1263*weight         \
+                            + 0.0740*age)           \
+                        * 4.184
+
+        #   calibration at threshold
+        ThresholdCoef   = ThresholdBurn             \
+                        / ( -20.4022                \
+                            + 0.4472*EnduranceHR    \
+                            + 0.1263*weight         \
+                            + 0.0740*age)           \
+                        * 4.184
+
 
     for i, dt, HR in zip( range(nPts), dt_sig, hr_sig ):
 
@@ -142,16 +182,21 @@ def plot_heartrate(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
                         * (ThresholdBurn-EnduranceBurn) \
                         / (ThresholdHR-EnduranceHR)
         else:
-            if HR < EnduranceHR:
-                coef  = EnduranceCoef
+            coef = EnduranceCoef if (HR < EnduranceHR) else ThresholdCoef
+            if sex == 'male':
+                CalPerMin   = ( -55.0969        \
+                                + 0.6309*HR     \
+                                + 0.1988*weight \
+                                + 0.2017*age)   \
+                            / 4.184             \
+                            * coef
             else:
-                coef  = ThresholdCoef
-            CalPerMin   = (   -55.0969      \
-                            + 0.6309*HR     \
-                            + 0.1988*weight \
-                            + 0.2017*age)   \
-                        / 4.184             \
-                        * coef
+                CalPerMin   = ( -20.4022        \
+                                + 0.4472*HR     \
+                                + 0.1263*weight \
+                                + 0.0740*age)   \
+                            / 4.184             \
+                            * coef
         calories[i] = dt * CalPerMin / 60
 
     running_calories    = np.cumsum( calories )

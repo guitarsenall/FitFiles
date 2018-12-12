@@ -3754,8 +3754,97 @@ files from my Garmin Edge 810.
                 I thought this is rather clever:
                     h_zone_labels = [ hZones[k][1] for k in range(1,8) ]
                 Commit & push
-
-
+        -   Add sex to config file and formula
+            >   Add line:
+                    sex : male  ; male or female
+            >   Hmmm... this is not a float, so I can't use
+                        sex  = config.getfloat( 'user', 'sex' )
+                Study
+                    https://docs.python.org/2/library/configparser.html
+                Lots of exceptions I can check for and handle.
+                It looks like I use
+                        sex  = config.get( 'user', 'sex' )
+            >   I will need good workouts for testing. Find an endurance
+                workout with Kim: A group ride on 11/28
+                    Will:   153W, 448kJ, 61%
+                    Kim:    108W, 316kJ, 72%
+            >   Error. ConfigParser cannot even read the weight (1st line).
+                Oops, I had hard-coded ConfigFile in plot_heartrate.py.
+                It was trying to read mine in Kim's folder, where it does
+                not exist. Results:
+                    Kim:
+                            CWD:  D:\...\will
+                            PATH: D:\...\kim
+                            FILE: 2018-11-28-18-10-40.fit
+                            -------------------- Heart Rate -----------------
+                            reading config file D:\...\cyclingconfig_kim.txt
+                            WeightEntry   :  110.0
+                            WeightToKg    :  0.45359237
+                            weight        :  49.8951607
+                            age           :  57.0
+                            sex           :  female
+                            EndurancePower:  105.0
+                            ThresholdPower:  150.0
+                            EnduranceHR   :  135.0
+                            ThresholdHR   :  165.0
+                            total calories = 423
+                            Heart-Rate Zone Histogram:
+                                Zone  1:  0:37:20 (54%)
+                                Zone  2:  0:14:12 (20%)
+                                Zone  3:  0:13:14 (19%)
+                                Zone  4:  0:03:15 ( 4%)
+                                Zone 5a:  0:00:00 ( 0%)
+                                Zone 5b:  0:00:00 ( 0%)
+                                Zone 5c:  0:00:00 ( 0%)
+                                  total:  1:08:01
+                        Work was 316 kJ, but her HR was running high
+                        (notice 16.5 minutes z3+).
+                    Will:
+                            CWD:  D:\...\kim
+                            PATH: D:\...\will
+                            FILE: 2018-11-28-18-11-51.fit
+                            -------------------- Heart Rate -----------------
+                            reading config file D:\...\cyclingconfig_will.txt
+                            WeightEntry   :  190.0
+                            WeightToKg    :  0.45359237
+                            weight        :  86.1825503
+                            age           :  52.0
+                            sex           :  male
+                            EndurancePower:  175.0
+                            ThresholdPower:  250.0
+                            EnduranceHR   :  140.0
+                            ThresholdHR   :  170.0
+                            total calories = 615
+                            Heart-Rate Zone Histogram:
+                                Zone  1:  1:02:30 (92%)
+                                Zone  2:  0:04:53 ( 7%)
+                                Zone  3:  0:00:00 ( 0%)
+                                Zone  4:  0:00:00 ( 0%)
+                                Zone 5a:  0:00:00 ( 0%)
+                                Zone 5b:  0:00:00 ( 0%)
+                                Zone 5c:  0:00:00 ( 0%)
+                                  total:  1:07:23
+                How can I tell if this makes sense?
+                    see will_kim_hr_compare_a.png
+                Kim's calories are lower partly because of her lower
+                EndurancePower at a similar EnduranceHR. Are the different
+                coefficients really having an effect? That would be almost
+                impossible to tell:
+                :   At EnduranceHR, CalPerMin is set to EndurancePower.
+                    (assuming efficiency of 1/4.184 so that calories burned
+                    equal kJ expended).
+                :   At ThresholdHR, CalPerMin is set to ThresholdPower.
+                :   Between EnduranceHR and ThresholdHR, CalPerMin is
+                    interpolated.
+                :   Below EnduranceHR, CalPerMin follows the formula, but
+                    it is scaled onto [EnduranceHR, EndurancePower].
+                :   Above ThresholdHR, CalPerMin follows the formula, but
+                    it is scaled onto [ThresholdHR, ThresholdPower].
+                So it is all about EndurancePower for these workouts.
+                Therefore, I don't think there is much need to make
+                absolutely sure the coefficients are correct. The code
+                looks right!
+            >   Commit & push.
 
 
 d:
@@ -3786,9 +3875,9 @@ TO DO:
         -   Can I plot the variable-increment data and avoid the vertical lines
             to zero?
     *   plot_heartrate
-        -   Add sex to config file and formula
         -   grid lines at endurance and threshold HRs.
         -   Create new plot window (currently overplots same one).
+        -   Cross-plot CalPerMin Vs HR
 
 
 D:\Users\Owner\Documents\OneDrive\2018\fitfiles\cyclingconfig_will.txt
