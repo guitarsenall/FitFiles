@@ -433,26 +433,39 @@ if __name__ == '__main__':
     else:
         raise IOError('Need a .FIT file')
 
+    #FitFilePath = r'S:\will\documents\OneDrive\bike\activities\will\\' \
+    #            + r'2018-11-22-11-02-30.fit'
 
-## workout summary
-#mm = sum(time[ii]) // 60
-#ss = sum(time[ii])  % 60
-#print '%8s%5i:%02i%8d%8d%8d%8d%8.1f' \
-#        % ("AVERAGE", mm, ss,
-#            sum(  power[ii]*time[ii]) / sum(time[ii]),
-#            sum( avg_hr[ii]*time[ii]) / sum(time[ii]),
-#            max(max_hr[ii]),
-#            sum(cadence[ii]*time[ii]) / sum(time[ii]),
-#            sum(balance[ii]*time[ii]) / sum(time[ii]) )
-##print "average interval power: %d watts" % (sum(power[ii]*time[ii]) / sum(time[ii]))
+# SAMPLE OUTPUT
+#    CWD: D:\Users\Owner\Documents\OneDrive\bike\activities\will
+#    PATH: D:\Users\Owner\Documents\OneDrive\bike\activities\will
+#    FILE: 2018-11-22-11-02-30.fit
 #
-#                     avg     avg     max     avg     avg
-#     lap    time   power      HR      HR     cad     bal
-#       0   16:19     133     127     143      74    48.4
-#       1   18:55     171     139     146      74    48.1
-#       2   30:40     181     139     148      79    48.1
-#       3   40:58     171     138     155      75    48.0
-#       4   26:48     175     143     150      81    48.2
-#       5   16:29     178     141     151      80    47.5
-#       6    6:03      79     133     148      53    47.5
-# AVERAGE  156:15     166     138     155      76    48.0
+#    -------------------- Endurance Laps --------------------
+#
+#    reading config file D:\Users\Owner\Documents\OneDrive\2018\fitfiles\cyclingconfig_will.txt
+#    WeightEntry   :  190.0
+#    WeightToKg    :  0.45359237
+#    weight        :  86.1825503
+#    age           :  52.0
+#    EndurancePower:  175.0
+#    ThresholdPower:  250.0
+#    EnduranceHR   :  140.0
+#    ThresholdHR   :  170.0
+#    FTP setting = 260 None
+#    signal timestamp:  11:02:30
+#    lap results:
+#                   lap     avg    norm     avg     max
+#         lap      time   power   power      HR      HR      EF
+#           0      6:58     178     179     121     132    1.49
+#           1     11:53     190     199     135     149    1.48
+#           2     18:20     181     189     140     148    1.35
+#           3     18:08     180     187     141     149    1.33
+#           4     18:28     170     183     139     147    1.32
+#           5     13:43     190     196     143     151    1.37
+#           6      3:10      69     138     133     151    1.04
+#    ride-level results:
+#                moving     avg    norm     avg             Pw:
+#         seg      time   power   power      HR      EF      HR
+#         all   1:30:44     176     188     138    1.37     5.2
+#        1-05   1:20:34     180     190     139    1.36     3.2

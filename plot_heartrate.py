@@ -319,3 +319,53 @@ if __name__ == '__main__':
     #FitFilePath = r'S:\will\documents\OneDrive\bike\activities\will\\' \
     #            + r'2018-12-02-13-13-19.fit'
 
+# SAMPLE OUTPUT:
+#    CWD: D:\Users\Owner\Documents\OneDrive\bike\activities\will
+#    PATH: D:\Users\Owner\Documents\OneDrive\bike\activities\will
+#    FILE: 2018-12-02-13-13-19.fit
+#
+#    -------------------- Heart Rate --------------------
+#
+#    reading config file D:\...\fitfiles\cyclingconfig_will.txt
+#    WeightEntry   :  190.0
+#    WeightToKg    :  0.45359237
+#    weight        :  86.1825503
+#    age           :  52.0
+#    sex           :  male
+#    EndurancePower:  175.0
+#    ThresholdPower:  250.0
+#    EnduranceHR   :  140.0
+#    ThresholdHR   :  170.0
+#    total calories = 645
+#    Heart-Rate Zone Histogram:
+#        Zone  1:  1:16:43 (92%)
+#        Zone  2:  0:03:46 ( 4%)
+#        Zone  3:  0:01:57 ( 2%)
+#        Zone  4:  0:00:11 ( 0%)
+#        Zone 5a:  0:00:00 ( 0%)
+#        Zone 5b:  0:00:00 ( 0%)
+#        Zone 5c:  0:00:00 ( 0%)
+#          total:  1:22:37
+
+#    -------------------- Endurance Laps --------------------
+#
+#    reading config file D:\...\cyclingconfig_will.txt
+#    WeightEntry   :  190.0
+#    WeightToKg    :  0.45359237
+#    weight        :  86.1825503
+#    age           :  52.0
+#    EndurancePower:  175.0
+#    ThresholdPower:  250.0
+#    EnduranceHR   :  140.0
+#    ThresholdHR   :  170.0
+#    required signals not in file
+#    Signals required:
+#       power
+#       heart_rate
+#    Signals contained:
+#       distance
+#       temperature
+#       altitude
+#       heart_rate
+#       time
+#       metadata

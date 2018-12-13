@@ -3845,6 +3845,11 @@ files from my Garmin Edge 810.
                 absolutely sure the coefficients are correct. The code
                 looks right!
             >   Commit & push.
+                                        Thursday, December 13, 2018 (8:30 AM)
+        -   Wrap up this version.
+            >   Add sample output to the analysis modules.
+            >   Commit & push.
+            >   Tag this as v1.0.
 
 
 d:
@@ -3863,20 +3868,17 @@ TO DO:
             file is loaded and the derived versions made available.
     *   General
         -   Error and exception handling
-        -   Reconcile LoadFitFile() and OnDropFiles(). They should do the
-            same thing.
         -   Encapsulate heart-rate and power zones for plotting axes.
             >   Can I pass an axes object to a function for a plot target?
-        -   Encapsulate config file import.
+        -   Encapsulate config file import. For example, only plot_heartrate.py
+            imports the sex field.
         -   The CLOSE button should close MatPlotLib windows.
     *   endurance_summery
-        -   CLOSE button does not close the plot window.
     *   zone_detect
         -   Can I plot the variable-increment data and avoid the vertical lines
             to zero?
     *   plot_heartrate
         -   grid lines at endurance and threshold HRs.
-        -   Create new plot window (currently overplots same one).
         -   Cross-plot CalPerMin Vs HR
 
 

@@ -376,5 +376,31 @@ if __name__ == '__main__':
         raise IOError('Need a .FIT file')
 
     #FitFilePath = r'S:\will\documents\OneDrive\bike\activities\will\\' \
-    #            + r'2018-12-02-20-29-34.fit'
+    #            + r'2018-10-18-18-26-53.fit'
 
+# SAMPLE OUTPUT:
+#
+#    CWD: D:\Users\Owner\Documents\OneDrive\bike\activities\will
+#    PATH: D:\Users\Owner\Documents\OneDrive\bike\activities\will
+#    FILE: 2018-10-18-18-26-53.fit
+#
+#    -------------------- Zone Detection --------------------
+#
+#    reading config file cyclingconfig_will.txt
+#    WeightEntry   :  190.0
+#    WeightToKg    :  0.45359237
+#    weight        :  86.1825503
+#    age           :  52.0
+#    EndurancePower:  175.0
+#    ThresholdPower:  250.0
+#    EnduranceHR   :  140.0
+#    ThresholdHR   :  170.0
+#    Power Zone Histogram:
+#        Zone 1:  0:12:05 (14%)
+#        Zone 2:  0:09:39 (11%)
+#        Zone 3:  0:21:41 (26%)
+#        Zone 4:  0:32:16 (39%)
+#        Zone 5:  0:03:39 ( 4%)
+#        Zone 6:  0:00:57 ( 1%)
+#        Zone 7:  0:00:49 ( 1%)
+#         total:  1:21:09

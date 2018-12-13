@@ -159,4 +159,22 @@ if __name__ == '__main__':
     #FitFilePath = r'S:\will\documents\OneDrive\bike\activities\will\\' \
     #            + r'2018-12-10-17-28-24.fit'
 
-
+# SAMPLE OUTPUT:
+#    CWD: D:\Users\Owner\Documents\OneDrive\bike\activities\will
+#    PATH: D:\Users\Owner\Documents\OneDrive\bike\activities\will
+#    FILE: 2018-12-10-17-28-24.fit
+#
+#    -------------------- Interval Laps --------------------
+#
+#    FTP setting = 260 None
+#    processing 7 laps above 195 watts...
+#                         avg     avg     avg     max     avg
+#         lap    time   power     cad      HR      HR     bal
+#           1    0:32     478      96     149     159    46.9
+#           3    1:00     322      93     153     163    48.3
+#           5    2:00     308      93     161     173    48.3
+#           7    3:00     292      91     166     178    48.2
+#           9    2:01     296      87     162     176    48.7
+#          11    0:28     404      96     165     171    48.0
+#          13    1:00     307      93     153     168    48.2
+#     AVERAGE   10:05     315      91     160     178    48.3
