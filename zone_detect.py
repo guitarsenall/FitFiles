@@ -64,7 +64,6 @@ def zone_detect(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     #   Parse the configuration file
     #
     from ConfigParser import ConfigParser
-    ConfigFile  = 'cyclingconfig_will.txt'
     config      = ConfigParser()
     config.read(ConfigFile)
     print >> OutStream, 'reading config file ' + ConfigFile

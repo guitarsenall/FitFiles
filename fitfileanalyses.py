@@ -34,15 +34,16 @@ def AutoFillConfigFile(FilePath):
     (FitFilePath, FITFileName) = os.path.split( FileNameCtl.GetLabel() )
     print 'AutoFillConfigFile called. CodePath: ' + CodePath
     # attempt to find appropriate config file
-    if 'will' in FilePath.split('\\'):
+    if 'will' in FilePath.split('\\')[-1]:
         ConfigFilename = 'cyclingconfig_will.txt'
         print 'searching for  ' + CodePath + '\\' + ConfigFilename
         if os.path.exists(CodePath + '\\' + ConfigFilename):
             ConfigFileCtl.SetLabel(CodePath + '\\' + ConfigFilename)
         elif os.path.exists( FitFilePath + '\\' + ConfigFilename):
             ConfigFileCtl.SetLabel(FitFilePath + '\\' + ConfigFilename)
-    elif 'kim' in FilePath.split('\\'):
+    elif 'kim' in FilePath.split('\\')[-1]:
         ConfigFilename = 'cyclingconfig_kim.txt'
+        print 'searching for  ' + CodePath + '\\' + ConfigFilename
         if os.path.exists(CodePath + '\\' + ConfigFilename):
             ConfigFileCtl.SetLabel(CodePath + '\\' + ConfigFilename)
         elif os.path.exists( FitFilePath + '\\' + ConfigFilename):
@@ -313,6 +314,7 @@ if len(sys.argv) >= 2:
         OutputTextCtl.SetValue( '\n'.join(OutStr) )
         print >> OutputTextCtl, '\n'
         SetFileNameText(fitfilepath)
+        AutoFillConfigFile(FilePath)
 
 win.Show()
 app.MainLoop()

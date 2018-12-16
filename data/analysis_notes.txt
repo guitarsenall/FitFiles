@@ -3850,6 +3850,23 @@ files from my Garmin Edge 810.
             >   Add sample output to the analysis modules.
             >   Commit & push.
             >   Tag this as v1.0.
+                    see tortoise_git_log_a.png
+                                                    Sub-Project Hours: 31.5
+                                            Friday, December 14, 2018 (10:30 AM)
+        -   BUG: On the desktop, drag-dropping a Kim file after a Will file
+            fails to load Kim's config file.
+            >   On the desktop, 'will' is in the filepath...at the beginning
+                of the CodePath:
+                    AutoFillConfigFile called. CodePath:
+                        S:\will\documents\OneDrive\2018\fitfiles
+                    searching for  S:\will\documents\OneDrive\2018
+                        \fitfiles\cyclingconfig_will.txt
+            >   To make it work, I have to find 'kim' in
+                    S:\will\documents\OneDrive\bike\activities\kim
+                That is, only check the last element after splitting the
+                path:
+                    >>> 'kim' in FilePath.split('\\')[-1]
+                    True
 
 
 d:
@@ -3861,6 +3878,9 @@ python demo.py
 TO DO:
 +   fitfileanalyses
     *   Major features
+        -   Analyses for Comparing two files.
+            >   File control for second file should be disabled unless
+                the analysis uses it.
         -   A list of channels in the file with a plot button.
         -   The ability to signal-process a channel into a new version
             (e.g., low-pass filtering), save to a .PKL file with the
