@@ -3873,6 +3873,9 @@ files from my Garmin Edge 810.
             All clear.
             >   Report the major caloric burn rates in plot_heartrate.py.
             >   Commit & push.
+            >   Remove the tag for v1.0 from the earlier commit using the
+                popup-menu item in the log. Then retag this commit
+                as v1.0.
 
 
 d:
@@ -3884,6 +3887,7 @@ python demo.py
 TO DO:
 +   fitfileanalyses
     *   Major features
+        -   Heart-rate transfer-function parameter inference.
         -   Analyses for Comparing two files.
             >   File control for second file should be disabled unless
                 the analysis uses it.
@@ -3892,13 +3896,24 @@ TO DO:
             (e.g., low-pass filtering), save to a .PKL file with the
             same prefix. This file can be searched for when the .FIT
             file is loaded and the derived versions made available.
+            >   Consider a tree control.
+            >   Examples:
+                :   30-sec moving average
+                :   Low-pass filtering
+                :   Heart-rate transfer-function filter for power.
     *   General
+        -   Time axis for time plots has the day-of-month number.
         -   Error and exception handling
         -   Encapsulate heart-rate and power zones for plotting axes.
             >   Can I pass an axes object to a function for a plot target?
         -   Encapsulate config file import. For example, only plot_heartrate.py
             imports the sex field.
         -   The CLOSE button should close MatPlotLib windows.
+            >   Consider using
+                    matplotlib.pyplot.close(fig='all')
+                See
+                    https://matplotlib.org/api/_as_gen
+                        /matplotlib.pyplot.close.html
         -   Consider automatically forming the name of ConfigFile from the
             folder the FIT file is in: e.g., cyclingconfig_user.txt for
             .\path\user\*.fit
