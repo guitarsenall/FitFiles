@@ -3867,6 +3867,12 @@ files from my Garmin Edge 810.
                 path:
                     >>> 'kim' in FilePath.split('\\')[-1]
                     True
+                                        Monday, December 17, 2018 (7:30 AM)
+        -   More bugs. The other day I discovered that ConfigFile was
+            hard-coded in zone_detect.py. Check the other analyses.
+            All clear.
+            >   Report the major caloric burn rates in plot_heartrate.py.
+            >   Commit & push.
 
 
 d:
@@ -3893,12 +3899,14 @@ TO DO:
         -   Encapsulate config file import. For example, only plot_heartrate.py
             imports the sex field.
         -   The CLOSE button should close MatPlotLib windows.
+        -   Consider automatically forming the name of ConfigFile from the
+            folder the FIT file is in: e.g., cyclingconfig_user.txt for
+            .\path\user\*.fit
     *   endurance_summery
     *   zone_detect
         -   Can I plot the variable-increment data and avoid the vertical lines
             to zero?
     *   plot_heartrate
-        -   grid lines at endurance and threshold HRs.
         -   Cross-plot CalPerMin Vs HR
 
 

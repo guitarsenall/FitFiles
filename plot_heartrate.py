@@ -134,7 +134,10 @@ def plot_heartrate(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     calories    = np.zeros(nPts)
 
     EnduranceBurn   = EndurancePower*3600/1e3/60    # Cal/min
+    print >> OutStream,  'EnduranceBurn = %5.2f cal/min' % EnduranceBurn
     ThresholdBurn   = ThresholdPower*3600/1e3/60    # Cal/min
+    print >> OutStream,  'ThresholdBurn = %5.2f cal/min' % ThresholdBurn
+
 
     if sex == 'male':
 

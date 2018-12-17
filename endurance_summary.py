@@ -52,12 +52,6 @@ def endurance_summary(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     #   Parse the configuration file
     #
     from ConfigParser import ConfigParser
-    # are we on the desktop or laptop?
-#    if 'D' in FitFilePath.split('\\')[0]:
-#        ConfigFilePath  = 'D:\\Users\\Owner\\Documents\\OneDrive\\2018\\fitfiles\\'
-#    else:
-#        ConfigFilePath  = 'S:\\will\\documents\\OneDrive\\2018\\fitfiles\\'
-#    ConfigFile  = ConfigFilePath + 'cyclingconfig_will.txt'
     config      = ConfigParser()
     config.read(ConfigFile)
     print >> OutStream, 'reading config file ' + ConfigFile
