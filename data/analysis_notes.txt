@@ -3876,6 +3876,27 @@ files from my Garmin Edge 810.
             >   Remove the tag for v1.0 from the earlier commit using the
                 popup-menu item in the log. Then retag this commit
                 as v1.0.
+                                        Tuesday, December 18, 2018 (9:12 AM)
+            >   The CLOSE button should close MatPlotLib windows.
+                :   Consider using
+                        matplotlib.pyplot.close(fig='all')
+                    See
+                        https://matplotlib.org/api/_as_gen
+                            /matplotlib.pyplot.close.html
+                    Try this in the close button callback.
+                    Not working. One analysis works. The second hangs Python
+                    at the point of trying to launch a new plot window.
+                    Google("")
+                        https://stackoverflow.com/questions/15930121
+                            /wxpython-matplotlib-closing-figure-hangs-python
+                    I don't think this solves it; I am using
+                        import matplotlib.pyplot as plt
+                    consistently.
+                    I begin to suspect it has something to do with where
+                    the import occurs--namely, inside the analysis functions.
+                    google("python import statement inside function")
+
+
 
 
 d:
@@ -3887,6 +3908,7 @@ python demo.py
 TO DO:
 +   fitfileanalyses
     *   Major features
+        -   Candence analysis: histogram, seated intervals.
         -   Heart-rate transfer-function parameter inference.
         -   Analyses for Comparing two files.
             >   File control for second file should be disabled unless
@@ -3908,12 +3930,6 @@ TO DO:
             >   Can I pass an axes object to a function for a plot target?
         -   Encapsulate config file import. For example, only plot_heartrate.py
             imports the sex field.
-        -   The CLOSE button should close MatPlotLib windows.
-            >   Consider using
-                    matplotlib.pyplot.close(fig='all')
-                See
-                    https://matplotlib.org/api/_as_gen
-                        /matplotlib.pyplot.close.html
         -   Consider automatically forming the name of ConfigFile from the
             folder the FIT file is in: e.g., cyclingconfig_user.txt for
             .\path\user\*.fit
@@ -3922,6 +3938,7 @@ TO DO:
         -   Can I plot the variable-increment data and avoid the vertical lines
             to zero?
     *   plot_heartrate
+        -   Print average heart rate...per lap?
         -   Cross-plot CalPerMin Vs HR
 
 

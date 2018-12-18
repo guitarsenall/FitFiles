@@ -268,10 +268,12 @@ hBox4.Add(ConfigFileCtl, proportion=1, flag=wx.EXPAND | wx.RIGHT, border=5)
 hBox4.Add(ConfigFileButton, proportion=0, flag=wx.LEFT, border=5)
 
 # LAUNCH and CLOSE buttons
+#import matplotlib.pyplot as plt
 LaunchButton = wx.Button(bkg, label='LAUNCH ANALYSIS')
 LaunchButton.Bind(wx.EVT_BUTTON, LaunchAnalysis)
 def OnClose(event):
     print 'OnClose called'
+    #plt.close(fig='all')
     win.Close(True)
 CloseButton = wx.Button(bkg, label='CLOSE')
 CloseButton.Bind(wx.EVT_BUTTON, OnClose)
