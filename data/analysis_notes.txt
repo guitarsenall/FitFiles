@@ -3879,7 +3879,7 @@ files from my Garmin Edge 810.
                                         Tuesday, December 18, 2018 (9:12 AM)
             >   The CLOSE button should close MatPlotLib windows.
                 :   Consider using
-                        matplotlib.pyplot.close(fig='all')
+                        matplotlib.pyplot.close('all')
                     See
                         https://matplotlib.org/api/_as_gen
                             /matplotlib.pyplot.close.html
@@ -3892,11 +3892,66 @@ files from my Garmin Edge 810.
                     I don't think this solves it; I am using
                         import matplotlib.pyplot as plt
                     consistently.
-                    I begin to suspect it has something to do with where
+                :   I begin to suspect it has something to do with where
                     the import occurs--namely, inside the analysis functions.
-                    google("python import statement inside function")
-
-
+                    google("python import statement inside function").
+                    Try moving all the matplotlib import statements to the
+                    top of the module files. No luck. Problem still present.
+                    Furthermore, plt.close('all') after one analysis does
+                    not close a figure but hangs Python.
+                    #   Worse. Commenting out the code in fitfileanalyses.py
+                        doesn't solve it now. That MUST be because I moved
+                        the import statements.
+                    #   Revert the analysis modules.
+                            see tortoise_git_revert_a.png
+                        At least now I can run multiple analyses again!!
+                                        Wednesday, December 19, 2018 (7:59 AM)
+                :   New idea: Have the analysis function define its own
+                    ClosePlots() function, and return it when called. Then
+                    the close button can call it. This way, the close function
+                    gets defined inside the scope in which the plot is
+                    created.
+                        def endurance_summary(FitFilePath,
+                                              ConfigFile=None,
+                                              OutStream=sys.stdout):
+                            # create plots #
+                            def ClosePlots():
+                                plt.close('all')
+                            return ClosePlots
+                    Then hold it in a list:
+                        def LaunchAnalysis(event):
+                            ...
+                            PlotCloserFcn = endurance_summary( FITFileName,
+                                                ConfigFile,
+                                                OutStream=OutputTextCtl )
+                            plot_closer_fcns.append(PlotCloserFcn)
+                    But now I have a problem. PlotCloserFcn exists in the
+                    scope of LaunchAnalysis(). How do I make it available
+                    to OnClose()? I suppose LaunchAnalysis() will have to
+                    return it...but to what? It is a button callback?
+                    In what scope is it called?
+                    I suppose I can make the launch button a class. Then
+                    LaunchButton.LaunchAnalysis() can hold the plot
+                    closers. Try it with endurance_summary.py.
+                    WOW!!! IT WORKED!!!
+                    (With only one analysis.)
+                    Expand to heart_rate.py and try together.
+                    OMG!!! IT WORKED!!
+                    I can't believe I pulled that off with no errors
+                    ...except one: I did not need 'self' in the class
+                    definition for the plot_closer_fcns variable:
+                        class MyLaunchButton(wx.Button):
+                            self.plot_closer_fcns   = []
+                            def LaunchAnalysis(self, event):
+                                ...
+                    It looks like I only need 'self' in the definition
+                    of class methods.
+                    Expand to zone_detect.py. Interval laps does not create
+                    plots, so ignore it (but place a comment).
+                    It works!
+                    I can close any plots I don't need, and the close button
+                    works without error.
+                :   Commit & push.
 
 
 d:

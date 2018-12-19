@@ -5,6 +5,9 @@ fitfileanalyses.py
 
 import os
 
+# needed to close figure windows, but not working.
+# import matplotlib.pyplot as plt
+
 
 ################################################################################
 ################################################################################
@@ -137,72 +140,97 @@ from zone_detect import zone_detect
 from plot_heartrate import plot_heartrate
 from interval_laps import interval_laps
 
-def LaunchAnalysis(event):
+class MyLaunchButton(wx.Button):
+    ''' class to hold plot-closer functions to be called when application is closed'''
 
-    AnalysesChoice  = AnalysesCtl.GetSelection()
-    AnalysesChoice  = AnalysesCtl.GetString(AnalysesChoice)
-    print >> OutputTextCtl, '-'*20 + ' ' + AnalysesChoice + ' ' + '-'*20
-    FITFileName = FileNameCtl.GetLabel()
-    ConfigFile  = ConfigFileCtl.GetLabel()
-    if not os.path.exists(FITFileName):
-        dlg = wx.MessageDialog(win,
-                    'A valid .FIT file must be entered.',
-                    'WARNING',
-                    wx.OK | wx.ICON_INFORMATION
-                    )
-        dlg.ShowModal()
-        dlg.Destroy()
-        return
+    plot_closer_fcns   = []
 
-    if AnalysesChoice == 'Endurance Laps':
-        print 'Running endurance summary on ' + FITFileName
-        print >> OutputTextCtl, ''
-        try:
-            endurance_summary( FITFileName, ConfigFile, OutStream=OutputTextCtl )
-        except IOError, ErrorObj:
-            dlg = wx.MessageDialog(win, ErrorObj.message, AnalysesChoice,
-                        wx.OK | wx.ICON_INFORMATION )
+    def LaunchAnalysis(self, event):
+
+        AnalysesChoice  = AnalysesCtl.GetSelection()
+        AnalysesChoice  = AnalysesCtl.GetString(AnalysesChoice)
+        print >> OutputTextCtl, '-'*20 + ' ' + AnalysesChoice + ' ' + '-'*20
+        FITFileName = FileNameCtl.GetLabel()
+        ConfigFile  = ConfigFileCtl.GetLabel()
+        if not os.path.exists(FITFileName):
+            dlg = wx.MessageDialog(win,
+                        'A valid .FIT file must be entered.',
+                        'WARNING',
+                        wx.OK | wx.ICON_INFORMATION
+                        )
             dlg.ShowModal()
             dlg.Destroy()
+            return
 
-    elif AnalysesChoice == 'Zone Detection':
-        print 'Running zone detection on ' + FITFileName
-        print >> OutputTextCtl, ''
-        try:
-            zone_detect( FITFileName, ConfigFile, OutStream=OutputTextCtl )
-        except IOError, ErrorObj:
-            dlg = wx.MessageDialog(win, ErrorObj.message, AnalysesChoice,
-                        wx.OK | wx.ICON_INFORMATION )
+        if AnalysesChoice == 'Endurance Laps':
+            print 'Running endurance summary on ' + FITFileName
+            print >> OutputTextCtl, ''
+            try:
+                PlotCloserFcn = endurance_summary( FITFileName, ConfigFile,
+                                                    OutStream=OutputTextCtl )
+                self.plot_closer_fcns.append(PlotCloserFcn)
+            except IOError, ErrorObj:
+                dlg = wx.MessageDialog(win, ErrorObj.message, AnalysesChoice,
+                            wx.OK | wx.ICON_INFORMATION )
+                dlg.ShowModal()
+                dlg.Destroy()
+
+        elif AnalysesChoice == 'Zone Detection':
+            print 'Running zone detection on ' + FITFileName
+            print >> OutputTextCtl, ''
+            try:
+                PlotCloserFcn = zone_detect( FITFileName, ConfigFile,
+                                             OutStream=OutputTextCtl )
+                self.plot_closer_fcns.append(PlotCloserFcn)
+            except IOError, ErrorObj:
+                dlg = wx.MessageDialog(win, ErrorObj.message, AnalysesChoice,
+                            wx.OK | wx.ICON_INFORMATION )
+                dlg.ShowModal()
+                dlg.Destroy()
+
+        elif AnalysesChoice == 'Interval Laps':
+            print 'Running interval-lap analysis on ' + FITFileName
+            print >> OutputTextCtl, ''
+            try:
+                # no plots created
+                interval_laps( FITFileName, ConfigFile,
+                               OutStream=OutputTextCtl )
+            except IOError, ErrorObj:
+                dlg = wx.MessageDialog(win, ErrorObj.message, AnalysesChoice,
+                            wx.OK | wx.ICON_INFORMATION )
+                dlg.ShowModal()
+                dlg.Destroy()
+
+        elif AnalysesChoice == 'Heart Rate':
+            print 'Running heartrate analysis on ' + FITFileName
+            print >> OutputTextCtl, ''
+            try:
+                PlotCloserFcn = plot_heartrate( FITFileName, ConfigFile,
+                                                OutStream=OutputTextCtl )
+                self.plot_closer_fcns.append(PlotCloserFcn)
+            except IOError, ErrorObj:
+                dlg = wx.MessageDialog(win, ErrorObj.message, AnalysesChoice,
+                            wx.OK | wx.ICON_INFORMATION )
+                dlg.ShowModal()
+                dlg.Destroy()
+
+        else:
+            print 'Analysis not yet supported: ' + AnalysesChoice
+            dlg = wx.MessageDialog(win,
+                        'Analysis not supported: ' + AnalysesChoice,
+                        'WARNING',
+                        wx.OK | wx.ICON_INFORMATION
+                        )
             dlg.ShowModal()
             dlg.Destroy()
+            return
 
-    elif AnalysesChoice == 'Interval Laps':
-        print 'Running interval-lap analysis on ' + FITFileName
-        print >> OutputTextCtl, ''
-        interval_laps( FITFileName, ConfigFile, OutStream=OutputTextCtl )
+    # end MyLaunchButton.LaunchAnalysis()
 
-    elif AnalysesChoice == 'Heart Rate':
-        print 'Running heartrate analysis on ' + FITFileName
-        print >> OutputTextCtl, ''
-        try:
-            plot_heartrate( FITFileName, ConfigFile, OutStream=OutputTextCtl )
-        except IOError, ErrorObj:
-            dlg = wx.MessageDialog(win, ErrorObj.message, AnalysesChoice,
-                        wx.OK | wx.ICON_INFORMATION )
-            dlg.ShowModal()
-            dlg.Destroy()
-
-    else:
-        print 'Analysis not yet supported: ' + AnalysesChoice
-        dlg = wx.MessageDialog(win,
-                    'Analysis not supported: ' + AnalysesChoice,
-                    'WARNING',
-                    wx.OK | wx.ICON_INFORMATION
-                    )
-        dlg.ShowModal()
-        dlg.Destroy()
-        return
-
+    def ClosePlots(self):
+        if len(self.plot_closer_fcns) > 0:
+            for PlotCloserFcn in self.plot_closer_fcns:
+                PlotCloserFcn()
 
 class StreamTextControl(wx.TextCtrl):
     ''' make a text control streamable for print statement '''
@@ -268,12 +296,11 @@ hBox4.Add(ConfigFileCtl, proportion=1, flag=wx.EXPAND | wx.RIGHT, border=5)
 hBox4.Add(ConfigFileButton, proportion=0, flag=wx.LEFT, border=5)
 
 # LAUNCH and CLOSE buttons
-#import matplotlib.pyplot as plt
-LaunchButton = wx.Button(bkg, label='LAUNCH ANALYSIS')
-LaunchButton.Bind(wx.EVT_BUTTON, LaunchAnalysis)
+LaunchButton = MyLaunchButton(bkg, label='LAUNCH ANALYSIS')
+LaunchButton.Bind( wx.EVT_BUTTON, LaunchButton.LaunchAnalysis )
 def OnClose(event):
     print 'OnClose called'
-    #plt.close(fig='all')
+    LaunchButton.ClosePlots()
     win.Close(True)
 CloseButton = wx.Button(bkg, label='CLOSE')
 CloseButton.Bind(wx.EVT_BUTTON, OnClose)

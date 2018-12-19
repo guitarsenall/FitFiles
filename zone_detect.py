@@ -355,6 +355,11 @@ def zone_detect(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     ss  = (dur % 3600) % 60
     print >> OutStream, '     total: %2i:%02i:%02i' % (hh, mm, ss)
 
+    def ClosePlots():
+        plt.close('all')
+
+    return ClosePlots
+
 # end zone_detect()
 
 ############################################################

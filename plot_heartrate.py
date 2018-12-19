@@ -298,7 +298,10 @@ def plot_heartrate(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     fig2.tight_layout()
     plt.show()
 
+    def ClosePlots():
+        plt.close('all')
 
+    return ClosePlots
 
 # end plot_heartrate()
 

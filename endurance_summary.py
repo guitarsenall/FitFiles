@@ -408,6 +408,11 @@ def endurance_summary(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     fig1.tight_layout()
     plt.show()
 
+    def ClosePlots():
+        plt.close('all')
+
+    return ClosePlots
+
 # end endurance_summary()
 
 ############################################################
