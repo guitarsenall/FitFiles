@@ -406,6 +406,7 @@ def endurance_summary(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
                 loc='upper left');
     fig1.suptitle('Endurance Power Results', fontsize=20)
     fig1.tight_layout()
+    fig1.canvas.set_window_title(FitFilePath)
     plt.show()
 
     def ClosePlots():

@@ -269,6 +269,7 @@ def plot_heartrate(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     ax0.set_title('Heart Rate Analysis')
     fig1.autofmt_xdate()
     fig1.tight_layout()
+    fig1.canvas.set_window_title(FitFilePath)
     plt.show()
 
     #    plt.plot(t_sig/60, hr_sig, 'r.-')
@@ -296,6 +297,7 @@ def plot_heartrate(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     ax2.set_xticklabels(h_zone_labels)
     ax2.legend()
     fig2.tight_layout()
+    fig2.canvas.set_window_title(FitFilePath)
     plt.show()
 
     def ClosePlots():

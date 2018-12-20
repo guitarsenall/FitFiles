@@ -3952,6 +3952,19 @@ files from my Garmin Edge 810.
                     I can close any plots I don't need, and the close button
                     works without error.
                 :   Commit & push.
+                                        Thursday, December 20, 2018 (7:15 AM)
+            >   Last night I found I can launch two instances by
+                double-clicking the BAT file. This way I can compare my ride
+                with Kim's side by side. However, I can get confused about
+                which plots are Kim's and which are mine. Solution:
+                Have plot titles contain FIT file path and name.
+                :   Google('matplotlib set title of window')
+                        https://stackoverflow.com/questions/5812960
+                            /change-figure-window-title-in-pylab
+                    This gives a few ways. Best:
+                        fig1.canvas.set_window_title(FitFilePath)
+                    It works.
+                :   Commit & push.
 
 
 d:
@@ -3965,6 +3978,13 @@ TO DO:
     *   Major features
         -   Candence analysis: histogram, seated intervals.
         -   Heart-rate transfer-function parameter inference.
+            >   See discussion above
+            >   Other Resources:
+                SciPy.signal appears to contain everything I need:
+                    https://docs.scipy.org/doc/scipy/reference/signal.html
+                Video shows use of scipy.signal with the same sort of
+                transfer function:
+                    https://www.youtube.com/watch?v=2lQbGQ_cQ3w
         -   Analyses for Comparing two files.
             >   File control for second file should be disabled unless
                 the analysis uses it.
@@ -3992,6 +4012,7 @@ TO DO:
     *   zone_detect
         -   Can I plot the variable-increment data and avoid the vertical lines
             to zero?
+        -   Vertical grids at lap boundaries
     *   plot_heartrate
         -   Print average heart rate...per lap?
         -   Cross-plot CalPerMin Vs HR

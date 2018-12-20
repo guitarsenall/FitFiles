@@ -312,6 +312,7 @@ def zone_detect(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
                 loc='upper left');
     fig1.suptitle('Power Zone Detection', fontsize=20)
     fig1.tight_layout()
+    fig1.canvas.set_window_title(FitFilePath)
     plt.show()
 
     # better histogram plot with control of counts
@@ -337,6 +338,7 @@ def zone_detect(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     ax.set_xticklabels(('Rec', 'End', 'Tmp', 'Thr', 'VO2', 'An', 'NM'))
     ax.legend()
     fig2.tight_layout()
+    fig2.canvas.set_window_title(FitFilePath)
     plt.show()
 
     # formatted print of histogram
