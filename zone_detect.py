@@ -88,8 +88,7 @@ def zone_detect(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     from fitparse import Activity
     from activity_tools import extract_activity_signals
 
-    required_signals    = [ 'power',
-                            'heart_rate' ]
+    required_signals    = [ 'power' ] # 'heart_rate' optional
 
     # get the signals
     activity    = Activity(FitFilePath)
@@ -106,6 +105,7 @@ def zone_detect(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
             print >> OutStream, '   ' + s
         raise IOError(msg)
 
+    hasHR = True if 'heart_rate' in signals.keys() else False
 
     # up-sample by 5x so that zone-skipping is not needed
     SampleRate  = 5.0
@@ -115,7 +115,8 @@ def zone_detect(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     nPts        = int(n*SampleRate)  # 32-bit integer
     new_time    = arange(nPts)/SampleRate
     power       = interp(new_time, old_time, signals['power'])
-    heart_rate  = interp(new_time, old_time, signals['heart_rate'])
+    if hasHR:
+        heart_rate  = interp(new_time, old_time, signals['heart_rate'])
 
     # power zones from "Cyclist's Training Bible", 5th ed., by Joe Friel, p51
     FTP = ThresholdPower
@@ -293,11 +294,14 @@ def zone_detect(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     base = dt.datetime(2014, 1, 27, 0, 0, 0)
     x = [base + dt.timedelta(seconds=t) for t in new_time]
     x = date2num(x) # Convert to matplotlib format
-    fig1, (ax0, ax1) = plt.subplots(nrows=2, sharex=True)
-    ax0.plot_date( x, heart_rate, 'r-', linewidth=3 );
-    ax0.set_yticks( h_zone_bounds, minor=False)
-    ax0.grid(True)
-    ax0.set_title('heart rate, BPM')
+    if hasHR:
+        fig1, (ax0, ax1) = plt.subplots(nrows=2, sharex=True)
+        ax0.plot_date( x, heart_rate, 'r-', linewidth=3 );
+        ax0.set_yticks( h_zone_bounds, minor=False)
+        ax0.grid(True)
+        ax0.set_title('heart rate, BPM')
+    else:
+        fig1, ax1 = plt.subplots(nrows=1, sharex=True)
     ax1.plot_date( x, power,        'k-', linewidth=1 );
     ax1.plot_date( x, fboxpower,    'm-', linewidth=1);
     ax1.plot_date( x, cp2,          'r.', markersize=4);
@@ -381,8 +385,13 @@ if __name__ == '__main__':
     else:
         raise IOError('Need a .FIT file')
 
+    # good example
     #FitFilePath = r'S:\will\documents\OneDrive\bike\activities\will\\' \
     #            + r'2018-10-18-18-26-53.fit'
+
+    # sample without HR
+    #FitFilePath = r'D:\Users\Owner\Documents\OneDrive\bike\activities\will\\' \
+    #            + r'2018-12-22-16-28-06.fit'
 
 # SAMPLE OUTPUT:
 #

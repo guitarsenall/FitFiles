@@ -3965,6 +3965,37 @@ files from my Garmin Edge 810.
                         fig1.canvas.set_window_title(FitFilePath)
                     It works.
                 :   Commit & push.
+                                            Monday, December 24, 2018 (9:00 AM)
+            >   My heartrate monitor died the other night before my ride
+                with Kim. It felt like an endurance ride, but was it?
+                I can't tell because zone_detect() requires heartrate.
+                Make heartrate optional.
+                :   Handy technique:
+                        hasHR = True if 'heart_rate' in signals.keys() \
+                                    else False
+                :   It looks like I was a bit rough on Kim:
+                        see zone_detect_no_hr_a.png
+                    output:
+                        WeightEntry   :  190.0
+                        WeightToKg    :  0.45359237
+                        weight        :  86.1825503
+                        age           :  52.0
+                        EndurancePower:  175.0
+                        ThresholdPower:  250.0
+                        EnduranceHR   :  140.0
+                        ThresholdHR   :  170.0
+                        executing Wills version of profile.def
+                        Power Zone Histogram:
+                            Zone 1:  0:23:22 (25%)
+                            Zone 2:  0:31:36 (33%)
+                            Zone 3:  0:36:19 (38%)
+                            Zone 4:  0:01:52 ( 2%)
+                            Zone 5:  0:00:13 ( 0%)
+                            Zone 6:  0:00:00 ( 0%)
+                            Zone 7:  0:00:00 ( 0%)
+                             total:  1:33:23
+                    An endurance ride should have much less tempo
+                    content--perhaps half that of z2.
 
 
 d:
@@ -3976,6 +4007,9 @@ python demo.py
 TO DO:
 +   fitfileanalyses
     *   Major features
+        -   Force analysis: A histogram of either reps or work at
+            leg force. Create by calculating crank torque and revolutions
+            from power and cadence.
         -   Candence analysis: histogram, seated intervals.
         -   Heart-rate transfer-function parameter inference.
             >   See discussion above
@@ -4016,6 +4050,14 @@ TO DO:
     *   plot_heartrate
         -   Print average heart rate...per lap?
         -   Cross-plot CalPerMin Vs HR
+        -   Estimate TSS
+            >   Relate HR zones to power zones to compute intensity.
+            >   Back-calculate power through transfer function?
+                    H(s)/P(s) = k/(tau*s+1)
+                    P(s) = H(s)*(tau*s+1)/k
+                    P(s) = s*H(s)*tau/k + H(s)/k
+                    P(t) = tau/k*H' + H/k
+                So I can estimate power with HR and its derivative.
 
 
 D:\Users\Owner\Documents\OneDrive\2018\fitfiles\cyclingconfig_will.txt
