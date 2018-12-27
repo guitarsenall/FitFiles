@@ -5,28 +5,6 @@ files from my Garmin Edge 810.
 
 +   Project ideas:
     *   Saddle endurance measurement.
-    *   Heart rate as a transfer function on power.
-        -   article on "Heart rate control during treadmill exercise..."
-                https://www.sciencedirect.com/science/article
-                    /pii/S174680941630057X
-        -   article "Optimal control of heart rate during treadmill exercise"
-                https://onlinelibrary.wiley.com/doi/pdf/10.1002/oca.2355
-            Describes a "nominal plant" from treadmill speed (power) to
-            heart rate.
-                "the plant transfer function Pd = B/A is taken to be a
-                first-order LTI system; this assumption follows previous
-                observations that such a model gives a good representation of HR
-                dynamics during moderate-to-vigorous treadmill exercise..."
-                    Y(s)/U(s) = k/(tau*s+1)
-        -   article "Identification of heart rate dynamics during
-            moderate-to-vigorous treadmill exercise"
-                https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4687158/
-            This is reference #13 in "Optimal control..."
-            With,
-                    Y(s)/U(s) = k/(tau*s+1)
-            parameter ranges are,
-                    20.7 <=  k  <= 28.0
-                    43.8 <= tau <= 67.7
     *   Plot torque or pedal force
         -   Cumulative histogram: crank revs above load.
             See,
@@ -39,48 +17,6 @@ files from my Garmin Edge 810.
             >   See E:\cat_code_backup\primary\2016\grinder_state
                     \segment_detection.pro
                 for debounce technique.
-    *   Upgrade dragdrop.py to plot heart rate with grids.
-    *   Zone-based overplot of heart rate and power. This will show how
-        appropriate the heart rate is to the power. Map to zone points
-        for Y axis.
-    *   Endurance ride summary with drag-drop support and formatted printout.
-        -   table of lap results with average HR, power, NP, EF,
-        -   Eventually included percent seated time.
-        -   Power balance while seated. Degrading with fatigue?
-    *   Use wxPython to create a dialog with a suite of custom analyses
-        applied to a .FIT file that is drag-dropped onto the dialog
-        (or originally onto the .BAT launcher).
-        -   Can I have a static text showing the name of the .FIT file?
-            If so, I need to be able to change the label when a new file
-            is drag-dropped. Google.
-                    https://stackoverflow.com/questions/293344
-                        /wxpython-set-value-of-statictext
-            Yes. wx.StaticText has a method, SetLabel(), that is not clearly
-            specified in the API at,
-                https://wxpython.org/Phoenix/docs/html/wx.StaticText.html
-            because it inherits the method from a superclass.
-        -   I considered using a wxChoice control to list the analyses since
-            it would be easy to add an analysis.
-        -   Perhaps associate a config file (e.g., cyclingconfig_will.txt)
-            with the dialog?
-        -   Add a section for a second file for analyses that compare
-            two .FIT files?
-        -   Make it run on a web page?
-            >   Example:
-                    https://www.dcrainmaker.com/analyzer
-        -   Provide a log panel for formatted printing.
-            >   Redirect STDOUT to it?
-            >   Not sure a log is really what I want. See
-                        https://wxpython.org/Phoenix/docs/html
-                            /log_classes_overview.html
-                A text control would be more appropriate. Each analysis.
-                when performed, can just overwrite its contents.
-        -   Drag-dropping:
-            >   This link has sample code for a FileDropTarget.
-                    https://wiki.wxpython.org/DragAndDrop
-            >   The wxPython demo has a sample file-drop under
-                    Clipboard and DnD -> DragAndDrop
-                The code subclasses wx.FileDropTarget.
     *   Generate a table of extended ASCII characters to import into
         EditPlus as a ClipText file.
         -   It NEEDS to include the "approximately equal" symbol, which
@@ -3996,6 +3932,68 @@ files from my Garmin Edge 810.
                              total:  1:33:23
                     An endurance ride should have much less tempo
                     content--perhaps half that of z2.
+                :   Commit & push.
+
+                                                    Sub-Project Hours: 37.5
++   NEW PROJECT: PwHR Transfer Function.
+    Objective: Simulate heart rate as a transfer-function response to power.
+
+    *   Earlier planning notes:
+        Heart rate as a transfer function on power.
+        -   article on "Heart rate control during treadmill exercise..."
+                https://www.sciencedirect.com/science/article
+                    /pii/S174680941630057X
+        -   article "Optimal control of heart rate during treadmill exercise"
+                https://onlinelibrary.wiley.com/doi/pdf/10.1002/oca.2355
+            Describes a "nominal plant" from treadmill speed (power) to
+            heart rate.
+                "the plant transfer function Pd = B/A is taken to be a
+                first-order LTI system; this assumption follows previous
+                observations that such a model gives a good representation of HR
+                dynamics during moderate-to-vigorous treadmill exercise..."
+                    Y(s)/U(s) = k/(tau*s+1)
+        -   article "Identification of heart rate dynamics during
+            moderate-to-vigorous treadmill exercise"
+                https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4687158/
+            This is reference #13 in "Optimal control..."
+            With,
+                    Y(s)/U(s) = k/(tau*s+1)
+            parameter ranges are,
+                    20.7 <=  k  <= 28.0
+                    43.8 <= tau <= 67.7
+        -   Heart-rate transfer-function parameter inference.
+            >   See discussion above
+            >   Other Resources:
+                SciPy.signal appears to contain everything I need:
+                    https://docs.scipy.org/doc/scipy/reference/signal.html
+                Video shows use of scipy.signal with the same sort of
+                transfer function:
+                    https://www.youtube.com/watch?v=2lQbGQ_cQ3w
+
+    *   Initial coding in pwhr_transfer_function.py to compute HR from a given transfer
+        function and overplot it with measured HR.
+        -   The units on k are from treadmill speeds. This is actually
+            the Efficiency Factor, EF, which runs at about 1.3 watts/BPM
+            for me. So k is the inverse, 1/EF ~ 0.77 BPM/W.
+        -   Follow
+                    https://www.youtube.com/watch?v=2lQbGQ_cQ3w
+            to set up for simulation in scratch.py:
+                import numpy as np
+                from scipy import signal
+                import matplotlib.pyplot as plt
+                from scipy.integrate import odeint
+                k   = 3.0
+                tau = 2.0
+                num     = [k]
+                den     = [tau, 1]
+                HPtf    = signal.TransferFunction(num,den)
+                t, y    = signal.step(HPtf)
+                plt.figure(1)
+                plt.plot(t, y, 'r-')
+                plt.show()
+            It works.
+            Commit & push
+
 
 
 d:
@@ -4013,12 +4011,6 @@ TO DO:
         -   Candence analysis: histogram, seated intervals.
         -   Heart-rate transfer-function parameter inference.
             >   See discussion above
-            >   Other Resources:
-                SciPy.signal appears to contain everything I need:
-                    https://docs.scipy.org/doc/scipy/reference/signal.html
-                Video shows use of scipy.signal with the same sort of
-                transfer function:
-                    https://www.youtube.com/watch?v=2lQbGQ_cQ3w
         -   Analyses for Comparing two files.
             >   File control for second file should be disabled unless
                 the analysis uses it.
@@ -4032,6 +4024,9 @@ TO DO:
                 :   30-sec moving average
                 :   Low-pass filtering
                 :   Heart-rate transfer-function filter for power.
+        -   Make it run on a web page?
+            >   Example:
+                    https://www.dcrainmaker.com/analyzer
     *   General
         -   Time axis for time plots has the day-of-month number.
         -   Error and exception handling
@@ -4043,6 +4038,8 @@ TO DO:
             folder the FIT file is in: e.g., cyclingconfig_user.txt for
             .\path\user\*.fit
     *   endurance_summery
+        -   Eventually included percent seated time.
+        -   Power balance while seated. Degrading with fatigue?
     *   zone_detect
         -   Can I plot the variable-increment data and avoid the vertical lines
             to zero?

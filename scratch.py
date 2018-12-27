@@ -1,26 +1,44 @@
 
 # scratch.py
 
-# experiment with zone data structure
-FTHR = 170.0
-hZones  = { 1   : ([     0    ,   0.82*FTHR ],  ' 1' ),
-            2   : ([ 0.82*FTHR,   0.89*FTHR ],  ' 2' ),
-            3   : ([ 0.89*FTHR,   0.94*FTHR ],  ' 3' ),
-            4   : ([ 0.94*FTHR,   1.00*FTHR ],  ' 4' ),
-            5   : ([ 1.00*FTHR,   1.03*FTHR ],  '5a' ),
-            6   : ([ 1.03*FTHR,   1.06*FTHR ],  '5b' ),
-            7   : ([ 1.07*FTHR,   1.15*FTHR ],  '5c' )}
+#Follow
+#    https://www.youtube.com/watch?v=2lQbGQ_cQ3w
+#for step simulation of 1st-order transfer function.
+import numpy as np
+from scipy import signal
+import matplotlib.pyplot as plt
+from scipy.integrate import odeint
+k   = 3.0
+tau = 2.0
+num     = [k]
+den     = [tau, 1]
+HPtf    = signal.TransferFunction(num,den)
+t, y    = signal.step(HPtf)
+plt.figure(1)
+plt.plot(t, y, 'r-')
+plt.show()
 
-h_zone_bounds   = [     0.4*FTHR,       #  1 lo
-                    hZones[2][0][0],    #  2 lo
-                    hZones[3][0][0],    #  3 lo
-                    hZones[4][0][0],    #  4 lo
-                    hZones[5][0][0],    # 5a lo
-                    hZones[6][0][0],    # 5b lo
-                    hZones[7][0][0],    # 5c lo
-                    hZones[7][0][1] ]   # 5c hi
 
-h_zone_labels   = [ hZones[k][1] for k in range(1,8) ]
+## experiment with zone data structure
+#FTHR = 170.0
+#hZones  = { 1   : ([     0    ,   0.82*FTHR ],  ' 1' ),
+#            2   : ([ 0.82*FTHR,   0.89*FTHR ],  ' 2' ),
+#            3   : ([ 0.89*FTHR,   0.94*FTHR ],  ' 3' ),
+#            4   : ([ 0.94*FTHR,   1.00*FTHR ],  ' 4' ),
+#            5   : ([ 1.00*FTHR,   1.03*FTHR ],  '5a' ),
+#            6   : ([ 1.03*FTHR,   1.06*FTHR ],  '5b' ),
+#            7   : ([ 1.07*FTHR,   1.15*FTHR ],  '5c' )}
+#
+#h_zone_bounds   = [     0.4*FTHR,       #  1 lo
+#                    hZones[2][0][0],    #  2 lo
+#                    hZones[3][0][0],    #  3 lo
+#                    hZones[4][0][0],    #  4 lo
+#                    hZones[5][0][0],    # 5a lo
+#                    hZones[6][0][0],    # 5b lo
+#                    hZones[7][0][0],    # 5c lo
+#                    hZones[7][0][1] ]   # 5c hi
+#
+#h_zone_labels   = [ hZones[k][1] for k in range(1,8) ]
 
 
 
