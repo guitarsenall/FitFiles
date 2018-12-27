@@ -13,9 +13,15 @@ tau = 2.0
 num     = [k]
 den     = [tau, 1]
 HPtf    = signal.TransferFunction(num,den)
-t, y    = signal.step(HPtf)
+t1, y1    = signal.step(HPtf)
+def model(y,t):
+    u = 1
+    return (-y + k*u)/tau
+t2 = np.linspace(0,14,100)
+y2 = odeint(model,0,t2)
 plt.figure(1)
-plt.plot(t, y, 'r-')
+plt.plot(t1, y1, 'r-')
+plt.plot(t2, y2, 'b--')
 plt.show()
 
 

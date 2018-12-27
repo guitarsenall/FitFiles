@@ -3993,6 +3993,29 @@ files from my Garmin Edge 810.
                 plt.show()
             It works.
             Commit & push
+            Continue following using odeint(), which works for nonlinear
+            systems.
+                def model(y,t):
+                    u = 1
+                    return (-y + k*u)/tau
+                t = np.linspace(0,14,100)
+                y = odeint(model,0
+            I am not understanding model(). In the video, he says it "returns
+            the derivative of our function." Let's see:
+                    H(s)/P(s) = k/(tau*s+1)
+                    P(s) = H(s)*(tau*s+1)/k
+                    P(s) = s*H(s)*tau/k + H(s)/k
+                    P(t) = tau/k*H' + H/k
+                    H'  = (P(t) - H/k) * k/tau
+                        = ( -H + P*k ) / tau
+            OK, I get it now. Add the extra code to scratch.py. It works.
+            Regarding, see,
+                    https://docs.scipy.org/doc/scipy/reference/generated
+                        /scipy.integrate.odeint.html
+            which has a great example showing the use of args to pass in
+            constants (which might be changing with time in my model).
+            Commit & push
+
 
 
 
@@ -4045,7 +4068,8 @@ TO DO:
             to zero?
         -   Vertical grids at lap boundaries
     *   plot_heartrate
-        -   Print average heart rate...per lap?
+        -   Print average heart rate
+            >   per lap?
         -   Cross-plot CalPerMin Vs HR
         -   Estimate TSS
             >   Relate HR zones to power zones to compute intensity.
