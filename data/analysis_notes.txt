@@ -4069,6 +4069,91 @@ files from my Garmin Edge 810.
                 between heartrate and power. It is NOT just a gain!
                 Commit & push.
 
+                                            Friday, December 28, 2018 (8:06 AM)
+    *   Steady-state relationship between power and HR.
+        -   A few points can be noted:
+                    power       HR    EF    note
+                        0       80     0    Active resting HR
+                      140      120  1.15    Recovery
+                      180      140  1.29    Aerobic threshold (FTHR-30)
+                      250      170  1.47    Functional threshold power and HR
+                      300      180  1.67    Aerobic capacity
+                      350      188  1.86    Max HR
+            These points establish targets that HR will converge toward
+            in 1st-order character. The efficiency factor is usually
+            measured at the aerobic threshold, but notice how inadequate it
+            is to describe the whole range!
+            Now consider the expression for the HR derivative:
+                Hd  = ( P*k - H ) / tau
+            P*k is simply the HR target established by the gain, so
+            P*k-H is really the difference between the target HR
+            and the current HR. So we can derive a better model:
+                Hd  = ( H(p) - H ) / tau
+            where H(p) comes from the table above.
+        -   Can I establish the table from the zones?
+                FTP = ThresholdPower
+                FTHR = ThresholdHR
+                phTable = [  [    0    ,  0.50*FTHR ], # Active resting HR
+                             [ 0.55*FTP,  0.70*FTHR ], # Recovery
+                             [ 0.70*FTP,  0.82*FTHR ], # Aerobic threshold
+                             [ 1.00*FTP,       FTHR ], # Functional threshold
+                             [ 1.20*FTP,  1.03*FTHR ], # Aerobic capacity
+                             [ 1.50*FTP,  1.06*FTHR ]] # Max HR
+            So the model will look something like this:
+                def heartrate_dot(HR,t):
+                    i = int(t * SampleRate)
+                    HRp = np.interp( power[i], phTable[:,0], phTable[:,1] )
+                    return ( HRp - HR ) / tau
+            Try it.
+                from scipy.integrate import odeint
+                SampleRate  = 1.0
+                k           = 0.77  # BPM/w
+                tau         = 63.0  # seconds
+                PwHRTable   = np.array( [
+                                [    0    ,  0.50*FTHR ],
+                                [ 0.55*FTP,  0.70*FTHR ],
+                                [ 0.70*FTP,  0.82*FTHR ],
+                                [ 1.00*FTP,       FTHR ],
+                                [ 1.20*FTP,  1.03*FTHR ],
+                                [ 1.50*FTP,  1.06*FTHR ]])
+                def heartrate_dot(HR,t):
+                    i = min( int(t * SampleRate), nScans-1 )
+                    HRp = np.interp( power[i], PwHRTable[:,0], PwHRTable[:,1] )
+                    return ( HRp - HR ) / tau
+                heart_rate_sim = odeint( heartrate_dot,
+                                         heart_rate_ci[0],
+                                         time_ci )
+            A higher time constant looks better.
+                see pwhr_transferfunction_b.png
+            Now we're getting somewhere.
+                >   A faster time constant improves correlation with peaks
+                    while a slower one improves valleys.
+                >   I can see cardiac drift--the effects of fatigue. As
+                    fatigue builds, measured heartrate exceeds simulated
+                    more and more.
+                    I have a concept for modeling cardiac drift: A linear
+                    function of fatigue quantified as TSS. This could exist
+                    as a table at the same power points as PwHRTable.
+                    A target for cardiac drift is 6% at the aerobic threshold
+                    after 2 hours. This would translate to 0.06*140
+                    8 BPM at 100 TSS. I am guessing it is more pronounced at a
+                    recovery pace and less pronounced at threshold.
+        -   What does a sustained threshold effort look like? A good workout
+            is on 9/3/18 with a 67-minute interval:
+                    D:\Users\Owner\Documents\OneDrive\bike\activities\will
+                        \2018-09-03-17-36-11.fit
+            Try it
+                see pwhr_transferfunction_c.png
+            Cardiac drift is 10.8% for this interval. That amounts to
+            0.108*163 = 17.6 BPM--definitely more, not less.
+        -   Try another: 7/17/18. Threshold intervals.
+                see pwhr_transferfunction_d.png
+            This one contains some mysteries. HR is clearly high in the
+            2nd interval, then in line later.
+            Commit & push
+
+
+
 
 d:
 cd D:\Users\Owner\Documents\OneDrive\2018\notesparser\wxPython-demo-4.0.3\demo

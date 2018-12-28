@@ -14,8 +14,15 @@ import sys
 
 # inputs
 #def pwhr_transfer_function(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
+## VO2max intervals:
+#FitFilePath = r'S:\will\documents\OneDrive\bike\activities\will\\' \
+#            + r'2018-12-10-17-28-24.fit'
+## threshold effort:
+#FitFilePath = r'S:\will\documents\OneDrive\bike\activities\will\\' \
+#            + r'2018-09-03-17-36-11.fit'
+# threshold intervals:
 FitFilePath = r'S:\will\documents\OneDrive\bike\activities\will\\' \
-            + r'2018-12-10-17-28-24.fit'
+            + r'2018-07-17-15-12-10.fit'
 OutStream=sys.stdout
 ConfigFile=None
 
@@ -131,15 +138,15 @@ for record in records:
             FTP = field_data
 
 # resample to constant-increment (1 Hz) with zeros at missing samples
-from numpy import nonzero, array, arange, zeros, average, logical_and
+import numpy as np
 time_idx                = signals['time'].astype('int')
 power_vi                = signals['power']
 heart_rate_vi           = signals['heart_rate']
 nScans                  = time_idx[-1]+1
-time_ci                 = arange(nScans)
-power                   = zeros(nScans)
+time_ci                 = np.arange(nScans)
+power                   = np.zeros(nScans)
 power[time_idx]         = power_vi
-heart_rate_ci           = zeros(nScans)
+heart_rate_ci           = np.zeros(nScans)
 heart_rate_ci[time_idx] = heart_rate_vi
 
 # compute the 30-second, moving-average power signal.
@@ -153,11 +160,18 @@ p30 = BackwardMovingAverage( power )
 from scipy.integrate import odeint
 SampleRate  = 1.0
 k           = 0.77  # BPM/w
-tau         = 55.0  # seconds
-def heartrate_dot(H,t):
-    i = int(t * SampleRate)
-    P = power[i]
-    return ( -H + P*k ) / tau
+tau         = 63.0  # seconds
+PwHRTable   = np.array( [
+                [    0    ,  0.50*FTHR ],   # Active resting HR
+                [ 0.55*FTP,  0.70*FTHR ],   # Recovery
+                [ 0.70*FTP,  0.82*FTHR ],   # Aerobic threshold
+                [ 1.00*FTP,       FTHR ],   # Functional threshold
+                [ 1.20*FTP,  1.03*FTHR ],   # Aerobic capacity
+                [ 1.50*FTP,  1.06*FTHR ]])  # Max HR
+def heartrate_dot(HR,t):
+    i = min( int(t * SampleRate), nScans-1 )
+    HRp = np.interp( power[i], PwHRTable[:,0], PwHRTable[:,1] )
+    return ( HRp - HR ) / tau
 heart_rate_sim = odeint( heartrate_dot, heart_rate_ci[0], time_ci )
 
 
@@ -174,9 +188,10 @@ x = [base + dt.timedelta(seconds=t) for t in time_ci.astype('float')]
 x = date2num(x) # Convert to matplotlib format
 fig1, (ax0, ax1) = plt.subplots(nrows=2, sharex=True)
 ax0.plot_date( x, heart_rate_ci,  'r-', linewidth=1 );
-ax0.plot_date( x, heart_rate_sim, 'r-', linewidth=3 );
+ax0.plot_date( x, heart_rate_sim, 'm-', linewidth=3 );
 ax0.set_yticks( h_zone_bounds, minor=False)
 ax0.grid(True)
+ax0.legend( ['measured', 'simulated' ], loc='upper left');
 ax0.set_title('heart rate, BPM')
 ax1.plot_date( x, power,            'k-', linewidth=1 );
 ax1.plot_date( x, p30,              'm-', linewidth=1);
