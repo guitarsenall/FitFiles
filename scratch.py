@@ -13,15 +13,21 @@ tau = 2.0
 num     = [k]
 den     = [tau, 1]
 HPtf    = signal.TransferFunction(num,den)
-t1, y1    = signal.step(HPtf)
+t1, y1  = signal.step(HPtf)
+Fs      = 10.0
+timevec = np.arange(0, 14, 1/Fs)
+nPts    = len(timevec)
+u_input         = np.zeros(nPts)
+u_input[10:]    = 1.0
 def model(y,t):
-    u = 1
+    i = int(t * Fs)
+    print 't = ', t, ', i = ', i
+    u = u_input[i]
     return (-y + k*u)/tau
-t2 = np.linspace(0,14,100)
-y2 = odeint(model,0,t2)
+y2 = odeint(model,0,timevec)
 plt.figure(1)
 plt.plot(t1, y1, 'r-')
-plt.plot(t2, y2, 'b--')
+plt.plot(timevec, y2, 'b--')
 plt.show()
 
 

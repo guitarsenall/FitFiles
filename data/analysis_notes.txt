@@ -3999,7 +3999,7 @@ files from my Garmin Edge 810.
                     u = 1
                     return (-y + k*u)/tau
                 t = np.linspace(0,14,100)
-                y = odeint(model,0
+                y = odeint(model,0,t)
             I am not understanding model(). In the video, he says it "returns
             the derivative of our function." Let's see:
                     H(s)/P(s) = k/(tau*s+1)
@@ -4015,8 +4015,59 @@ files from my Garmin Edge 810.
             which has a great example showing the use of args to pass in
             constants (which might be changing with time in my model).
             Commit & push
-
-
+        -   Try implementing odeint() in pwhr_transfer_function.py with
+                    20.7 <=  k  <= 28.0
+                    43.8 <= tau <= 67.7
+            >   Define the model:
+                    def heartrate(H,t):
+                        return ( -H + P*k ) / tau
+                How do I get the power, P, into the model? I suppose I have
+                to pass it in as an argument:
+                    def heartrate_dot(H,t,P):
+                        return ( -H + P*k ) / tau
+                    H = odeint( heartrate_dot, HR0, t, args=(P) )
+                No, I don't think so. P is not constant but a function of time.
+                perhaps I can rely on global variables and access power:
+                    def heartrate_dot(H,t,P):
+                        P = power(t)
+                        return ( -H + P*k ) / tau
+                    H = odeint( heartrate_dot, HR0, t )
+                though power(t) is not straightforward. Perhaps get the
+                index corresponding to t:
+                    def heartrate_dot(H,t,P):
+                        i = int(t * SampleRate)
+                        P = power[i]
+                        return ( -H + P*k ) / tau
+                    H = odeint( heartrate_dot, HR0, t )
+                Try this approach in scratch.py with u being a delayed step.
+                    Fs      = 10.0
+                    timevec = np.arange(0, 14, 1/Fs)
+                    nPts    = len(timevec)
+                    u_input         = np.zeros(nPts)
+                    u_input[10:]    = 1.0
+                    def model(y,t):
+                        i = int(t * Fs)
+                        u = u_input[i]
+                        return (-y + k*u)/tau
+                    y2 = odeint(model,0,timevec)
+                It works.
+            >   Not try it in pwhr_transfer_function.py:
+                    from scipy.integrate import odeint
+                    SampleRate  = 1.0
+                    k           = 0.77  # BPM/w
+                    tau         = 55.0  # seconds
+                    def heartrate_dot(H,t):
+                        i = int(t * SampleRate)
+                        P = power[i]
+                        return ( -H + P*k ) / tau
+                    heart_rate_sim = odeint( heartrate_dot,
+                                             heart_rate_ci[0],
+                                             time_ci )
+                which gives results worth pondering:
+                    see pwhr_transferfunction_a.png
+                I need to think about the true steady-state relationship
+                between heartrate and power. It is NOT just a gain!
+                Commit & push.
 
 
 d:

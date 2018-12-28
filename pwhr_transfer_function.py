@@ -150,8 +150,15 @@ p30 = BackwardMovingAverage( power )
 #
 # simulate the heart rate
 #
-heart_rate_sim          = zeros(nScans)
-
+from scipy.integrate import odeint
+SampleRate  = 1.0
+k           = 0.77  # BPM/w
+tau         = 55.0  # seconds
+def heartrate_dot(H,t):
+    i = int(t * SampleRate)
+    P = power[i]
+    return ( -H + P*k ) / tau
+heart_rate_sim = odeint( heartrate_dot, heart_rate_ci[0], time_ci )
 
 
 #
