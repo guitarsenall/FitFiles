@@ -20,9 +20,12 @@ import sys
 ## threshold effort:
 #FitFilePath = r'S:\will\documents\OneDrive\bike\activities\will\\' \
 #            + r'2018-09-03-17-36-11.fit'
-# threshold intervals:
+## threshold intervals:
+#FitFilePath = r'S:\will\documents\OneDrive\bike\activities\will\\' \
+#            + r'2018-07-17-15-12-10.fit'
+# endurance:
 FitFilePath = r'S:\will\documents\OneDrive\bike\activities\will\\' \
-            + r'2018-07-17-15-12-10.fit'
+            + r'2018-10-19-15-14-04.fit'
 OutStream=sys.stdout
 ConfigFile=None
 
@@ -153,14 +156,21 @@ heart_rate_ci[time_idx] = heart_rate_vi
 from endurance_summary import BackwardMovingAverage
 p30 = BackwardMovingAverage( power )
 
+# Calculate running normalized power and TSS.
+norm_power  = np.zeros(nScans)
+TSS         = np.zeros(nScans)
+for i in range(1,nScans):
+    norm_power[i] = np.average( p30[:i]**4 )**(0.25)
+    TSS[i] = time_ci[i]/36*(norm_power[i]/FTP)**2
 
 #
 # simulate the heart rate
 #
 from scipy.integrate import odeint
 SampleRate  = 1.0
-k           = 0.77  # BPM/w
+k           = 0.77  # BPM/W (deprecated)
 tau         = 63.0  # seconds
+HRDriftRate = 0.08  # 0.17 # BPM/TSS
 PwHRTable   = np.array( [
                 [    0    ,  0.50*FTHR ],   # Active resting HR
                 [ 0.55*FTP,  0.70*FTHR ],   # Recovery
@@ -171,7 +181,8 @@ PwHRTable   = np.array( [
 def heartrate_dot(HR,t):
     i = min( int(t * SampleRate), nScans-1 )
     HRp = np.interp( power[i], PwHRTable[:,0], PwHRTable[:,1] )
-    return ( HRp - HR ) / tau
+    HRt = HRp + HRDriftRate*TSS[i]
+    return ( HRt - HR ) / tau
 heart_rate_sim = odeint( heartrate_dot, heart_rate_ci[0], time_ci )
 
 

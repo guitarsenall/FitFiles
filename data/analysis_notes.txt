@@ -4152,7 +4152,49 @@ files from my Garmin Edge 810.
             2nd interval, then in line later.
             Commit & push
 
-
+                                        Saturday, December 29, 2018 (9:06 AM)
+    *   Model cardiac drift as a linear increase in HR to TSS.
+        -   Calculate running TSS.
+                TSS[i] = seconds/36*(norm_power[i]/FTP)**2
+            I will need a running normalized power.
+                norm_power[i] = average( p30[:i]**4 )**(0.25)
+            where p30 has already been calculated via
+                from endurance_summary import BackwardMovingAverage
+                p30 = BackwardMovingAverage( power )
+            with a default window of 30 seconds.
+        -   Preliminary parameter estimate: The long threshold interval
+            from 9/3/18 is worth 104 TSS with a HR increase of 18 BPM,
+            which gives,
+                HRDriftRate = 0.17 # BPM/TSS
+            So the model becomes,
+                def heartrate_dot(HR,t):
+                    i = min( int(t * SampleRate), nScans-1 )
+                    HRp = np.interp( power[i], PwHRTable[:,0], PwHRTable[:,1] )
+                    HRt = HRp + HRDriftRate*TSS[i]
+                    return ( HRt - HR ) / tau
+                                        Sunday, December 30, 2018 (8:36 PM)
+        -   Try it on the threshold effort.
+                see pwhr_transferfunction_e.png
+            Compare with pwhr_transferfunction_c.png. Cardiac drift looks great,
+            though the model overpredicts the HR by about 5 BPM.
+        -   Endurance ride, 12/21. Cardiac drift is less;
+            reduce to 0.08 BPM/TSS.
+                see pwhr_transferfunction_f.png
+            HR was clearly lower after my break! Interesting things can happen.
+            Sure enough, this ride gets Pw:HR = -0.1 for the active laps.
+        -   A more normal one (12/17).
+                see pwhr_transferfunction_g.png
+            I was quite strong that day and achieved NP of 199W for the inner
+            laps.
+        -   Another, 10/19.
+                see pwhr_transferfunction_h.png
+            Overpredicted again. Hmmm
+            I begin to think my model could be improved--especially FTHR
+            is probably lower...usually. Perhaps a 2-parameter optimization
+            on FTHR and HRDriftRate? I could iterate over multiple files
+            (as with the power balance analysis), find the optimum values
+            for each, and print out a table.
+            Commit & push
 
 
 d:
