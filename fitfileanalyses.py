@@ -134,10 +134,12 @@ analyses_labels = [ 'Endurance Laps',
                     'Zone Detection',
                     'Interval Laps',
                     'Heart Rate',
+                    'Pw-HR Simulation',
                     'Compare Two Powers']
 from endurance_summary import endurance_summary
 from zone_detect import zone_detect
 from plot_heartrate import plot_heartrate
+from pwhr_transfer_function import pwhr_transfer_function
 from interval_laps import interval_laps
 
 class MyLaunchButton(wx.Button):
@@ -206,6 +208,19 @@ class MyLaunchButton(wx.Button):
             print >> OutputTextCtl, ''
             try:
                 PlotCloserFcn = plot_heartrate( FITFileName, ConfigFile,
+                                                OutStream=OutputTextCtl )
+                self.plot_closer_fcns.append(PlotCloserFcn)
+            except IOError, ErrorObj:
+                dlg = wx.MessageDialog(win, ErrorObj.message, AnalysesChoice,
+                            wx.OK | wx.ICON_INFORMATION )
+                dlg.ShowModal()
+                dlg.Destroy()
+
+        elif AnalysesChoice == 'Pw-HR Simulation':
+            print 'Running Pw-HR Simulation on ' + FITFileName
+            print >> OutputTextCtl, ''
+            try:
+                PlotCloserFcn = pwhr_transfer_function( FITFileName, ConfigFile,
                                                 OutStream=OutputTextCtl )
                 self.plot_closer_fcns.append(PlotCloserFcn)
             except IOError, ErrorObj:

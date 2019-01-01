@@ -12,5 +12,7 @@ EndurancePower  : 175.0     ; watts
 ThresholdPower  : 250.0     ; watts
 EnduranceHR     : 140.0     ; BPM
 ThresholdHR     : 170.0     ; BPM
+HRTimeConstant  :  63.0     ; seconds
+HRDriftRate     :  0.17     ; BPM/TSS
 
 

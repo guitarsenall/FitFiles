@@ -4196,6 +4196,12 @@ files from my Garmin Edge 810.
             for each, and print out a table.
             Commit & push
 
+                                            Tuesday, January 1, 2019 (8:27 AM)
+    *   Add pwhr_transfer_function.py to fitfileanalyses.py as an analysis.
+        -   Move the time constant and drift rate to the user configuration
+            file.
+                HRTimeConstant  :  63.0     ; seconds
+                HRDriftRate     :  0.17     ; BPM/TSS
 
 d:
 cd D:\Users\Owner\Documents\OneDrive\2018\notesparser\wxPython-demo-4.0.3\demo
