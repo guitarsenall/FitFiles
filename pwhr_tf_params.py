@@ -68,10 +68,10 @@ print >> OutStream, 'EnduranceHR    : ', EnduranceHR
 print >> OutStream, 'ThresholdHR    : ', ThresholdHR
 print >> OutStream, 'HRTimeConstant : ', HRTimeConstant
 print >> OutStream, 'HRDriftRate    : ', HRDriftRate
+FTP = ThresholdPower
 
 '''
 # power zones from "Cyclist's Training Bible", 5th ed., by Joe Friel, p51
-FTP = ThresholdPower
 pZones  = { 1   : [    0    ,   0.55*FTP ],
             2   : [ 0.55*FTP,   0.75*FTP ],
             3   : [ 0.75*FTP,   0.90*FTP ],
@@ -116,31 +116,20 @@ from activity_tools import extract_activity_signals
 from endurance_summary import BackwardMovingAverage
 from scipy.integrate import odeint
 from scipy.optimize import minimize
+import numpy as np
 
 required_signals    = [ 'power',
                         'heart_rate' ]
 
 SampleRate  = 1.0
 
-def heartrate_dot(HR,t):
-    ''' Heart rate model. The derivative is proportional to the difference
-        between the HR target and the current heartrate
+
+def heartrate_dot(HR, t, FTHR, HRTimeConstant, HRDriftRate):
+    ''' Heart rate model. The derivative, the return value, is
+        proportional to the difference between the HR target and
+        the current heartrate.
     '''
-    i = min( int(t * SampleRate), nScans-1 )
-    HRp = np.interp( power[i], PwHRTable[:,0], PwHRTable[:,1] )
-    HRt = HRp + HRDriftRate*TSS[i]
-    return ( HRt - HR ) / HRTimeConstant
-
-
-
-def HRSimulationError(params):
-    ''' A function passed to scipy.optimize.minimize() that
-        computes and returns the error in simulating heart rate
-        based on the three parameters passed to it.
-    '''
-    FTHR            = params[0]
-    HRTimeConstant  = params[1]
-    HRDriftRate     = params[2]
+    #print '    heartrate_dot called'
     PwHRTable   = np.array( [
                     [    0    ,  0.50*FTHR ],   # Active resting HR
                     [ 0.55*FTP,  0.70*FTHR ],   # Recovery
@@ -148,10 +137,29 @@ def HRSimulationError(params):
                     [ 1.00*FTP,       FTHR ],   # Functional threshold
                     [ 1.20*FTP,  1.03*FTHR ],   # Aerobic capacity
                     [ 1.50*FTP,  1.06*FTHR ]])  # Max HR
-    heart_rate_sim = odeint( heartrate_dot, heart_rate_ci[0], time_ci )
+    i = min( int(t * SampleRate), nScans-1 )
+    HRp = np.interp( power[i], PwHRTable[:,0], PwHRTable[:,1] )
+    HRt = HRp + HRDriftRate*TSS[i]
+    return ( HRt - HR ) / HRTimeConstant
+
+
+def HRSimulationError(params):
+    ''' A function passed to scipy.optimize.minimize() that
+        computes and returns the error in simulating heart rate
+        based on the three parameters passed to it.
+            FTHR            = params[0]
+            HRTimeConstant  = params[1]
+            HRDriftRate     = params[2]
+    '''
+    args            = tuple(params)
+    heart_rate_sim = odeint( heartrate_dot, heart_rate_ci[0], time_ci,
+                             args=args )
     err     = heart_rate_sim - heart_rate_ci
-    RMSError    = sqrt(average( err**2 ))
+    RMSError    = np.sqrt(np.average( err**2 ))
+    print 'HRSimulationError called with %10i, %10.1f, %10.3f -> %10.1f' \
+            % (params[0], params[1], params[2], RMSError)
     return RMSError
+
 
 print >> OutStream, 'Optimization Results:'
 names1  = [ 'FIT File', 'FTHR (BPM)',  'tau (sec)', 'HRDriftRate' ]
@@ -176,20 +184,19 @@ for FitFile in fit_files:
             print >> OutStream, '   ' + s
         raise IOError(msg)
 
-    # get the FTP
-    FTP = 250.0 #assume if not present
-    records = activity.get_records_by_type('zones_target')
-    for record in records:
-        valid_field_names = record.get_valid_field_names()
-        for field_name in valid_field_names:
-            if 'functional_threshold_power' in field_name:
-                field_data = record.get_data(field_name)
-                field_units = record.get_units(field_name)
-                print >> OutStream, 'FTP setting = %i %s' % (field_data, field_units)
-                FTP = field_data
+#    # get the FTP
+#    FTP = 250.0 #assume if not present
+#    records = activity.get_records_by_type('zones_target')
+#    for record in records:
+#        valid_field_names = record.get_valid_field_names()
+#        for field_name in valid_field_names:
+#            if 'functional_threshold_power' in field_name:
+#                field_data = record.get_data(field_name)
+#                field_units = record.get_units(field_name)
+#                #print >> OutStream, 'FTP setting = %i %s' % (field_data, field_units)
+#                FTP = field_data
 
     # resample to constant-increment (1 Hz) with zeros at missing samples
-    import numpy as np
     time_idx                = signals['time'].astype('int')
     power_vi                = signals['power']
     heart_rate_vi           = signals['heart_rate']

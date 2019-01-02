@@ -1,0 +1,224 @@
+*** Python 2.7.14 (v2.7.14:84471935ed, Sep 16 2017, 20:19:30) [MSC v.1500 32 bit (Intel)] on win32. ***
+>>>
+*** Remote Interpreter Reinitialized  ***
+>>>
+Command Line : D:\Users\Owner\Documents\OneDrive\bike\activities\will\2018-12-10-17-28-24.fit
+ConfigFile:
+S:\will\documents\OneDrive\bike\activities\will\\\cyclingconfig_will.txt
+reading config file S:\will\documents\OneDrive\bike\activities\will\\\cyclingconfig_will.txt
+WeightEntry    :  190.0
+WeightToKg     :  0.45359237
+weight         :  86.1825503
+age            :  52.0
+EndurancePower :  175.0
+ThresholdPower :  250.0
+EnduranceHR    :  140.0
+ThresholdHR    :  170.0
+HRTimeConstant :  63.0
+HRDriftRate    :  0.17
+executing Wills version of profile.def
+Optimization Results:
+            FIT File:FTHR (BPM) tau (sec)HRDriftRate
+HRSimulationError called with        170,       63.0,      0.170 ->       23.3
+HRSimulationError called with        170,       63.0,      0.170 ->       23.3
+HRSimulationError called with        170,       63.0,      0.170 ->       23.3
+HRSimulationError called with        170,       63.0,      0.170 ->       23.3
+HRSimulationError called with        170,       63.0,      0.170 ->       23.3
+HRSimulationError called with        136,      107.6,      0.000 ->       43.6
+HRSimulationError called with        153,       85.3,      0.085 ->       31.1
+HRSimulationError called with        161,       74.1,      0.128 ->       26.3
+HRSimulationError called with        165,       68.6,      0.149 ->       24.5
+HRSimulationError called with        167,       65.8,      0.159 ->       23.8
+HRSimulationError called with        168,       64.4,      0.165 ->       23.6
+HRSimulationError called with        169,       63.7,      0.167 ->       23.4
+HRSimulationError called with        169,       63.3,      0.169 ->       23.4
+HRSimulationError called with        169,       63.2,      0.169 ->       23.4
+HRSimulationError called with        169,       63.1,      0.170 ->       23.3
+HRSimulationError called with        169,       63.0,      0.170 ->       23.3
+HRSimulationError called with        169,       63.0,      0.170 ->       23.3
+HRSimulationError called with        169,       63.0,      0.170 ->       23.3
+HRSimulationError called with        169,       63.0,      0.170 ->       23.3
+HRSimulationError called with        169,       63.0,      0.170 ->       23.3
+HRSimulationError called with        200,       30.0,      0.000 ->       28.7
+HRSimulationError called with        184,       46.5,      0.085 ->       24.1
+HRSimulationError called with        177,       54.8,      0.127 ->       23.2
+HRSimulationError called with        173,       58.9,      0.149 ->       23.2
+HRSimulationError called with        171,       61.0,      0.159 ->       23.2
+HRSimulationError called with        170,       62.0,      0.165 ->       23.3
+HRSimulationError called with        170,       62.5,      0.167 ->       23.3
+HRSimulationError called with        170,       62.8,      0.169 ->       23.3
+HRSimulationError called with        170,       62.9,      0.169 ->       23.3
+HRSimulationError called with        170,       63.0,      0.170 ->       23.3
+HRSimulationError called with        169,       63.0,      0.170 ->       23.3
+HRSimulationError called with        169,       63.0,      0.170 ->       23.3
+HRSimulationError called with        169,       63.0,      0.170 ->       23.3
+HRSimulationError called with        169,       63.0,      0.170 ->       23.3
+HRSimulationError called with        169,       63.0,      0.170 ->       23.3
+HRSimulationError called with        200,       30.0,      0.500 ->       38.2
+HRSimulationError called with        184,       46.5,      0.335 ->       25.7
+HRSimulationError called with        177,       54.8,      0.252 ->       22.8
+HRSimulationError called with        173,       58.9,      0.211 ->       22.6
+HRSimulationError called with        171,       60.9,      0.190 ->       22.9
+HRSimulationError called with        170,       62.0,      0.180 ->       23.1
+HRSimulationError called with        170,       62.5,      0.175 ->       23.2
+HRSimulationError called with        170,       62.8,      0.172 ->       23.3
+HRSimulationError called with        170,       62.9,      0.171 ->       23.3
+HRSimulationError called with        170,       62.9,      0.170 ->       23.3
+HRSimulationError called with        170,       63.0,      0.170 ->       23.3
+HRSimulationError called with        170,       63.0,      0.170 ->       23.3
+HRSimulationError called with        170,       63.0,      0.170 ->       23.3
+HRSimulationError called with        170,       63.0,      0.170 ->       23.3
+HRSimulationError called with        170,       63.0,      0.170 ->       23.3
+HRSimulationError called with        189,       30.5,      0.000 ->       26.4
+HRSimulationError called with        179,       46.7,      0.085 ->       24.0
+HRSimulationError called with        174,       54.9,      0.127 ->       23.5
+HRSimulationError called with        172,       58.9,      0.149 ->       23.4
+HRSimulationError called with        171,       60.9,      0.159 ->       23.3
+HRSimulationError called with        170,       62.0,      0.165 ->       23.3
+HRSimulationError called with        170,       62.5,      0.167 ->       23.3
+HRSimulationError called with        170,       62.7,      0.169 ->       23.3
+HRSimulationError called with        170,       62.9,      0.169 ->       23.3
+HRSimulationError called with        170,       62.9,      0.170 ->       23.3
+HRSimulationError called with        170,       62.9,      0.170 ->       23.3
+HRSimulationError called with        170,       62.9,      0.170 ->       23.3
+HRSimulationError called with        170,       62.9,      0.170 ->       23.3
+HRSimulationError called with        170,       62.9,      0.170 ->       23.3
+HRSimulationError called with        170,       62.9,      0.170 ->       23.3
+HRSimulationError called with        173,      118.8,      0.000 ->       23.6
+HRSimulationError called with        172,       90.9,      0.085 ->       23.2
+HRSimulationError called with        171,       76.9,      0.127 ->       23.2
+HRSimulationError called with        170,       69.9,      0.149 ->       23.2
+HRSimulationError called with        170,       66.4,      0.159 ->       23.3
+HRSimulationError called with        170,       64.7,      0.165 ->       23.3
+HRSimulationError called with        170,       63.8,      0.167 ->       23.3
+HRSimulationError called with        170,       63.4,      0.168 ->       23.3
+HRSimulationError called with        170,       63.2,      0.169 ->       23.3
+HRSimulationError called with        170,       63.1,      0.169 ->       23.3
+HRSimulationError called with        170,       63.0,      0.170 ->       23.3
+HRSimulationError called with        170,       63.0,      0.170 ->       23.3
+HRSimulationError called with        170,       63.0,      0.170 ->       23.3
+HRSimulationError called with        170,       63.0,      0.170 ->       23.3
+HRSimulationError called with        170,       63.0,      0.170 ->       23.3
+HRSimulationError called with        170,       63.2,      0.205 ->       22.9
+HRSimulationError called with        170,       63.1,      0.187 ->       23.1
+HRSimulationError called with        170,       63.1,      0.178 ->       23.2
+HRSimulationError called with        170,       63.0,      0.174 ->       23.3
+HRSimulationError called with        170,       63.0,      0.172 ->       23.3
+HRSimulationError called with        170,       63.0,      0.171 ->       23.3
+HRSimulationError called with        170,       63.0,      0.170 ->       23.3
+HRSimulationError called with        170,       63.0,      0.170 ->       23.3
+HRSimulationError called with        170,       63.0,      0.170 ->       23.3
+HRSimulationError called with        170,       63.0,      0.170 ->       23.3
+HRSimulationError called with        170,       63.0,      0.170 ->       23.3
+HRSimulationError called with        170,       63.0,      0.170 ->       23.3
+HRSimulationError called with        170,       63.0,      0.170 ->       23.3
+HRSimulationError called with        170,       63.0,      0.170 ->       23.3
+HRSimulationError called with        170,       63.0,      0.170 ->       23.3
+HRSimulationError called with        169,       62.6,      0.498 ->       23.2
+HRSimulationError called with        170,       62.8,      0.334 ->       22.2
+HRSimulationError called with        170,       62.9,      0.252 ->       22.5
+HRSimulationError called with        170,       63.0,      0.211 ->       22.8
+HRSimulationError called with        170,       63.0,      0.190 ->       23.1
+HRSimulationError called with        170,       63.0,      0.180 ->       23.2
+HRSimulationError called with        170,       63.0,      0.175 ->       23.3
+HRSimulationError called with        170,       63.0,      0.172 ->       23.3
+HRSimulationError called with        170,       63.0,      0.171 ->       23.3
+HRSimulationError called with        170,       63.0,      0.170 ->       23.3
+HRSimulationError called with        170,       63.0,      0.170 ->       23.3
+HRSimulationError called with        170,       63.0,      0.170 ->       23.3
+HRSimulationError called with        170,       63.0,      0.170 ->       23.3
+HRSimulationError called with        170,       63.0,      0.170 ->       23.3
+HRSimulationError called with        170,       63.0,      0.170 ->       23.3
+HRSimulationError called with        169,       63.1,      0.103 ->       24.4
+HRSimulationError called with        169,       63.0,      0.137 ->       23.8
+HRSimulationError called with        170,       63.0,      0.153 ->       23.6
+HRSimulationError called with        170,       63.0,      0.162 ->       23.4
+HRSimulationError called with        170,       63.0,      0.166 ->       23.4
+HRSimulationError called with        170,       63.0,      0.168 ->       23.4
+HRSimulationError called with        170,       63.0,      0.169 ->       23.3
+HRSimulationError called with        170,       63.0,      0.169 ->       23.3
+HRSimulationError called with        170,       63.0,      0.170 ->       23.3
+HRSimulationError called with        170,       63.0,      0.170 ->       23.3
+HRSimulationError called with        170,       63.0,      0.170 ->       23.3
+HRSimulationError called with        170,       63.0,      0.170 ->       23.3
+HRSimulationError called with        170,       63.0,      0.170 ->       23.3
+HRSimulationError called with        170,       63.0,      0.170 ->       23.3
+HRSimulationError called with        170,       63.0,      0.170 ->       23.3
+HRSimulationError called with        170,       63.0,      0.169 ->       23.3
+HRSimulationError called with        170,       63.0,      0.170 ->       23.3
+HRSimulationError called with        170,       63.0,      0.170 ->       23.3
+HRSimulationError called with        170,       63.0,      0.170 ->       23.3
+HRSimulationError called with        170,       63.0,      0.170 ->       23.3
+HRSimulationError called with        170,       63.0,      0.170 ->       23.3
+HRSimulationError called with        170,       63.0,      0.170 ->       23.3
+HRSimulationError called with        170,       63.0,      0.170 ->       23.3
+HRSimulationError called with        170,       63.0,      0.170 ->       23.3
+HRSimulationError called with        170,       63.0,      0.170 ->       23.3
+HRSimulationError called with        170,       63.0,      0.170 ->       23.3
+
+2018-12-10-17-28-24.fit:       170      63.0     0.170
+
+HRSimulationError called with        170,       63.0,      0.170 ->       33.6
+HRSimulationError called with        170,       63.0,      0.170 ->       33.6
+HRSimulationError called with        170,       63.0,      0.170 ->       33.6
+HRSimulationError called with        170,       63.0,      0.170 ->       33.6
+HRSimulationError called with        170,       63.0,      0.170 ->       33.6
+HRSimulationError called with        199,      119.6,      0.000 ->       42.0
+HRSimulationError called with        184,       91.3,      0.085 ->       37.1
+HRSimulationError called with        177,       77.2,      0.128 ->       35.2
+HRSimulationError called with        173,       70.1,      0.149 ->       34.3
+HRSimulationError called with        171,       66.5,      0.159 ->       33.9
+HRSimulationError called with        170,       64.8,      0.165 ->       33.8
+HRSimulationError called with        170,       63.9,      0.167 ->       33.7
+HRSimulationError called with        170,       63.4,      0.169 ->       33.6
+HRSimulationError called with        170,       63.2,      0.169 ->       33.6
+HRSimulationError called with        170,       63.1,      0.170 ->       33.6
+HRSimulationError called with        170,       63.1,      0.170 ->       33.6
+HRSimulationError called with        170,       63.1,      0.170 ->       33.6
+HRSimulationError called with        170,       63.1,      0.170 ->       33.6
+HRSimulationError called with        170,       63.1,      0.170 ->       33.6
+HRSimulationError called with        170,       63.1,      0.170 ->       33.6
+HRSimulationError called with        132,      120.0,      0.489 ->       33.8
+HRSimulationError called with        151,       91.5,      0.329 ->       32.2
+HRSimulationError called with        160,       77.3,      0.250 ->       32.5
+HRSimulationError called with        165,       70.2,      0.210 ->       33.0
+HRSimulationError called with        167,       66.6,      0.190 ->       33.2
+HRSimulationError called with        168,       64.8,      0.180 ->       33.4
+HRSimulationError called with        169,       63.9,      0.175 ->       33.5
+HRSimulationError called with        169,       63.5,      0.172 ->       33.5
+HRSimulationError called with        169,       63.3,      0.171 ->       33.6
+HRSimulationError called with        169,       63.2,      0.170 ->       33.6
+HRSimulationError called with        169,       63.1,      0.170 ->       33.6
+HRSimulationError called with        169,       63.1,      0.170 ->       33.6
+HRSimulationError called with        169,       63.1,      0.170 ->       33.6
+HRSimulationError called with        169,       63.1,      0.170 ->       33.6
+HRSimulationError called with        169,       63.1,      0.170 ->       33.6
+HRSimulationError called with        130,      120.0,      0.000 ->       45.7
+HRSimulationError called with        149,       91.6,      0.085 ->       32.7
+HRSimulationError called with        159,       77.3,      0.128 ->       31.0
+HRSimulationError called with        164,       70.2,      0.149 ->       31.8
+HRSimulationError called with        167,       66.7,      0.160 ->       32.6
+HRSimulationError called with        168,       64.9,      0.165 ->       33.0
+HRSimulationError called with        169,       64.0,      0.167 ->       33.3
+HRSimulationError called with        169,       63.6,      0.169 ->       33.4
+HRSimulationError called with        169,       63.3,      0.169 ->       33.5
+HRSimulationError called with        169,       63.2,      0.170 ->       33.5
+HRSimulationError called with        169,       63.2,      0.170 ->       33.6
+HRSimulationError called with        169,       63.2,      0.170 ->       33.6
+HRSimulationError called with        169,       63.2,      0.170 ->       33.6
+HRSimulationError called with        169,       63.2,      0.170 ->       33.6
+HRSimulationError called with        169,       63.2,      0.170 ->       33.6
+2018-09-03-17-36-11.fit:       169      63.2     0.170
+Traceback (most recent call last):
+  File "D:\Users\Owner\Documents\OneDrive\2018\fitfiles\pwhr_tf_params.py", line 223, in <module>
+    res = minimize(HRSimulationError, x0, method='SLSQP', bounds=bnds)
+  File "C:\Python27\lib\site-packages\scipy\optimize\_minimize.py", line 495, in minimize
+    constraints, callback=callback, **options)
+  File "C:\Python27\lib\site-packages\scipy\optimize\slsqp.py", line 378, in _minimize_slsqp
+    fx = func(x)
+  File "C:\Python27\lib\site-packages\scipy\optimize\optimize.py", line 292, in function_wrapper
+    return function(*(wrapper_args + args))
+  File "D:\Users\Owner\Documents\OneDrive\2018\fitfiles\pwhr_tf_params.py", line 158, in HRSimulationError
+    RMSError    = np.sqrt(np.average( err**2 ))
+MemoryError
+>>>

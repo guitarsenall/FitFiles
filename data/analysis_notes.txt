@@ -4220,6 +4220,36 @@ files from my Garmin Edge 810.
             >   Somehow heartrate_dot cannot find PwHRTable as a global
                 variable. I may have to explicitly pass it in.
                 Commit & push.
+                Again, see,
+                        https://docs.scipy.org/doc/scipy/reference/generated
+                            /scipy.integrate.odeint.html
+                which has a great example showing the use of args to pass in
+                constants (which might be changing with time in my model).
+                This would look something like,
+                    heart_rate_sim = odeint(heartrate_dot,
+                                            heart_rate_ci[0],
+                                            time_ci,
+                                            args=(p1,p2,p3) )
+                where (p1,p2,p3) are the parameters.
+                Wait! My problem is that PwHRTable is defined within
+                HRSimulationError(). heartrate_dot() has no problem finding
+                SampleRate, nScans, or power. I'll have to think more
+                carefully about this.
+            >   HRSimulationError() gets called about every 4 seconds. Not
+                sure it's converging for the first file. Print some info to
+                watch.
+                    print 'HRSimulationError called with ' \
+                        + '%10i, %10.1f, %10.3f -> %10.1f' \
+                        % (params[0], params[1], params[2], RMSError)
+                12 minutes to solve the first file and another 8 minutes for
+                the second, both with little change in the parameters:
+                    2018-12-10-17-28-24.fit:       170      63.0     0.170
+                    2018-09-03-17-36-11.fit:       169      63.2     0.170
+                Then it died with a memory error.
+                Also, one of the points that went by was better than the
+                converged result:
+                    159,       77.3,      0.128 ->       31.0
+
 
 
 
