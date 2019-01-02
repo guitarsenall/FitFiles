@@ -4249,7 +4249,102 @@ files from my Garmin Edge 810.
                 Also, one of the points that went by was better than the
                 converged result:
                     159,       77.3,      0.128 ->       31.0
-
+                (see output.txt, which may change between commits.)
+                                        Wednesday, January 2, 2019 (7:39 AM)
+                :   Study memory errors
+                    #   I can measure the size of an object:
+                            >>> import sys
+                            >>> sys.getsizeof('hellow world')
+                            33
+                    #   I wonder about creating PwHRTable with every
+                        execution of heartrate_dot(). Try rearranging:
+                            def heartrate_dot(HR, t, FTHR, HRTimeConstant,
+                                            HRDriftRate):
+                                PwHRTable[0,1]  = 0.50*FTHR
+                                PwHRTable[1,1]  = 0.70*FTHR
+                                PwHRTable[2,1]  = 0.82*FTHR
+                                PwHRTable[3,1]  =      FTHR
+                                PwHRTable[4,1]  = 1.03*FTHR
+                                PwHRTable[5,1]  = 1.06*FTHR
+                                #print '    heartrate_dot called'
+                                i = min( int(t * SampleRate), nScans-1 )
+                                HRp = np.interp( power[i],
+                                                 PwHRTable[:,0],
+                                                 PwHRTable[:,1] )
+                                HRt = HRp + HRDriftRate*TSS[i]
+                                return ( HRt - HR ) / HRTimeConstant
+                        HRSimulationError() runs faster--about 3 seconds.
+                        python.exe begins at 33.3MB. But once in a while I see
+                        it jump briefly (240MB?) then return.
+                        2018-12-10-17-28-24.fit solved in 9 minutes.
+                        python.exe is now 37.0MB.
+                        2018-09-03-17-36-11.fit solved in 15 minutes (total).
+                        Sudden crash with memory error at line 164:
+                            RMSError    = np.sqrt(np.average( err**2 ))
+                        within HRSimulationError(). python.exe is 723.7MB
+                        all of a sudden.
+                        In the PyScripter variables tab, activity is red. Why?
+                    #   The error occurs on the first simulation iteration of
+                        2018-07-17-15-12-10.fit for which nScans is 9458.
+                    #   Now that I know where the error occurs, use a
+                        breakpoint within HRSimulationError() and debug:
+                            [Dbg]>>> sys.getsizeof(heart_rate_sim)
+                            75720
+                            [Dbg]>>> sys.getsizeof(err)
+                            715630168
+                        WHOA!!!
+                            [Dbg]>>> type(err)
+                            <type 'numpy.ndarray'>
+                            [Dbg]>>> err.size
+                            89453764
+                        This indicates 8 bytes per element (float).
+                            [Dbg]>>> err.shape
+                            (9458, 9458)
+                        OK, that looks bad.
+                            [Dbg]>>> heart_rate_sim.shape
+                            (9458, 1)
+                            [Dbg]>>> heart_rate_ci.shape
+                            (9458,)
+                        WELL!!! Can I remove the degenerate dimension?
+                        Found something:
+                                https://docs.scipy.org/doc/numpy-1.15.1
+                                    /reference/generated/numpy.squeeze.html
+                        Try it:
+                            [Dbg]>>> hrs = np.squeeze(heart_rate_sim)
+                            [Dbg]>>> hrs.shape
+                            (9458,)
+                            [Dbg]>>> err = hrs - heart_rate_ci
+                            [Dbg]>>> err.shape
+                            (9458,)
+                    #   Implement it:
+                            err = np.squeeze( heart_rate_sim ) \
+                                - np.squeeze( heart_rate_ci  )
+            >   Restart the simulation on desktop. Runs at same rate.
+                RMSError starts at 12.9 (rather than 23) indicating this
+                problem was plaguing the results all along.
+                Again, the first file solves in 10 minutes with,
+                    2018-12-10-17-28-24.fit:       170      63.1     0.171
+                that is, no change, though it finds better points.
+                I need to consider a different solver.
+                    2018-09-03-17-36-11.fit:       170      63.2     0.171
+                Simulation finished.
+                    2018-07-17-15-12-10.fit:       170      63.2     0.171
+                    2018-12-31-12-23-12.fit:       169      63.0     0.171
+                See output.txt.
+            >   Today's workout (2.0-hr endurance), 2019-01-02-12-50-40.fit,
+                clearly has a low HR:
+                    see pwhr_transferfunction_i.png
+                It will be a good test for the optimizer, which should find
+                a lower FTHR. Some points:
+                    FTHR        tau       drift       RMS err
+                    170,       63.0,      0.170 ->       24.6   (IG)
+                    150,       85.9,      0.085 ->       24.0
+                    160,       74.5,      0.127 ->       21.9
+                    165,       68.8,      0.148 ->       22.7
+                    167,       66.0,      0.159 ->       23.5
+                    170,       62.1,      0.005 ->       22.0
+                Even after finding these great points, it wastes A LOT of time
+                near the initial guess (IG) and ends up back there.
 
 
 
@@ -4317,6 +4412,7 @@ TO DO:
         -   Make measured HR an optional signal.
             >   The initial condition to odeint() should be heart_rate_ci[0]
                 if it is available, else 0.50*FTHR or PwHRTable[0,1] if not.
+        -   Print average HR for measured and simulated.
 
 
 

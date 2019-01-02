@@ -25,8 +25,9 @@ FilePath    = r'S:\will\documents\OneDrive\bike\activities\will\\'
 fit_files   = [ '2018-12-10-17-28-24.fit' ,   # VO2max intervals
                 '2018-09-03-17-36-11.fit' ,   # threshold effort
                 '2018-07-17-15-12-10.fit' ,   # threshold intervals
-                '2018-12-31-12-23-12.fit' ]   # endurance
-
+                '2018-12-31-12-23-12.fit' ,   # endurance
+                '2019-01-02-12-50-40.fit'     # endurance lo-HR
+              ][4:]
 
 #(FilePath, FitFileName) = os.path.split(FitFilePath)
 
@@ -68,7 +69,8 @@ print >> OutStream, 'EnduranceHR    : ', EnduranceHR
 print >> OutStream, 'ThresholdHR    : ', ThresholdHR
 print >> OutStream, 'HRTimeConstant : ', HRTimeConstant
 print >> OutStream, 'HRDriftRate    : ', HRDriftRate
-FTP = ThresholdPower
+FTP     = ThresholdPower
+FTHR    = ThresholdHR
 
 '''
 # power zones from "Cyclist's Training Bible", 5th ed., by Joe Friel, p51
@@ -81,7 +83,6 @@ pZones  = { 1   : [    0    ,   0.55*FTP ],
             7   : [ 1.50*FTP,   2.50*FTP ]}
 
 # heart-rate zones from "Cyclist's Training Bible" 5th ed. by Joe Friel, p50
-FTHR = ThresholdHR
 hZones  = { 1   : [     0    ,   0.82*FTHR ],  # 1
             2   : [ 0.82*FTHR,   0.89*FTHR ],  # 2
             3   : [ 0.89*FTHR,   0.94*FTHR ],  # 3
@@ -123,20 +124,26 @@ required_signals    = [ 'power',
 
 SampleRate  = 1.0
 
+PwHRTable   = np.array( [
+                [    0    ,  0.50*FTHR ],   # Active resting HR
+                [ 0.55*FTP,  0.70*FTHR ],   # Recovery
+                [ 0.70*FTP,  0.82*FTHR ],   # Aerobic threshold
+                [ 1.00*FTP,       FTHR ],   # Functional threshold
+                [ 1.20*FTP,  1.03*FTHR ],   # Aerobic capacity
+                [ 1.50*FTP,  1.06*FTHR ]])  # Max HR
 
 def heartrate_dot(HR, t, FTHR, HRTimeConstant, HRDriftRate):
     ''' Heart rate model. The derivative, the return value, is
         proportional to the difference between the HR target and
         the current heartrate.
     '''
+    PwHRTable[0,1]  = 0.50*FTHR     # Active resting HR
+    PwHRTable[1,1]  = 0.70*FTHR     # Recovery
+    PwHRTable[2,1]  = 0.82*FTHR     # Aerobic threshold
+    PwHRTable[3,1]  =      FTHR     # Functional threshold
+    PwHRTable[4,1]  = 1.03*FTHR     # Aerobic capacity
+    PwHRTable[5,1]  = 1.06*FTHR     # Max HR
     #print '    heartrate_dot called'
-    PwHRTable   = np.array( [
-                    [    0    ,  0.50*FTHR ],   # Active resting HR
-                    [ 0.55*FTP,  0.70*FTHR ],   # Recovery
-                    [ 0.70*FTP,  0.82*FTHR ],   # Aerobic threshold
-                    [ 1.00*FTP,       FTHR ],   # Functional threshold
-                    [ 1.20*FTP,  1.03*FTHR ],   # Aerobic capacity
-                    [ 1.50*FTP,  1.06*FTHR ]])  # Max HR
     i = min( int(t * SampleRate), nScans-1 )
     HRp = np.interp( power[i], PwHRTable[:,0], PwHRTable[:,1] )
     HRt = HRp + HRDriftRate*TSS[i]
@@ -152,9 +159,12 @@ def HRSimulationError(params):
             HRDriftRate     = params[2]
     '''
     args            = tuple(params)
-    heart_rate_sim = odeint( heartrate_dot, heart_rate_ci[0], time_ci,
-                             args=args )
-    err     = heart_rate_sim - heart_rate_ci
+    heart_rate_sim  = odeint( heartrate_dot,
+                              heart_rate_ci[0],
+                              time_ci,
+                              args=args )
+    err     = np.squeeze( heart_rate_sim ) \
+            - np.squeeze( heart_rate_ci  )
     RMSError    = np.sqrt(np.average( err**2 ))
     print 'HRSimulationError called with %10i, %10.1f, %10.3f -> %10.1f' \
             % (params[0], params[1], params[2], RMSError)
@@ -168,9 +178,13 @@ print >> OutStream, fmt % tuple(names1)
 
 for FitFile in fit_files:
 
+    print >> OutStream, '#################################################'
+    print >> OutStream, '###%s###' % FitFile.center(43)
+    print >> OutStream, '#################################################'
+
     # get the signals
     FitFilePath = FilePath + FitFile
-    activity = Activity(FitFilePath)
+    activity    = Activity(FitFilePath)
     signals     = extract_activity_signals(activity, resample='existing')
 
     if not all( s in signals.keys() for s in required_signals ):
