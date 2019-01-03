@@ -4484,6 +4484,22 @@ files from my Garmin Edge 810.
             my HR artificially (i.e., not related to the power). Another
             discrepancy occurs during breaks when measured HR is zero.
             Perhaps I should fill these points with a finite value?
+        -   Run on all five files (output.txt).
+                        file                  FTHR      tau  HRDriftRate
+                2018-12-10-17-28-24.fit:       176     143.1   0.297153
+                2018-09-03-17-36-11.fit:       157      68.3   0.173895
+                2018-07-17-15-12-10.fit:       180      47.6  -0.118702
+                2018-12-31-12-23-12.fit:       167      38.9   0.199545
+                2019-01-02-12-50-40.fit:       160      39.7   0.104043
+            >   What is the deal with 2018-07-17-15-12-10.fit?
+                    see pwhr_tf_params_b.png
+                Threshold intervals.
+                The file has FTP=270, which was probably high back then.
+                I don't see the reason for the negative HRDriftRate.
+                I wonder if it is because of the zeros during the breaks.
+                I need to find a way to eliminate these from the RMSError
+                calculation.
+            >   commit & push
 
 
 
@@ -4551,7 +4567,9 @@ TO DO:
         -   Make measured HR an optional signal.
             >   The initial condition to odeint() should be heart_rate_ci[0]
                 if it is available, else 0.50*FTHR or PwHRTable[0,1] if not.
-
+    *   pwhr_tf_params.py
+        -   eliminate missing HR points (zeros) from the RMSError
+            calculation.
 
 
 D:\Users\Owner\Documents\OneDrive\2018\fitfiles\cyclingconfig_will.txt

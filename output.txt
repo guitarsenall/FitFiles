@@ -20,6 +20,344 @@ executing Wills version of profile.def
 Optimization Results:
             FIT File:     FTHR (BPM)      tau (sec)   sHRDriftRate
 #################################################
+###          2018-12-10-17-28-24.fit          ###
+#################################################
+HRSimulationError called with        170,       63.0,    170.000 ->     12.895
+HRSimulationError called with        178,       63.0,    170.000 ->     10.223
+HRSimulationError called with        170,       66.2,    170.000 ->     12.742
+HRSimulationError called with        170,       63.0,    178.500 ->     12.629
+HRSimulationError called with        175,       65.1,    175.667 ->     10.493
+HRSimulationError called with        179,       61.2,    179.444 ->     10.142
+HRSimulationError called with        184,       58.8,    184.167 ->     10.807
+HRSimulationError called with        185,       63.2,    171.574 ->     10.811
+HRSimulationError called with        181,       63.2,    173.306 ->     10.094
+HRSimulationError called with        184,       59.8,    172.833 ->     10.722
+HRSimulationError called with        177,       63.8,    174.958 ->     10.172
+HRSimulationError called with        180,       62.5,    181.806 ->     10.026
+HRSimulationError called with        182,       62.2,    187.708 ->     10.107
+HRSimulationError called with        183,       60.8,    181.412 ->     10.513
+HRSimulationError called with        179,       63.0,    176.572 ->     10.049
+HRSimulationError called with        181,       64.5,    175.011 ->      9.986
+HRSimulationError called with        183,       66.2,    172.794 ->     10.014
+HRSimulationError called with        179,       63.5,    182.287 ->      9.924
+HRSimulationError called with        178,       63.7,    186.777 ->      9.910
+HRSimulationError called with        181,       64.1,    185.824 ->      9.897
+HRSimulationError called with        182,       64.6,    190.450 ->      9.983
+HRSimulationError called with        180,       65.8,    183.269 ->      9.734
+HRSimulationError called with        179,       67.4,    184.001 ->      9.608
+HRSimulationError called with        177,       65.6,    196.057 ->      9.670
+HRSimulationError called with        181,       67.7,    190.477 ->      9.576
+HRSimulationError called with        182,       69.7,    192.327 ->      9.610
+HRSimulationError called with        177,       69.7,    194.532 ->      9.425
+HRSimulationError called with        176,       72.5,    198.887 ->      9.466
+HRSimulationError called with        181,       71.0,    183.283 ->      9.420
+HRSimulationError called with        183,       73.6,    176.896 ->      9.484
+HRSimulationError called with        180,       71.5,    194.861 ->      9.236
+HRSimulationError called with        180,       73.6,    200.292 ->      9.084
+HRSimulationError called with        178,       75.1,    194.928 ->      9.036
+HRSimulationError called with        177,       78.8,    197.153 ->      8.935
+HRSimulationError called with        181,       79.2,    192.620 ->      8.926
+HRSimulationError called with        183,       83.9,    191.663 ->      9.048
+HRSimulationError called with        178,       83.4,    210.093 ->      8.461
+HRSimulationError called with        177,       89.7,    223.498 ->      8.155
+HRSimulationError called with        177,       91.5,    208.556 ->      8.332
+HRSimulationError called with        179,       94.7,    219.296 ->      7.990
+HRSimulationError called with        181,      102.7,    230.367 ->      7.893
+HRSimulationError called with        175,      110.1,    248.994 ->      7.675
+HRSimulationError called with        171,      125.5,    277.181 ->      8.017
+HRSimulationError called with        178,      110.1,    260.017 ->      7.422
+HRSimulationError called with        179,      119.4,    285.748 ->      7.546
+HRSimulationError called with        179,      125.6,    269.420 ->      7.333
+HRSimulationError called with        180,      143.6,    292.382 ->      7.651
+HRSimulationError called with        174,      127.8,    288.587 ->      7.259
+HRSimulationError called with        170,      140.4,    317.698 ->      7.771
+HRSimulationError called with        179,      132.3,    296.356 ->      7.598
+HRSimulationError called with        178,      126.7,    284.515 ->      7.290
+HRSimulationError called with        176,      143.3,    301.665 ->      7.067
+HRSimulationError called with        174,      159.9,    322.489 ->      7.160
+HRSimulationError called with        173,      139.6,    313.758 ->      7.244
+HRSimulationError called with        170,      147.1,    318.159 ->      7.871
+HRSimulationError called with        176,      131.8,    292.926 ->      7.101
+HRSimulationError called with        176,      148.7,    316.979 ->      7.161
+HRSimulationError called with        179,      142.9,    293.955 ->      7.440
+HRSimulationError called with        174,      140.5,    308.808 ->      7.108
+HRSimulationError called with        175,      128.4,    285.287 ->      7.159
+HRSimulationError called with        175,      133.4,    293.210 ->      7.095
+HRSimulationError called with        177,      131.9,    283.060 ->      7.112
+HRSimulationError called with        175,      138.3,    302.371 ->      7.085
+HRSimulationError called with        174,      144.9,    305.238 ->      7.105
+HRSimulationError called with        176,      135.1,    296.004 ->      7.080
+HRSimulationError called with        176,      144.4,    306.817 ->      7.089
+HRSimulationError called with        176,      141.6,    303.415 ->      7.082
+HRSimulationError called with        176,      141.7,    298.352 ->      7.082
+HRSimulationError called with        176,      138.4,    293.933 ->      7.078
+HRSimulationError called with        175,      136.2,    296.049 ->      7.078
+HRSimulationError called with        176,      143.5,    298.427 ->      7.059
+HRSimulationError called with        176,      147.8,    299.639 ->      7.066
+HRSimulationError called with        175,      143.6,    303.495 ->      7.073
+HRSimulationError called with        176,      150.8,    306.343 ->      7.080
+HRSimulationError called with        175,      139.8,    298.622 ->      7.068
+HRSimulationError called with        176,      140.9,    295.648 ->      7.070
+HRSimulationError called with        176,      141.5,    297.610 ->      7.063
+HRSimulationError called with        176,      145.8,    299.846 ->      7.078
+HRSimulationError called with        176,      141.3,    298.928 ->      7.062
+HRSimulationError called with        176,      141.0,    294.978 ->      7.060
+HRSimulationError called with        176,      142.3,    297.279 ->      7.063
+HRSimulationError called with        176,      141.7,    297.527 ->      7.068
+HRSimulationError called with        176,      142.2,    296.703 ->      7.061
+HRSimulationError called with        176,      142.4,    298.678 ->      7.064
+HRSimulationError called with        176,      142.5,    298.019 ->      7.066
+HRSimulationError called with        176,      142.9,    297.853 ->      7.061
+HRSimulationError called with        176,      143.4,    296.645 ->      7.061
+HRSimulationError called with        176,      143.1,    297.153 ->      7.054
+HRSimulationError called with        176,      143.0,    297.002 ->      7.067
+HRSimulationError called with        176,      143.0,    297.641 ->      7.063
+HRSimulationError called with        176,      143.3,    297.790 ->      7.066
+HRSimulationError called with        176,      142.7,    296.928 ->      7.068
+HRSimulationError called with        176,      143.0,    297.503 ->      7.063
+2018-12-10-17-28-24.fit:       176     143.1   297.153
+ final_simplex: (array([[176.25754748, 143.14217216, 297.15285187],
+       [176.20121043, 143.03599449, 297.50310154],
+       [176.24966257, 143.34003505, 297.79006723],
+       [176.27006079, 142.69333089, 296.92786453]]), array([7.05356191, 7.06339933, 7.06606099, 7.06803978]))
+           fun: 7.053561912349416
+       message: 'Optimization terminated successfully.'
+          nfev: 93
+           nit: 48
+        status: 0
+       success: True
+             x: array([176.25754748, 143.14217216, 297.15285187])
+#################################################
+###          2018-09-03-17-36-11.fit          ###
+#################################################
+HRSimulationError called with        170,       63.0,    170.000 ->     12.614
+HRSimulationError called with        178,       63.0,    170.000 ->     19.039
+HRSimulationError called with        170,       66.2,    170.000 ->     12.493
+HRSimulationError called with        170,       63.0,    178.500 ->     12.943
+HRSimulationError called with        161,       65.1,    175.667 ->      8.093
+HRSimulationError called with        153,       66.1,    178.500 ->      8.750
+HRSimulationError called with        164,       66.5,    165.278 ->      9.005
+HRSimulationError called with        160,       68.8,    170.630 ->      7.695
+HRSimulationError called with        155,       71.8,    170.944 ->      7.831
+HRSimulationError called with        154,       67.5,    171.049 ->      8.531
+HRSimulationError called with        153,       67.8,    179.619 ->      8.548
+HRSimulationError called with        155,       67.5,    176.034 ->      7.763
+HRSimulationError called with        164,       66.8,    177.171 ->      9.256
+HRSimulationError called with        156,       67.3,    172.580 ->      7.721
+HRSimulationError called with        154,       70.6,    170.496 ->      8.525
+HRSimulationError called with        159,       66.5,    174.374 ->      7.637
+HRSimulationError called with        162,       67.6,    169.022 ->      8.107
+HRSimulationError called with        157,       67.5,    174.281 ->      7.567
+HRSimulationError called with        161,       67.9,    173.610 ->      8.000
+HRSimulationError called with        158,       67.5,    172.837 ->      7.569
+HRSimulationError called with        156,       65.5,    177.032 ->      7.764
+HRSimulationError called with        159,       68.0,    172.230 ->      7.576
+HRSimulationError called with        157,       68.8,    171.858 ->      7.646
+HRSimulationError called with        158,       67.1,    173.745 ->      7.561
+HRSimulationError called with        156,       66.7,    175.012 ->      7.664
+HRSimulationError called with        158,       67.7,    172.926 ->      7.541
+HRSimulationError called with        158,       67.4,    174.464 ->      7.530
+HRSimulationError called with        159,       67.3,    175.277 ->      7.545
+HRSimulationError called with        160,       67.2,    173.142 ->      7.703
+HRSimulationError called with        158,       67.4,    173.996 ->      7.533
+HRSimulationError called with        158,       67.9,    173.845 ->      7.512
+HRSimulationError called with        157,       68.3,    173.895 ->      7.507
+2018-09-03-17-36-11.fit:       157      68.3   173.895
+ final_simplex: (array([[157.88635074,  68.32747571, 173.89544396],
+       [158.84812955,  67.36220268, 174.4636898 ],
+       [158.18961952,  67.42907011, 173.99613582],
+       [158.81808954,  67.66247119, 172.92558973]]), array([7.50715142, 7.52956593, 7.53264518, 7.54141804]))
+           fun: 7.507151417215791
+       message: 'Optimization terminated successfully.'
+          nfev: 32
+           nit: 16
+        status: 0
+       success: True
+             x: array([157.88635074,  68.32747571, 173.89544396])
+#################################################
+###          2018-07-17-15-12-10.fit          ###
+#################################################
+HRSimulationError called with        170,       63.0,    170.000 ->     44.979
+HRSimulationError called with        178,       63.0,    170.000 ->     47.609
+HRSimulationError called with        170,       66.2,    170.000 ->     45.027
+HRSimulationError called with        170,       63.0,    178.500 ->     45.406
+HRSimulationError called with        161,       65.1,    175.667 ->     43.432
+HRSimulationError called with        153,       66.1,    178.500 ->     42.581
+HRSimulationError called with        158,       67.2,    167.167 ->     42.740
+HRSimulationError called with        151,       64.7,    173.778 ->     42.344
+HRSimulationError called with        141,       64.0,    175.667 ->     42.711
+HRSimulationError called with        138,       69.1,    176.296 ->     43.199
+HRSimulationError called with        146,       67.5,    174.722 ->     42.445
+HRSimulationError called with        141,       65.1,    184.167 ->     42.843
+HRSimulationError called with        154,       66.7,    171.417 ->     42.471
+HRSimulationError called with        148,       66.5,    168.111 ->     42.240
+HRSimulationError called with        145,       66.7,    162.917 ->     42.248
+HRSimulationError called with        142,       65.9,    172.991 ->     42.615
+HRSimulationError called with        151,       66.5,    171.810 ->     42.337
+HRSimulationError called with        154,       64.3,    167.744 ->     42.303
+HRSimulationError called with        151,       66.7,    164.666 ->     42.164
+HRSimulationError called with        151,       67.7,    160.110 ->     42.080
+HRSimulationError called with        151,       65.9,    158.833 ->     42.008
+HRSimulationError called with        151,       65.6,    152.344 ->     41.859
+HRSimulationError called with        146,       68.9,    152.633 ->     42.095
+HRSimulationError called with        151,       68.3,    141.947 ->     41.705
+HRSimulationError called with        153,       69.2,    128.864 ->     41.458
+HRSimulationError called with        157,       66.1,    141.579 ->     41.802
+HRSimulationError called with        156,       66.2,    121.749 ->     41.259
+HRSimulationError called with        158,       65.4,    102.568 ->     40.886
+HRSimulationError called with        161,       68.2,     96.330 ->     40.919
+HRSimulationError called with        157,       69.2,     76.929 ->     40.541
+HRSimulationError called with        157,       70.7,     44.605 ->     40.269
+HRSimulationError called with        165,       67.0,     33.471 ->     39.834
+HRSimulationError called with        171,       65.9,    -14.225 ->     39.310
+HRSimulationError called with        163,       66.4,     -7.698 ->     39.564
+HRSimulationError called with        169,       69.9,    -87.448 ->     39.303
+HRSimulationError called with        175,       72.2,   -182.456 ->     39.982
+HRSimulationError called with        178,       64.1,   -117.519 ->     38.769
+HRSimulationError called with        188,       60.8,   -198.580 ->     38.924
+HRSimulationError called with        182,       66.9,   -138.429 ->     38.780
+HRSimulationError called with        183,       68.0,   -214.705 ->     39.544
+HRSimulationError called with        174,       66.4,    -64.345 ->     38.930
+HRSimulationError called with        187,       61.7,   -126.081 ->     38.946
+HRSimulationError called with        182,       63.7,   -116.422 ->     38.776
+HRSimulationError called with        188,       63.4,   -183.902 ->     38.871
+HRSimulationError called with        185,       64.1,   -154.013 ->     38.772
+HRSimulationError called with        181,       61.1,   -120.207 ->     38.704
+HRSimulationError called with        180,       58.2,   -111.096 ->     38.688
+HRSimulationError called with        179,       60.6,   -138.662 ->     38.761
+HRSimulationError called with        174,       57.8,    -90.838 ->     38.796
+HRSimulationError called with        182,       62.6,   -138.219 ->     38.732
+HRSimulationError called with        183,       56.8,   -141.132 ->     38.682
+HRSimulationError called with        185,       53.2,   -152.939 ->     38.711
+HRSimulationError called with        184,       57.8,   -121.636 ->     38.760
+HRSimulationError called with        183,       58.5,   -125.892 ->     38.712
+HRSimulationError called with        182,       53.2,   -113.861 ->     38.692
+HRSimulationError called with        181,       53.6,   -118.167 ->     38.661
+HRSimulationError called with        180,       51.2,   -114.304 ->     38.651
+HRSimulationError called with        180,       57.7,   -130.494 ->     38.692
+HRSimulationError called with        181,       54.3,   -118.019 ->     38.668
+HRSimulationError called with        182,       50.0,   -137.875 ->     38.653
+HRSimulationError called with        179,       46.8,   -105.667 ->     38.645
+HRSimulationError called with        178,       41.8,    -87.934 ->     38.687
+HRSimulationError called with        180,       44.4,   -120.545 ->     38.643
+HRSimulationError called with        179,       39.4,   -121.808 ->     38.690
+HRSimulationError called with        176,       45.0,    -89.136 ->     38.668
+HRSimulationError called with        181,       48.7,   -125.690 ->     38.636
+HRSimulationError called with        180,       42.1,   -120.297 ->     38.645
+HRSimulationError called with        181,       43.3,   -138.688 ->     38.672
+HRSimulationError called with        180,       45.9,   -113.922 ->     38.637
+HRSimulationError called with        180,       50.6,   -119.808 ->     38.637
+HRSimulationError called with        181,       52.5,   -119.069 ->     38.647
+HRSimulationError called with        180,       46.4,   -120.176 ->     38.635
+HRSimulationError called with        181,       51.2,   -129.860 ->     38.645
+HRSimulationError called with        180,       47.3,   -117.907 ->     38.634
+HRSimulationError called with        181,       44.3,   -122.707 ->     38.643
+HRSimulationError called with        180,       49.0,   -120.533 ->     38.635
+HRSimulationError called with        179,       46.4,   -113.387 ->     38.637
+HRSimulationError called with        180,       48.1,   -122.614 ->     38.635
+HRSimulationError called with        180,       45.5,   -119.932 ->     38.637
+HRSimulationError called with        180,       48.1,   -120.382 ->     38.633
+HRSimulationError called with        181,       49.3,   -120.427 ->     38.637
+HRSimulationError called with        180,       47.1,   -120.238 ->     38.636
+HRSimulationError called with        180,       47.7,   -119.145 ->     38.634
+HRSimulationError called with        180,       48.1,   -121.498 ->     38.635
+HRSimulationError called with        180,       47.3,   -120.279 ->     38.634
+HRSimulationError called with        180,       47.3,   -118.372 ->     38.634
+HRSimulationError called with        180,       47.4,   -120.211 ->     38.634
+HRSimulationError called with        180,       48.0,   -119.032 ->     38.632
+HRSimulationError called with        180,       48.3,   -118.408 ->     38.634
+HRSimulationError called with        180,       48.4,   -121.378 ->     38.633
+HRSimulationError called with        180,       48.9,   -120.317 ->     38.634
+HRSimulationError called with        180,       47.8,   -120.238 ->     38.635
+HRSimulationError called with        180,       48.2,   -120.205 ->     38.635
+HRSimulationError called with        180,       48.1,   -119.707 ->     38.634
+HRSimulationError called with        180,       47.7,   -119.622 ->     38.634
+HRSimulationError called with        180,       47.6,   -118.702 ->     38.632
+HRSimulationError called with        180,       47.3,   -117.951 ->     38.634
+HRSimulationError called with        180,       48.1,   -118.672 ->     38.634
+HRSimulationError called with        180,       48.0,   -118.910 ->     38.634
+HRSimulationError called with        180,       47.6,   -118.055 ->     38.634
+HRSimulationError called with        180,       48.0,   -119.294 ->     38.634
+HRSimulationError called with        180,       47.8,   -118.867 ->     38.634
+HRSimulationError called with        180,       47.8,   -118.806 ->     38.633
+HRSimulationError called with        180,       47.8,   -119.205 ->     38.634
+2018-07-17-15-12-10.fit:       180      47.6  -118.702
+ final_simplex: (array([[ 180.32206825,   47.61560142, -118.70208408],
+       [ 180.35853974,   47.79190052, -118.80588324],
+       [ 180.33604889,   47.78740502, -118.86691784],
+       [ 180.39572702,   47.83504157, -119.20460406]]), array([38.63242943, 38.63332289, 38.63360463, 38.63418543]))
+           fun: 38.632429432748175
+       message: 'Optimization terminated successfully.'
+          nfev: 104
+           nit: 54
+        status: 0
+       success: True
+             x: array([ 180.32206825,   47.61560142, -118.70208408])
+#################################################
+###          2018-12-31-12-23-12.fit          ###
+#################################################
+HRSimulationError called with        170,       63.0,    170.000 ->     15.235
+HRSimulationError called with        178,       63.0,    170.000 ->     16.710
+HRSimulationError called with        170,       66.2,    170.000 ->     15.286
+HRSimulationError called with        170,       63.0,    178.500 ->     15.248
+HRSimulationError called with        161,       65.1,    175.667 ->     15.982
+HRSimulationError called with        165,       64.6,    174.250 ->     15.344
+HRSimulationError called with        174,       63.5,    171.417 ->     15.725
+HRSimulationError called with        167,       64.3,    173.542 ->     15.230
+HRSimulationError called with        168,       60.7,    178.028 ->     15.168
+HRSimulationError called with        167,       58.0,    182.042 ->     15.129
+HRSimulationError called with        167,       60.5,    171.889 ->     15.195
+HRSimulationError called with        165,       58.9,    181.648 ->     15.280
+HRSimulationError called with        168,       62.0,    172.912 ->     15.188
+HRSimulationError called with        168,       56.0,    177.687 ->     15.102
+HRSimulationError called with        168,       51.9,    179.759 ->     15.051
+HRSimulationError called with        169,       54.1,    184.586 ->     15.102
+HRSimulationError called with        168,       47.3,    191.346 ->     15.007
+HRSimulationError called with        167,       40.0,    200.563 ->     14.971
+HRSimulationError called with        168,       39.3,    194.564 ->     14.996
+HRSimulationError called with        167,       33.5,    198.671 ->     14.992
+HRSimulationError called with        167,       23.3,    216.107 ->     15.190
+HRSimulationError called with        168,       44.8,    188.846 ->     14.989
+HRSimulationError called with        166,       39.5,    197.490 ->     14.998
+HRSimulationError called with        168,       39.4,    195.296 ->     14.976
+HRSimulationError called with        168,       49.3,    191.132 ->     15.041
+HRSimulationError called with        167,       37.4,    196.787 ->     14.972
+HRSimulationError called with        167,       33.1,    206.251 ->     14.995
+HRSimulationError called with        167,       41.8,    193.197 ->     14.976
+HRSimulationError called with        167,       40.2,    198.402 ->     14.974
+HRSimulationError called with        167,       36.6,    203.971 ->     14.975
+HRSimulationError called with        167,       37.9,    201.278 ->     14.971
+HRSimulationError called with        167,       36.7,    200.682 ->     14.975
+HRSimulationError called with        167,       39.3,    198.972 ->     14.970
+HRSimulationError called with        167,       40.7,    203.756 ->     14.971
+HRSimulationError called with        167,       39.9,    202.013 ->     14.971
+HRSimulationError called with        167,       41.6,    199.755 ->     14.974
+HRSimulationError called with        167,       38.8,    200.897 ->     14.970
+HRSimulationError called with        167,       38.6,    200.692 ->     14.972
+HRSimulationError called with        167,       39.7,    200.595 ->     14.970
+HRSimulationError called with        167,       38.6,    198.297 ->     14.970
+HRSimulationError called with        167,       38.8,    200.887 ->     14.970
+HRSimulationError called with        167,       38.5,    201.844 ->     14.970
+HRSimulationError called with        167,       39.5,    203.290 ->     14.971
+HRSimulationError called with        167,       38.9,    199.545 ->     14.969
+HRSimulationError called with        167,       39.4,    199.788 ->     14.970
+HRSimulationError called with        167,       39.0,    200.620 ->     14.970
+HRSimulationError called with        167,       38.8,    200.216 ->     14.970
+HRSimulationError called with        167,       39.3,    200.070 ->     14.970
+HRSimulationError called with        167,       38.8,    200.221 ->     14.970
+2018-12-31-12-23-12.fit:       167      38.9   199.545
+ final_simplex: (array([[167.48619147,  38.86246724, 199.54479838],
+       [167.51794705,  39.27171559, 200.07011087],
+       [167.52943889,  38.82209657, 200.21580035],
+       [167.43577969,  38.83635484, 200.22086407]]), array([14.96923193, 14.96972803, 14.96979993, 14.96999025]))
+           fun: 14.969231927294386
+       message: 'Optimization terminated successfully.'
+          nfev: 49
+           nit: 25
+        status: 0
+       success: True
+             x: array([167.48619147,  38.86246724, 199.54479838])
+#################################################
 ###          2019-01-02-12-50-40.fit          ###
 #################################################
 HRSimulationError called with        170,       63.0,    170.000 ->     24.607
@@ -123,9 +461,6 @@ HRSimulationError called with        160,       40.1,    104.216 ->     21.310
 HRSimulationError called with        160,       39.7,    104.043 ->     21.309
 HRSimulationError called with        160,       39.3,    104.503 ->     21.309
 2019-01-02-12-50-40.fit:       160      39.7   104.043
-execution time = 18:49
->>>
->>> res
  final_simplex: (array([[160.12059039,  39.6796331 , 104.04339738],
        [160.10359108,  40.14895567, 104.21602362],
        [160.0989293 ,  40.103897  , 103.20190293],
@@ -137,3 +472,5 @@ execution time = 18:49
         status: 0
        success: True
              x: array([160.12059039,  39.6796331 , 104.04339738])
+execution time = 55:46
+>>>

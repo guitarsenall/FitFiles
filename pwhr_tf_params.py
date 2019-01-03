@@ -30,7 +30,7 @@ fit_files   = [ '2018-12-10-17-28-24.fit' ,   # VO2max intervals
                 '2018-07-17-15-12-10.fit' ,   # threshold intervals
                 '2018-12-31-12-23-12.fit' ,   # endurance
                 '2019-01-02-12-50-40.fit'     # endurance lo-HR
-              ][4:]
+              ] #[4:]
 
 #(FilePath, FitFileName) = os.path.split(FitFilePath)
 
@@ -233,6 +233,7 @@ for FitFile in fit_files:
     #print res.message
     fmt     = '%20s:' + '%10i' + '%10.1f' + '%10.3f'
     print >> OutStream, fmt % (FitFile, res.x[0], res.x[1], res.x[2] )
+    print >> OutStream, res
 
 TimerEnd    = time.time()
 ExTime      = TimerEnd - TimerStart
