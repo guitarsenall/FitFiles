@@ -135,7 +135,7 @@ PwHRTable   = np.array( [
                 [ 1.20*FTP,  1.03*FTHR ],   # Aerobic capacity
                 [ 1.50*FTP,  1.06*FTHR ]])  # Max HR
 
-def heartrate_dot(HR, t, FTHR, HRTimeConstant, HRDriftRate):
+def heartrate_dot(HR, t, FTHR, HRTimeConstant, sHRDriftRate):
     ''' Heart rate model. The derivative, the return value, is
         proportional to the difference between the HR target and
         the current heartrate.
@@ -147,6 +147,7 @@ def heartrate_dot(HR, t, FTHR, HRTimeConstant, HRDriftRate):
     PwHRTable[4,1]  = 1.03*FTHR     # Aerobic capacity
     PwHRTable[5,1]  = 1.06*FTHR     # Max HR
     #print '    heartrate_dot called'
+    HRDriftRate = sHRDriftRate/1000.0
     i = min( int(t * SampleRate), nScans-1 )
     HRp = np.interp( power[i], PwHRTable[:,0], PwHRTable[:,1] )
     HRt = HRp + HRDriftRate*TSS[i]
@@ -159,7 +160,7 @@ def HRSimulationError(params):
         based on the three parameters passed to it.
             FTHR            = params[0]
             HRTimeConstant  = params[1]
-            HRDriftRate     = params[2]
+            sHRDriftRate    = params[2]
     '''
     args            = tuple(params)
     heart_rate_sim  = odeint( heartrate_dot,
@@ -169,14 +170,14 @@ def HRSimulationError(params):
     err     = np.squeeze( heart_rate_sim ) \
             - np.squeeze( heart_rate_ci  )
     RMSError    = np.sqrt(np.average( err**2 ))
-    print 'HRSimulationError called with %10i, %10.1f, %10.3f -> %10.1f' \
+    print 'HRSimulationError called with %10i, %10.1f, %10.3f -> %10.3f' \
             % (params[0], params[1], params[2], RMSError)
     return RMSError
 
 
 print >> OutStream, 'Optimization Results:'
-names1  = [ 'FIT File', 'FTHR (BPM)',  'tau (sec)', 'HRDriftRate' ]
-fmt     = '%20s:' + '%10s'*3
+names1  = [ 'FIT File', 'FTHR (BPM)',  'tau (sec)', 'sHRDriftRate' ]
+fmt     = '%20s:' + '%15s'*3
 print >> OutStream, fmt % tuple(names1)
 
 for FitFile in fit_files:
@@ -223,9 +224,12 @@ for FitFile in fit_files:
         TSS[i] = time_ci[i]/36*(norm_power[i]/FTP)**2
 
     # optimize by minimizing the simulation error
-    x0  = [ ThresholdHR, HRTimeConstant, HRDriftRate ]
-    bnds = ( (130.0, 200.0), (30.0, 120.0), (0.0, 0.50) )
-    res = minimize(HRSimulationError, x0, method='Nelder-Mead', bounds=bnds)
+    # Scale HRDriftRate to same order of magnitude as other parameters.
+    x0  = [ ThresholdHR, HRTimeConstant, 1000*HRDriftRate ]
+    bnds = ( (130.0, 200.0), (30.0, 120.0), (0.0, 500.0) )
+    res = minimize( HRSimulationError, x0,
+                    method='Nelder-Mead',
+                    options={'xatol': 1.0, 'fatol': 1.0} )
     #print res.message
     fmt     = '%20s:' + '%10i' + '%10.1f' + '%10.3f'
     print >> OutStream, fmt % (FitFile, res.x[0], res.x[1], res.x[2] )

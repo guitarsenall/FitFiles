@@ -4388,6 +4388,103 @@ files from my Garmin Edge 810.
                             /optimize.minimize-neldermead.html
                     There may be some kind of tolerance I can apply.
                     Commit & push.
+                    I can pass options to the Nelder-Mead routine with
+                    keyword:
+                        options={'fatol': 1e-4}
+                    With the default of 1e-4, I think this means the RMSError
+                    must converge to within 0.0001 BPM to be considered
+                    converged. I am looking for an order of magnitude
+                    improvement. Try 0.01 BPM:
+                        res = minimize( HRSimulationError, x0,
+                                        method='Nelder-Mead',
+                                        options={'fatol': 0.01} )
+                                            Thursday, January 3, 2019 (6:57 AM)
+                    It solved in 34 minutes with about 180 iterations:
+                        159,       37.8,      0.112 ->     21.304
+                    However, it really had the solution in half the time.
+                    Try 0.1 BPM:
+                        options={'fatol': 0.1}
+                    Hmmm...It still goes for 34 minutes.
+                        2019-01-02-12-50-40.fit:    159   37.8     0.112
+                        execution time = 33:37
+                        >>> res
+                         final_simplex: (array([
+                           [1.59511919e+02, 3.78061837e+01, 1.11591257e-01],
+                           [1.59512011e+02, 3.78061847e+01, 1.11591260e-01],
+                           [1.59511935e+02, 3.78061412e+01, 1.11591494e-01],
+                           [1.59511954e+02, 3.78061811e+01, 1.11591378e-01]]),
+                           array([21.30222807, 21.3035868 ,
+                                  21.30405625, 21.30422664]))
+                                   fun: 21.30222806968918
+                               message: 'Optimization terminated successfully.'
+                                  nfev: 182
+                                   nit: 85
+                                status: 0
+                               success: True
+                                     x: array([1.59511919e+02,
+                                               3.78061837e+01,
+                                               1.11591257e-01])
+                :   The values in the final_simplex indicate a tolerance
+                    0.01-0.02 BPM. Why? Should I perhaps be using the tol
+                    keyword for minimize?
+                    Or see
+                        https://stackoverflow.com/questions/43644797
+                            /what-is-xtol-for-in-minimizemethod-nelder-mead
+                    and
+                        https://en.wikipedia.org/wiki/Nelder-Mead_method
+                    I may need to include xatol also. However, xatol is a
+                    scalar expression for the "size" of the simplex, which
+                    implies I might want to scale HRDriftRate by 1000 to get
+                    it onto the scale of the other parameters. Then a "size"
+                    of 1.0 might make a reasonable stopping point.
+                    Try it:
+                        x0  = [ ThresholdHR, HRTimeConstant, 1000*HRDriftRate ]
+                        res = minimize( HRSimulationError, x0,
+                                        method='Nelder-Mead',
+                                        options={'xatol': 1.0, 'fatol': 1.0} )
+                    Much better (full results in output.txt):
+                        with 160, 39.3, 104.503 -> 21.309
+                        2019-01-02-12-50-40.fit:       160      39.7   104.043
+                        execution time = 18:49
+                        >>>
+                        >>> res
+                         final_simplex: (array([
+                               [160.12059039,  39.6796331 , 104.04339738],
+                               [160.10359108,  40.14895567, 104.21602362],
+                               [160.0989293 ,  40.103897  , 103.20190293],
+                               [160.22849521,  39.84282947, 103.33223336]]),
+                               array([21.30902753,
+                                      21.30979486,
+                                      21.31077239,
+                                      21.31081797]))
+                                   fun: 21.3090275335783
+                               message: 'Optimization terminated successfully.'
+                                  nfev: 100
+                                   nit: 53
+                                status: 0
+                               success: True
+                                     x: array([160.12059039,
+                                                39.6796331 ,
+                                               104.04339738])
+                    The size of the simplex is roughly 1, mainly along
+                    1000*HRDriftRate, less for the others. But the range
+                    of the function is quite small--about 0.01 BPM.
+        -   Try these values in pwhr_transfer_function.py for this event.
+            Enter in cyclingconfig_will.txt:
+                ThresholdHR     : 160.0     ; BPM
+                HRTimeConstant  :  40.0     ; seconds
+                HRDriftRate     :  0.104    ; BPM/TSS
+            Results:
+                see pwhr_tf_params_a.png
+                Average  measured HR: 132 BPM
+                Average simulated HR: 133 BPM
+                RMS error           :  21 BPM
+            It really did a rather nice job. The biggest HR discrepancy
+            occurs when I am standing, and I have always known this raises
+            my HR artificially (i.e., not related to the power). Another
+            discrepancy occurs during breaks when measured HR is zero.
+            Perhaps I should fill these points with a finite value?
+
 
 
 d:
