@@ -11,6 +11,9 @@ Estimate parameters for the power-HR transfer function:
 
 import os
 import sys
+import time
+
+TimerStart = time.time()     # measure execution time
 
 ############################################################
 #               pwhr_tf_params function def                #
@@ -198,18 +201,6 @@ for FitFile in fit_files:
             print >> OutStream, '   ' + s
         raise IOError(msg)
 
-#    # get the FTP
-#    FTP = 250.0 #assume if not present
-#    records = activity.get_records_by_type('zones_target')
-#    for record in records:
-#        valid_field_names = record.get_valid_field_names()
-#        for field_name in valid_field_names:
-#            if 'functional_threshold_power' in field_name:
-#                field_data = record.get_data(field_name)
-#                field_units = record.get_units(field_name)
-#                #print >> OutStream, 'FTP setting = %i %s' % (field_data, field_units)
-#                FTP = field_data
-
     # resample to constant-increment (1 Hz) with zeros at missing samples
     time_idx                = signals['time'].astype('int')
     power_vi                = signals['power']
@@ -234,10 +225,16 @@ for FitFile in fit_files:
     # optimize by minimizing the simulation error
     x0  = [ ThresholdHR, HRTimeConstant, HRDriftRate ]
     bnds = ( (130.0, 200.0), (30.0, 120.0), (0.0, 0.50) )
-    res = minimize(HRSimulationError, x0, method='SLSQP', bounds=bnds)
+    res = minimize(HRSimulationError, x0, method='Nelder-Mead', bounds=bnds)
     #print res.message
     fmt     = '%20s:' + '%10i' + '%10.1f' + '%10.3f'
     print >> OutStream, fmt % (FitFile, res.x[0], res.x[1], res.x[2] )
+
+TimerEnd    = time.time()
+ExTime      = TimerEnd - TimerStart
+mm  = ExTime // 60
+ss  = ExTime % 60
+print 'execution time = %02i:%02i' % (mm, ss)
 
 
 # end pwhr_tf_params()

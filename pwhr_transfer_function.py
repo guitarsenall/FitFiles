@@ -171,7 +171,14 @@ def pwhr_transfer_function(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
         HRt = HRp + HRDriftRate*TSS[i]
         return ( HRt - HR ) / tau
     heart_rate_sim = odeint( heartrate_dot, heart_rate_ci[0], time_ci )
-
+    err     = np.squeeze( heart_rate_sim ) \
+            - np.squeeze( heart_rate_ci  )
+    RMSError    = np.sqrt(np.average( err**2 ))
+    print >> OutStream, 'Average  measured HR: %3i BPM' \
+                        % np.average(heart_rate_ci)
+    print >> OutStream, 'Average simulated HR: %3i BPM' \
+                        % np.average(heart_rate_sim)
+    print >> OutStream, 'RMS error           : %3i BPM' % RMSError
 
     #
     # time plot

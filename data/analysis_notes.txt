@@ -4345,7 +4345,49 @@ files from my Garmin Edge 810.
                     170,       62.1,      0.005 ->       22.0
                 Even after finding these great points, it wastes A LOT of time
                 near the initial guess (IG) and ends up back there.
-
+                See output.txt
+                Commit & push.
+            >   Try another solver. See,
+                    https://docs.scipy.org/doc/scipy/reference/generated
+                        /scipy.optimize.minimize.html
+                Try 'L-BFGS-B' (accepts bounds). Very disappointing: it never
+                tries a lower FTHR or HRDriftRate and ends on the IG.
+            >   Try 'TNC' (accepts bounds).
+                :   measure execution time via
+                        import time
+                        TimerStart = time.time()
+                        ### code ###
+                        TimerEnd    = time.time()
+                        ExTime      = TimerEnd - TimerStart
+                        mm  = ExTime // 60
+                        ss  = ExTime % 60
+                        print 'execution time = %02i:%02i' % (mm, ss)
+                :   Have pwhr_transfer_function.py print average HR for
+                    measured and simulated along with RMS error. For this file,
+                    it is,
+                        Average  measured HR: 132 BPM
+                        Average simulated HR: 144 BPM
+                        RMS error           :  24 BPM
+                    So I expect FTHR to reduce by 12 BPM.
+                    It also has 4.4% cardiac drift. That would be about
+                    0.044*132 = 6 BPM over roughly 100 TSS, or 0.06 BPM/TSS.
+                :   Another waste of time. Abort.
+            >   Try 'Nelder-Mead'. After all, it is first in the list.
+                :   Looking promising:
+                        see pwhr_transferfunction_j.png
+                    It has no trepidation about playing with the parameters.
+                :   After 2 hours it converges:
+                        2019-01-02-12-50-40.fit:  159    37.8   0.112
+                        execution time = 118:14
+                    (see output.txt)
+                    But there is no reason it needed to take that
+                    long--600 iterations--when it had the answer within 90
+                    iterations.
+                :   Study
+                        https://docs.scipy.org/doc/scipy/reference
+                            /optimize.minimize-neldermead.html
+                    There may be some kind of tolerance I can apply.
+                    Commit & push.
 
 
 d:
@@ -4412,7 +4454,6 @@ TO DO:
         -   Make measured HR an optional signal.
             >   The initial condition to odeint() should be heart_rate_ci[0]
                 if it is available, else 0.50*FTHR or PwHRTable[0,1] if not.
-        -   Print average HR for measured and simulated.
 
 
 
