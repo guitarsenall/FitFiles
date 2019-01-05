@@ -1,34 +1,69 @@
 
 # scratch.py
 
-#Follow
-#    https://www.youtube.com/watch?v=2lQbGQ_cQ3w
-#for step simulation of 1st-order transfer function.
-import numpy as np
-from scipy import signal
-import matplotlib.pyplot as plt
-from scipy.integrate import odeint
-k   = 3.0
-tau = 2.0
-num     = [k]
-den     = [tau, 1]
-HPtf    = signal.TransferFunction(num,den)
-t1, y1  = signal.step(HPtf)
-Fs      = 10.0
-timevec = np.arange(0, 14, 1/Fs)
-nPts    = len(timevec)
-u_input         = np.zeros(nPts)
-u_input[10:]    = 1.0
-def model(y,t):
-    i = int(t * Fs)
-    print 't = ', t, ', i = ', i
-    u = u_input[i]
-    return (-y + k*u)/tau
-y2 = odeint(model,0,timevec)
-plt.figure(1)
-plt.plot(t1, y1, 'r-')
-plt.plot(timevec, y2, 'b--')
-plt.show()
+import sys
+from pwhr_transfer_function import pwhr_transfer_function
+ConfigFile  = r'D:\Users\Owner\Documents\OneDrive\2018\fitfiles\\'  \
+            + r'cyclingconfig_will.txt'
+OutStream   = sys.stdout
+FilePath    = r'S:\will\documents\OneDrive\bike\activities\will\\'
+fit_files   = [ '2018-12-10-17-28-24.fit' ,   # VO2max intervals
+                '2018-09-03-17-36-11.fit' ,   # threshold effort
+                '2018-07-17-15-12-10.fit' ,   # threshold intervals
+                '2018-12-31-12-23-12.fit' ,   # endurance
+                '2019-01-02-12-50-40.fit'     # endurance lo-HR
+              ] #[2:3]
+params  = [
+    #           file                  FTHR      tau  HRDriftRate
+    [  '2018-12-10-17-28-24.fit',      '181',   '202.2', ' .207684' ],
+    [  '2018-09-03-17-36-11.fit',      '160',   '189.2', ' .167104' ],
+    [  '2018-07-17-15-12-10.fit',      '175',   '144.3', ' .100218' ],
+    [  '2018-12-31-12-23-12.fit',      '179',   '142.7', '-. 89239' ],
+    [  '2019-01-02-12-50-40.fit',      '167',   '218.3', ' . 86974' ]]
+
+from ConfigParser import ConfigParser
+config      = ConfigParser()
+config.read(ConfigFile)
+config.set('power', 'ThresholdHR', repr(160.0))
+with open(ConfigFile, 'wb') as configfile:
+    config.write(configfile)
+
+
+#for i in range(5):
+#    fitfilepath = FilePath + fit_files[i]
+#    pwhr_transfer_function( fitfilepath, OutStream=sys.stdout,
+#                            ConfigFile=ConfigFile)
+
+
+
+##Follow
+##    https://www.youtube.com/watch?v=2lQbGQ_cQ3w
+##for step simulation of 1st-order transfer function.
+#import numpy as np
+#from scipy import signal
+#import matplotlib.pyplot as plt
+#from scipy.integrate import odeint
+#k   = 3.0
+#tau = 2.0
+#num     = [k]
+#den     = [tau, 1]
+#HPtf    = signal.TransferFunction(num,den)
+#t1, y1  = signal.step(HPtf)
+#Fs      = 10.0
+#timevec = np.arange(0, 14, 1/Fs)
+#nPts    = len(timevec)
+#u_input         = np.zeros(nPts)
+#u_input[10:]    = 1.0
+#def model(y,t):
+#    i = int(t * Fs)
+#    print 't = ', t, ', i = ', i
+#    u = u_input[i]
+#    return (-y + k*u)/tau
+#y2 = odeint(model,0,timevec)
+#plt.figure(1)
+#plt.plot(t1, y1, 'r-')
+#plt.plot(timevec, y2, 'b--')
+#plt.show()
 
 
 ## experiment with zone data structure

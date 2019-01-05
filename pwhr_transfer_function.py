@@ -9,6 +9,84 @@ import os
 import sys
 
 ############################################################
+#           HeartRateSimulator class definition            #
+############################################################
+
+from ConfigParser import ConfigParser
+from endurance_summary import BackwardMovingAverage
+import numpy as np
+from scipy.integrate import odeint
+
+
+class HeartRateSimulator():
+
+    def __init__(self, ConfigFile):
+        #   Parse the configuration file
+        config      = ConfigParser()
+        config.read(ConfigFile)
+        WeightEntry         = config.getfloat( 'user', 'weight' )
+        WeightToKg          = config.getfloat( 'user', 'WeightToKg' )
+        weight              = WeightEntry * WeightToKg
+        age                 = config.getfloat( 'user', 'age' )
+        EndurancePower      = config.getfloat( 'power', 'EndurancePower' )
+        self.ThresholdPower = config.getfloat( 'power', 'ThresholdPower' )
+        self.EnduranceHR    = config.getfloat( 'power', 'EnduranceHR'    )
+        self.ThresholdHR    = config.getfloat( 'power', 'ThresholdHR'    )
+        self.HRTimeConstant = config.getfloat( 'power', 'HRTimeConstant' )
+        self.HRDriftRate    = config.getfloat( 'power', 'HRDriftRate'    )
+        self.heart_rate_sim = None
+
+    def simulate(self, power):
+
+        SampleRate  = 1.0
+        FTHR        = self.ThresholdHR
+        FTP         = self.ThresholdPower
+        tau         = self.HRTimeConstant
+
+        # Calculate running normalized power and TSS.
+        nScans  = len(power)
+        time_ci = np.arange(nScans)
+        p30 = BackwardMovingAverage( power )
+        norm_power  = np.zeros(nScans)
+        TSS         = np.zeros(nScans)
+        for i in range(1,nScans):
+            norm_power[i] = np.average( p30[:i]**4 )**(0.25)
+            TSS[i] = time_ci[i]/36*(norm_power[i]/FTP)**2
+
+        PwHRTable   = np.array( [
+                        [    0    ,  0.50*FTHR ],   # Active resting HR
+                        [ 0.55*FTP,  0.70*FTHR ],   # Recovery
+                        [ 0.70*FTP,  0.82*FTHR ],   # Aerobic threshold
+                        [ 1.00*FTP,       FTHR ],   # Functional threshold
+                        [ 1.20*FTP,  1.03*FTHR ],   # Aerobic capacity
+                        [ 1.50*FTP,  1.06*FTHR ]])  # Max HR
+
+        def heartrate_dot(HR,t):
+            i = min( int(t * SampleRate), nScans-1 )
+            HRp = np.interp( power[i], PwHRTable[:,0], PwHRTable[:,1] )
+            HRt = HRp + self.HRDriftRate*TSS[i]
+            return ( HRt - HR ) / tau
+
+        self.heart_rate_sim = odeint( heartrate_dot, PwHRTable[0,1], time_ci )
+        self.heart_rate_sim = np.squeeze( self.heart_rate_sim )
+
+        return self.heart_rate_sim
+
+    def cardiac_drift(self, hrmeas):
+        # estimate cardiac drift
+        if self.heart_rate_sim is None:
+            raise IOError('heartrate simulation needs to be run first')
+        err = self.heart_rate_sim - hrmeas
+        '''
+        Cardiac drift causes HR to increase linearly with respect to TSS.
+        But it is already modeled in the simulation with HRDriftRate.
+        Perform linear regression on the error with respect to TSS.
+        If the error has a positive slope, add this to HRDriftRate to get
+        the measured drift.
+        '''
+
+
+############################################################
 #           pwhr_transfer_function function def            #
 ############################################################
 
@@ -30,7 +108,6 @@ def pwhr_transfer_function(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     #
     #   Parse the configuration file
     #
-    from ConfigParser import ConfigParser
     config      = ConfigParser()
     config.read(ConfigFile)
     print >> OutStream, 'reading config file ' + ConfigFile
@@ -116,6 +193,7 @@ def pwhr_transfer_function(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
             print >> OutStream, '   ' + s
         raise IOError(msg)
 
+    '''
     # get the FTP
     FTP = 250.0 #assume if not present
     records = activity.get_records_by_type('zones_target')
@@ -127,9 +205,9 @@ def pwhr_transfer_function(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
                 field_units = record.get_units(field_name)
                 print >> OutStream, 'FTP setting = %i %s' % (field_data, field_units)
                 FTP = field_data
+    '''
 
     # resample to constant-increment (1 Hz) with zeros at missing samples
-    import numpy as np
     time_idx                = signals['time'].astype('int')
     power_vi                = signals['power']
     heart_rate_vi           = signals['heart_rate']
@@ -141,7 +219,6 @@ def pwhr_transfer_function(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     heart_rate_ci[time_idx] = heart_rate_vi
 
     # compute the 30-second, moving-average power signal.
-    from endurance_summary import BackwardMovingAverage
     p30 = BackwardMovingAverage( power )
 
     # Calculate running normalized power and TSS.
@@ -154,7 +231,6 @@ def pwhr_transfer_function(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     #
     # simulate the heart rate
     #
-    from scipy.integrate import odeint
     SampleRate  = 1.0
     tau         = HRTimeConstant    # 63.0 seconds
     #HRDriftRate = 0.17  # BPM/TSS

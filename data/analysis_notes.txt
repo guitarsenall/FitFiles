@@ -4500,8 +4500,138 @@ files from my Garmin Edge 810.
                 I need to find a way to eliminate these from the RMSError
                 calculation.
             >   commit & push
-
-
+                                            Friday, January 4, 2019 (8:05 AM)
+        -   eliminate missing HR points (zeros) from the RMSError
+            calculation.
+            >   First, it pulls HRDriftRate down as breaks happen later in
+                the ride, and a negative HRDriftRate reduces the error in this
+                region.
+                Another reason to do this: it pulls HRTimeConstant down as
+                error is minimized by an instant drop to zero.
+            >   Embarrassingly easy: time_idx is already available.
+                    RMSError    = np.sqrt(np.average( err[time_idx]**2 ))
+            >   Try on 2018-07-17-15-12-10.fit (threshold intervals)
+                :   The first point has MUCH LESS error: 11 BPM Vs 44.
+                :   Results:
+                        2018-07-17-15-12-10.fit:   174     144.1   105.662
+                         final_simplex: (array([
+                            [174.88597834, 144.14066422, 105.66207402],
+                            [174.98478421, 144.75446625, 105.64518215],
+                            [174.78379287, 143.14812898, 106.29700219],
+                            [174.90458888, 144.01577525, 105.31113855]]),
+                            array([ 9.32657562, 9.32983934,
+                                    9.33235701, 9.33244149]))
+                                   fun: 9.326575618949352
+                               message: 'Optimization terminated successfully.'
+                                  nfev: 82
+                                   nit: 47
+                                status: 0
+                               success: True
+                                     x: array([ 174.88597834,
+                                                144.14066422,
+                                                105.66207402])
+                        execution time = 08:58
+                    Compare with previous:
+                                     x: array([ 180.32206825,
+                                                 47.61560142,
+                                                -118.70208408])
+                    Definitely an improvement! But a time constant of
+                    144 seconds?
+                :   Simulate the solution:
+                        see pwhr_tf_params_c.png
+                    The long time constant appears to accommodate the slow,
+                    upward ramp in the long intervals while the drift rate
+                    accommodates the longer result for the whole workout.
+                    Notice the second interval: A higher drift rate and
+                    faster time constant would improve the solution.
+                    But the long recovery afterward seems to cancel the
+                    cardiac drift.
+            >   Run on all five files (output.txt).
+                            file                  FTHR      tau  HRDriftRate
+                    2018-12-10-17-28-24.fit:       195     411.0  -0.030758
+                    2018-09-03-17-36-11.fit:       159     185.6   0.170681
+                    2018-07-17-15-12-10.fit:       174     144.1   0.105660
+                    2018-12-31-12-23-12.fit:       178     146.9  -0.064462
+                    2019-01-02-12-50-40.fit:       166     208.1   0.094702
+                I may have made a mistake starting with a poor initial guess:
+                        ThresholdHR    :  174.88
+                        HRTimeConstant :  144.14
+                        HRDriftRate    :  0.10566
+                Improve it:
+                        ThresholdHR    :  165.0
+                        HRTimeConstant :   63.0
+                        HRDriftRate    :  0.105
+                :   BUMMER! PyScripter crashed before I could copy the
+                    results from the terminal. Create an output stream
+                    that prints to both STDOUT as well to output.txt:
+                        class PrintAndFileStream():
+                            "A class that prints to stdout as well as to file"
+                            def __init__(self, OutFileName):
+                                self.OutFile = open(OutFileName, 'a')
+                            def write(self, data):
+                                print data,
+                                print >> self.OutFile, data,
+                            def flush(self):
+                                self.OutFile.flush()
+                            def close(self):
+                                self.OutFile.close()
+                    I have to flush the file to see results in it, so do so
+                    periodically between calls to minimize().
+                :   New results:
+                                file                  FTHR      tau  HRDriftRate
+                        2018-12-10-17-28-24.fit:       181     202.2   .207684
+                        2018-09-03-17-36-11.fit:       160     189.2   .167104
+                        2018-07-17-15-12-10.fit:       175     144.3   .100218
+                        2018-12-31-12-23-12.fit:       179     142.7  -. 89239
+                        2019-01-02-12-50-40.fit:       167     218.3   . 86974
+                    Other than the first file, the results come out the same.
+                                            Saturday, January 5, 2019 (9:03 AM)
+                    I do not believe these long time constants. I need a quick
+                    way of viewing these solutions. Research
+                    Python ConfigParser; I think I can write a parameter
+                    to the config file.
+                        https://docs.python.org/2/library/configparser.html
+                    I think I want
+                        RawConfigParser.set(section, option, value)
+                    but this might not write it to file. I might need
+                        RawConfigParser.write(fileobject)
+                    Or, perhaps I can pass a ConfigParser object to the
+                    function and have it detect its type. Or add an optional
+                    keyword params (dictionary?).
+                :   experiment with ConfigParser
+                        >>> config.set('power', 'ThresholdHR', repr(165.0))
+                        >>> config.items('power')
+                        [('endurancepower', '175.0'),
+                         ('thresholdpower', '250.0'),
+                         ('endurancehr', '140.0'),
+                         ('thresholdhr', '165.0'),
+                         ('hrtimeconstant', '202.0'),
+                         ('hrdriftrate', '0.208')]
+                        >>> config.set('power', 'ThresholdHR', repr(178.0))
+                        >>> config.getfloat( 'power', 'ThresholdHR'    )
+                        178.0
+                    This works:
+                        from ConfigParser import ConfigParser
+                        config      = ConfigParser()
+                        config.read(ConfigFile)
+                        config.set('power', 'ThresholdHR', repr(160.0))
+                        with open(ConfigFile, 'wb') as configfile:
+                            config.write(configfile)
+                    However, I don't like the format of the result.
+                    I need to change the ConfigParser object and pass it
+                    to pwhr_transfer_function().
+                    Hmmm...
+                        >>> type(ConfigFile)
+                        <type 'str'>
+                        >>> type(ConfigFile) == 'str'
+                        False
+                        >>> type(ConfigFile) is 'str'
+                        False
+                        >>> type('str')
+                        <type 'str'>
+                        >>> type(ConfigFile) == type('str')
+                        True
+                    Commit & push.
 
 d:
 cd D:\Users\Owner\Documents\OneDrive\2018\notesparser\wxPython-demo-4.0.3\demo
@@ -4547,6 +4677,9 @@ TO DO:
     *   endurance_summery
         -   Eventually included percent seated time.
         -   Power balance while seated. Degrading with fatigue?
+        -   A new basis for cardiac drift: HRDriftRate. If measured HR drifts
+            upward faster than simulated, then the true drift is greater and
+            can be quantified by the error Vs running TSS.
     *   zone_detect
         -   Can I plot the variable-increment data and avoid the vertical lines
             to zero?
@@ -4568,8 +4701,6 @@ TO DO:
             >   The initial condition to odeint() should be heart_rate_ci[0]
                 if it is available, else 0.50*FTHR or PwHRTable[0,1] if not.
     *   pwhr_tf_params.py
-        -   eliminate missing HR points (zeros) from the RMSError
-            calculation.
 
 
 D:\Users\Owner\Documents\OneDrive\2018\fitfiles\cyclingconfig_will.txt

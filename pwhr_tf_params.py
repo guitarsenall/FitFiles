@@ -13,7 +13,18 @@ import os
 import sys
 import time
 
-TimerStart = time.time()     # measure execution time
+class PrintAndFileStream():
+    "A class that prints to stdout as well as to file"
+    def __init__(self, OutFileName):
+        self.OutFile = open(OutFileName, 'a')
+    def write(self, data):
+        print data,
+        print >> self.OutFile, data,
+    def flush(self):
+        self.OutFile.flush()
+    def close(self):
+        self.OutFile.close()
+
 
 ############################################################
 #               pwhr_tf_params function def                #
@@ -21,8 +32,11 @@ TimerStart = time.time()     # measure execution time
 
 #def pwhr_tf_params(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
 
-ConfigFile=None
-OutStream=sys.stdout
+#ConfigFile  = r'D:\Users\Owner\Documents\OneDrive\2018\fitfiles\\'  \
+ConfigFile  = r'S:\will\documents\OneDrive\2018\fitfiles\\'  \
+            + r'cyclingconfig_will.txt'
+#OutStream   = sys.stdout
+OutStream   = PrintAndFileStream('output.txt')
 
 FilePath    = r'S:\will\documents\OneDrive\bike\activities\will\\'
 fit_files   = [ '2018-12-10-17-28-24.fit' ,   # VO2max intervals
@@ -30,7 +44,7 @@ fit_files   = [ '2018-12-10-17-28-24.fit' ,   # VO2max intervals
                 '2018-07-17-15-12-10.fit' ,   # threshold intervals
                 '2018-12-31-12-23-12.fit' ,   # endurance
                 '2019-01-02-12-50-40.fit'     # endurance lo-HR
-              ] #[4:]
+              ] #[2:3]
 
 #(FilePath, FitFileName) = os.path.split(FitFilePath)
 
@@ -75,44 +89,6 @@ print >> OutStream, 'HRDriftRate    : ', HRDriftRate
 FTP     = ThresholdPower
 FTHR    = ThresholdHR
 
-'''
-# power zones from "Cyclist's Training Bible", 5th ed., by Joe Friel, p51
-pZones  = { 1   : [    0    ,   0.55*FTP ],
-            2   : [ 0.55*FTP,   0.75*FTP ],
-            3   : [ 0.75*FTP,   0.90*FTP ],
-            4   : [ 0.90*FTP,   1.05*FTP ],
-            5   : [ 1.05*FTP,   1.20*FTP ],
-            6   : [ 1.20*FTP,   1.50*FTP ],
-            7   : [ 1.50*FTP,   2.50*FTP ]}
-
-# heart-rate zones from "Cyclist's Training Bible" 5th ed. by Joe Friel, p50
-hZones  = { 1   : [     0    ,   0.82*FTHR ],  # 1
-            2   : [ 0.82*FTHR,   0.89*FTHR ],  # 2
-            3   : [ 0.89*FTHR,   0.94*FTHR ],  # 3
-            4   : [ 0.94*FTHR,   1.00*FTHR ],  # 4
-            5   : [ 1.00*FTHR,   1.03*FTHR ],  # 5a
-            6   : [ 1.03*FTHR,   1.06*FTHR ],  # 5b
-            7   : [ 1.07*FTHR,   1.15*FTHR ]}  # 5c
-
-# get zone bounds for plotting
-p_zone_bounds   = [ pZones[1][0],
-                    pZones[2][0],
-                    pZones[3][0],
-                    pZones[4][0],
-                    pZones[5][0],
-                    pZones[6][0],
-                    pZones[7][0],
-                    pZones[7][1] ]
-
-h_zone_bounds   = [     0.4*FTHR,   # better plotting
-                    hZones[2][0],
-                    hZones[3][0],
-                    hZones[4][0],
-                    hZones[5][0],
-                    hZones[6][0],
-                    hZones[7][0],
-                    hZones[7][1] ]
-'''
 
 
 from fitparse import Activity
@@ -169,9 +145,10 @@ def HRSimulationError(params):
                               args=args )
     err     = np.squeeze( heart_rate_sim ) \
             - np.squeeze( heart_rate_ci  )
-    RMSError    = np.sqrt(np.average( err**2 ))
-    print 'HRSimulationError called with %10i, %10.1f, %10.3f -> %10.3f' \
-            % (params[0], params[1], params[2], RMSError)
+    RMSError    = np.sqrt(np.average( err[time_idx]**2 ))
+    print >> OutStream, \
+        'HRSimulationError called with %10i, %10.1f, %10.3f -> %10.3f' \
+        % (params[0], params[1], params[2], RMSError)
     return RMSError
 
 
@@ -179,8 +156,11 @@ print >> OutStream, 'Optimization Results:'
 names1  = [ 'FIT File', 'FTHR (BPM)',  'tau (sec)', 'sHRDriftRate' ]
 fmt     = '%20s:' + '%15s'*3
 print >> OutStream, fmt % tuple(names1)
+OutStream.flush()
 
 for FitFile in fit_files:
+
+    TimerStart = time.time()     # measure execution time
 
     print >> OutStream, '#################################################'
     print >> OutStream, '###%s###' % FitFile.center(43)
@@ -222,6 +202,7 @@ for FitFile in fit_files:
     for i in range(1,nScans):
         norm_power[i] = np.average( p30[:i]**4 )**(0.25)
         TSS[i] = time_ci[i]/36*(norm_power[i]/FTP)**2
+    OutStream.flush()
 
     # optimize by minimizing the simulation error
     # Scale HRDriftRate to same order of magnitude as other parameters.
@@ -235,12 +216,19 @@ for FitFile in fit_files:
     print >> OutStream, fmt % (FitFile, res.x[0], res.x[1], res.x[2] )
     print >> OutStream, res
 
-TimerEnd    = time.time()
-ExTime      = TimerEnd - TimerStart
-mm  = ExTime // 60
-ss  = ExTime % 60
-print 'execution time = %02i:%02i' % (mm, ss)
+    TimerEnd    = time.time()
+    ExTime      = TimerEnd - TimerStart
+    mm  = ExTime // 60
+    ss  = ExTime % 60
+    print >> OutStream, 'Results for %s:' % FitFile
+    print >> OutStream, '    execution time = %02i:%02i' % (mm, ss)
+    print >> OutStream, '    ThresholdHR     :%8.1f ; BPM    ' % res.x[0]
+    print >> OutStream, '    HRTimeConstant  :%8.1f ; seconds' % res.x[1]
+    print >> OutStream, '    HRDriftRate     :%8.3f ; BPM/TSS' % (res.x[2]/1e3)
+    OutStream.flush()
 
+if OutStream is not sys.stdout:
+    OutStream.close()
 
 # end pwhr_tf_params()
 
