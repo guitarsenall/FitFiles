@@ -4632,6 +4632,54 @@ files from my Garmin Edge 810.
                         >>> type(ConfigFile) == type('str')
                         True
                     Commit & push.
+                    Got it working in scratch.py.
+                        see pwhr_tf_params_d.png
+                                            Sunday, January 6, 2019 (7:36 AM)
+                :   I think the long time constants have the following causes:
+                    First, they can improve the slow drop in HR after an
+                    interval ends; second, they can improve the slow rise
+                    in HR in early intervals while I am still warming up or
+                    after a long break. 63.0 seconds still does a good job
+                    of modeling the start of an interval.
+                :   A ThresholdHR of 165.0 BPM works well for the threshold
+                    and low-HR-endurance efforts, but seems too low for the
+                    VO2max intervals and other endurance ride. Overall,
+                    I think 170 BPM is a better value.
+                :   A better value for HRDriftRate is 0.100. This represents
+                    a 10-BPM increase over a 100-TSS ride, and 17 BPM would
+                    be quite rare. Check a longer endurance ride:
+                    2019-01-02-12-50-40.fit. This was a particularly
+                    strong ride:
+                    lap results:
+                                   lap     avg    norm     avg     max
+                         lap      time   power   power      HR      HR      EF
+                           0     11:11     169     179     123     141    1.46
+                           1      9:50     189     193     137     149    1.42
+                           2      7:26     190     191     140     145    1.37
+                           3      9:32     183     188     142     150    1.33
+                           4      9:20     177     189     143     154    1.32
+                           5      9:06     179     195     143     151    1.37
+                           6      9:34     180     187     138     145    1.36
+                           7      9:13     184     197     141     151    1.40
+                           8      9:02     181     189     142     148    1.33
+                           9      9:19     179     184     143     149    1.29
+                          10      9:39     171     178     145     148    1.24
+                          11      9:32     168     177     143     151    1.24
+                          12      6:33      61      89     126     150    0.71
+                    ride-level results:
+                                moving     avg    norm     avg             Pw:
+                         seg      time   power   power      HR      EF      HR
+                         all   1:59:25     171     185     138    1.34     6.3
+                        1-11   1:41:40     178     188     141    1.33     4.4
+                    ThresholdHR of 165.0 BPM works better for this ride to
+                    illustrate that 0.100 BPM/TSS is more appropriate:
+                        see pwhr_tf_params_e.png
+                :   So the conclusion from parameter inference is:
+                        ThresholdHR     : 170.0     ; BPM
+                        HRTimeConstant  :  63.0     ; seconds
+                        HRDriftRate     : 0.100     ; BPM/TSS
+                :   Commit & push.
+
 
 d:
 cd D:\Users\Owner\Documents\OneDrive\2018\notesparser\wxPython-demo-4.0.3\demo

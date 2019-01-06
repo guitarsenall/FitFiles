@@ -1,38 +1,34 @@
 
 # scratch.py
 
+
+# Plot multiple workouts with different solutions for
+# HR-simulation parameters.
 import sys
 from pwhr_transfer_function import pwhr_transfer_function
 ConfigFile  = r'D:\Users\Owner\Documents\OneDrive\2018\fitfiles\\'  \
             + r'cyclingconfig_will.txt'
 OutStream   = sys.stdout
 FilePath    = r'S:\will\documents\OneDrive\bike\activities\will\\'
-fit_files   = [ '2018-12-10-17-28-24.fit' ,   # VO2max intervals
-                '2018-09-03-17-36-11.fit' ,   # threshold effort
-                '2018-07-17-15-12-10.fit' ,   # threshold intervals
-                '2018-12-31-12-23-12.fit' ,   # endurance
-                '2019-01-02-12-50-40.fit'     # endurance lo-HR
-              ] #[2:3]
 params  = [
-    #           file                  FTHR      tau  HRDriftRate
-    [  '2018-12-10-17-28-24.fit',      '181',   '202.2', ' .207684' ],
-    [  '2018-09-03-17-36-11.fit',      '160',   '189.2', ' .167104' ],
-    [  '2018-07-17-15-12-10.fit',      '175',   '144.3', ' .100218' ],
-    [  '2018-12-31-12-23-12.fit',      '179',   '142.7', '-. 89239' ],
-    [  '2019-01-02-12-50-40.fit',      '167',   '218.3', ' . 86974' ]]
-
+    #         file              FTHR    tau    HRDriftRate
+    ['2018-12-10-17-28-24.fit', '181', '202.2', ' 0.207684' ], # VO2max intervals
+    ['2018-09-03-17-36-11.fit', '160', '189.2', ' 0.167104' ], # threshold effort
+    ['2018-07-17-15-12-10.fit', '175', '144.3', ' 0.100218' ], # threshold intervals
+    ['2018-12-31-12-23-12.fit', '179', '142.7', '-0.089239' ], # endurance
+    ['2019-01-02-12-50-40.fit', '167', '218.3', ' 0.086974' ], # endurance lo-HR
+    ['2019-01-02-12-50-40.fit', '165', ' 63.0', ' 0.100000' ]  # endurance long
+    ] #2:3
 from ConfigParser import ConfigParser
 config      = ConfigParser()
 config.read(ConfigFile)
-config.set('power', 'ThresholdHR', repr(160.0))
-with open(ConfigFile, 'wb') as configfile:
-    config.write(configfile)
-
-
-#for i in range(5):
-#    fitfilepath = FilePath + fit_files[i]
-#    pwhr_transfer_function( fitfilepath, OutStream=sys.stdout,
-#                            ConfigFile=ConfigFile)
+for i in range(5):
+    fitfilepath = FilePath + params[i][0]
+    config.set( 'power', 'ThresholdHR',    params[i][1] )
+    config.set( 'power', 'HRTimeConstant', params[i][2] )
+    config.set( 'power', 'HRDriftRate',    params[i][3] )
+    pwhr_transfer_function( fitfilepath, OutStream=sys.stdout,
+                            ConfigFile=config )
 
 
 

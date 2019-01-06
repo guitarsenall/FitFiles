@@ -11,8 +11,8 @@ sex         : male          ; male or female
 EndurancePower  : 175.0     ; watts
 ThresholdPower  : 250.0     ; watts
 EnduranceHR     : 140.0     ; BPM
-ThresholdHR     : 180.0     ; BPM
-HRTimeConstant  :  48.0     ; seconds
-HRDriftRate     :-0.120     ; BPM/TSS
+ThresholdHR     : 170.0     ; BPM
+HRTimeConstant  :  63.0     ; seconds
+HRDriftRate     : 0.100     ; BPM/TSS
 
 

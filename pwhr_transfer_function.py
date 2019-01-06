@@ -102,15 +102,20 @@ def pwhr_transfer_function(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
             print >> OutStream, ConfigFile
         elif 'kim' in FilePath.split('\\'):
             ConfigFile = FilePath + r'\cyclingconfig_kim.txt'
-    if (ConfigFile is None) or (not os.path.exists(ConfigFile)):
-        raise IOError('Configuration file not specified or found')
+
+    print >> OutStream, 'ConfigFile type = ', type(ConfigFile)
 
     #
     #   Parse the configuration file
     #
-    config      = ConfigParser()
-    config.read(ConfigFile)
-    print >> OutStream, 'reading config file ' + ConfigFile
+    if type(ConfigFile) != type( ConfigParser() ):
+        if (ConfigFile is None) or (not os.path.exists(ConfigFile)):
+            raise IOError('Configuration file not specified or found')
+        config      = ConfigParser()
+        config.read(ConfigFile)
+        print >> OutStream, 'reading config file ' + ConfigFile
+    else:
+        config  = ConfigFile
     WeightEntry     = config.getfloat( 'user', 'weight' )
     WeightToKg      = config.getfloat( 'user', 'WeightToKg' )
     weight          = WeightEntry * WeightToKg
@@ -131,6 +136,7 @@ def pwhr_transfer_function(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     print >> OutStream, 'ThresholdHR    : ', ThresholdHR
     print >> OutStream, 'HRTimeConstant : ', HRTimeConstant
     print >> OutStream, 'HRDriftRate    : ', HRDriftRate
+
 
     # power zones from "Cyclist's Training Bible", 5th ed., by Joe Friel, p51
     FTP = ThresholdPower
