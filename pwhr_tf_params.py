@@ -34,16 +34,17 @@ class PrintAndFileStream():
 
 #ConfigFile  = r'D:\Users\Owner\Documents\OneDrive\2018\fitfiles\\'  \
 ConfigFile  = r'S:\will\documents\OneDrive\2018\fitfiles\\'  \
-            + r'cyclingconfig_will.txt'
+            + r'cyclingconfig_kim.txt'
 #OutStream   = sys.stdout
 OutStream   = PrintAndFileStream('output.txt')
 
-FilePath    = r'S:\will\documents\OneDrive\bike\activities\will\\'
-fit_files   = [ '2018-12-10-17-28-24.fit' ,   # VO2max intervals
-                '2018-09-03-17-36-11.fit' ,   # threshold effort
-                '2018-07-17-15-12-10.fit' ,   # threshold intervals
-                '2018-12-31-12-23-12.fit' ,   # endurance
-                '2019-01-02-12-50-40.fit'     # endurance lo-HR
+FilePath    = r'S:\will\documents\OneDrive\bike\activities\kim\\'
+fit_files   = [ '2018-09-10-18-21-11.fit' ,   # A2
+                '2018-06-22-18-35-17.fit' ,   # M2
+                '2018-08-25-17-27-32.fit' ,   # M6
+                '2018-09-24-18-27-54.fit' ,   # M6
+                '2018-09-06-18-23-46.fit' ,   # M1
+                '2018-12-26-14-51-33.fit'     # E2
               ] #[2:3]
 
 #(FilePath, FitFileName) = os.path.split(FitFilePath)

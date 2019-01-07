@@ -4206,7 +4206,7 @@ files from my Garmin Edge 810.
             Tag as v1.1.
             Push tags.
 
-    *   Parameter inference.
+    *   Parameter inference for Will.
         -   How will I approach it?
             >   The main component is scipy.optimize.minimize() as used
                 in compare_two_powers.py. I will need a function that
@@ -4679,6 +4679,30 @@ files from my Garmin Edge 810.
                         HRTimeConstant  :  63.0     ; seconds
                         HRDriftRate     : 0.100     ; BPM/TSS
                 :   Commit & push.
+
+    *   Parameter inference for Kim.
+        -   Baseline values:
+                ThresholdHR     : 165.0     ; BPM
+                HRTimeConstant  :  63.0     ; seconds
+                HRDriftRate     :  0.10     ; BPM/TSS
+            I really have no idea about the last two. I think she has a
+            faster time constant and lower drift rate than me.
+        -   Assemble some sample files.
+                    2018-09-10-18-21-11.fit     A2  kim_pwhr_a2_a.png
+                    2018-06-22-18-35-17.fit     M2  kim_pwhr_m2_a.png
+                    2018-08-25-17-27-32.fit     M6  kim_pwhr_m6_a.png
+                    2018-09-24-18-27-54.fit     M6  kim_pwhr_m6_b.png
+                    2018-09-06-18-23-46.fit     M1  kim_pwhr_m1_a.png
+                    2018-12-26-14-51-33.fit     E2  kim_pwhr_e2_a.png
+        -   Launch pwhr_tf_params.py with these six files.
+                            file                  FTHR      tau  HRDriftRate
+                    2018-09-10-18-21-11.fit:       161      67.3   154.862
+                    2018-06-22-18-35-17.fit:       150      56.6   332.012
+                    2018-08-25-17-27-32.fit:       161      66.9   355.928
+                    2018-09-24-18-27-54.fit:       171     110.7   103.539
+                    2018-09-06-18-23-46.fit:       153      70.1   381.981
+                    2018-12-26-14-51-33.fit:       157      75.8   151.274
+            >   Commit & push.
 
 
 d:
