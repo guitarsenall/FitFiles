@@ -4703,6 +4703,108 @@ files from my Garmin Edge 810.
                     2018-09-06-18-23-46.fit:       153      70.1   381.981
                     2018-12-26-14-51-33.fit:       157      75.8   151.274
             >   Commit & push.
+                                        Wednesday, January 9, 2019 (7:33 AM)
+        -   Simulate these files and solutions in scratch.py.
+            >   A word about approach:
+                    see pwhr_tf_params_f.png
+                PyScripter is used to launch scratch.py and generate plots
+                with solved parameters. fitfileanalyses.bat is used to
+                launch fitfileanalyses.py, which is used with
+                cyclingconfig_kim.txt to generate plots with fine-tuned
+                solutions.
+            >   2018-09-10-18-21-11.fit (A2)
+                FTHR looks good. Time constant should be faster. Drift rate
+                reasonable. Try these values:
+                    ThresholdHR     : 162.0     ; BPM
+                    HRTimeConstant  :  50.0     ; seconds
+                    HRDriftRate     :  0.15     ; BPM/TSS
+                Looks fabulous!!
+                    see kim_pwhr_a2_b.png
+            >   2018-06-22-18-35-17.fit (M2)
+                FTHR may be increased to improve intervals 2 & 3. Still
+                warming up in I1. Tau could be faster for I3, but it looks
+                good in the others. Drift rate would be too high if FTHR
+                is increased. Try same values:
+                    ThresholdHR     : 162.0     ; BPM
+                    HRTimeConstant  :  50.0     ; seconds
+                    HRDriftRate     :  0.15     ; BPM/TSS
+                which give,
+                    see kim_pwhr_m2_b.png
+                I like it, for the most part. tau=50s works well for I3-5,
+                if a little fast for I1-2. FTHR looks right for the most part,
+                though I1 and I5 are mysteries. Consult WKO4:
+                    see kim_pwhr_m2_c.png
+                I1 and I5 are performed at lower cadence. Even the small
+                bumps in measured HR during the intervals correlate with
+                cadence changes. I have often observed that Kim is strongest
+                at 80-85 RPM.
+            >   2018-08-25-17-27-32.fit (M6)
+                FTHR looks a bit low; I would guess 165 BPM would correlate
+                better. Difficult to assess tau with the variability.
+                If FTHR is increased, drift rate is probably OK, though it
+                is a high value. Try these values.
+                    ThresholdHR     : 165.0     ; BPM
+                    HRTimeConstant  :  50.0     ; seconds
+                    HRDriftRate     :  0.30     ; BPM/TSS
+                Looks pretty good:
+                    see kim_pwhr_m6_c.png
+                Once she is warmed up, it correlates well.
+            >   2018-09-24-18-27-54.fit (another M6)
+                I think FTHR (171) is too high and drift rate (0.103539)
+                is too low. Try new values:
+                    ThresholdHR     : 165.0     ; BPM
+                    HRTimeConstant  :  50.0     ; seconds
+                    HRDriftRate     :  0.15     ; BPM/TSS
+                Better:
+                    see kim_pwhr_m6_d.png
+                I think I'm happy with this, for the most part. But what
+                happened in the middle where Kim's measured HR runs high?
+                Consult WKO4:
+                    see kim_pwhr_m6_e.png
+                Again, cadence has a discernible effect. Kim's HR runs high
+                when cadence drops quite low (40-70 rpm) during the climb.
+                So I am happy with these values.
+            >   2018-09-06-18-23-46.fit (M1)
+                FTHR (153) and drift rate (0.381981) are probably low and
+                high, respectively. Arrive at these values:
+                    ThresholdHR     : 160.0     ; BPM
+                    HRTimeConstant  :  50.0     ; seconds
+                    HRDriftRate     :  0.30     ; BPM/TSS
+                which give,
+                    see kim_pwhr_m1_b.png
+                FTHR needs to be reduced to 160 for this one, and drift rate
+                is quite high--for the second time. Other effects appear
+                to be present in the long warmup.
+            >   2018-12-26-14-51-33.fit (E2)
+                The solution correlates quite well, though tau would not
+                matter here. Kim did a great job on this workout of keeping
+                her power in a steady zone-2 until the end, where her measured
+                power exceeds the simulation. I settled on these values:
+                    ThresholdHR     : 160.0     ; BPM
+                    HRTimeConstant  :  50.0     ; seconds
+                    HRDriftRate     :  0.15     ; BPM/TSS
+                which give,
+                    see kim_pwhr_e2_b.png
+                and look great. Also, this long endurance interval has
+                            moving     avg    norm     avg             Pw:
+                     seg      time   power   power      HR      EF      HR
+                     all   2:04:39     100     105     132    0.80     9.3
+                    1-12   1:38:29     107     108     136    0.79     6.8
+                of which a few things could be said. First, the average HR
+                of 136 suggests FTHR = 136+30=166. Second, her average and
+                normalize power are 107-108W for the interval, quite close
+                to her target of 150*0.7=105W, but a little higher, placing
+                her aerobic threshold closer to 135 BPM. Third, her Pw:HR
+                drift is 6.8%--just higher than the target of 6%, making
+                this a textbook endurance workout. All these make me weight
+                its results high.
+            >   Final values.
+                I think Kim's most representative parameters would be
+                    ThresholdHR     : 165.0     ; BPM
+                    HRTimeConstant  :  50.0     ; seconds
+                    HRDriftRate     :  0.15     ; BPM/TSS
+                On strong days, her FTHR can run about 5-BPM lower.
+            >   Commit & push.
 
 
 d:
@@ -4737,6 +4839,10 @@ TO DO:
             >   Example:
                     https://www.dcrainmaker.com/analyzer
     *   General
+        -   Make sure fitfileanalyses.bat works correctly on desktop and
+            laptop without editing.
+        -   I need a plot title control!
+        -   I need a "close plots" button!
         -   Time axis for time plots has the day-of-month number.
         -   Error and exception handling
         -   Encapsulate heart-rate and power zones for plotting axes.
@@ -4752,6 +4858,7 @@ TO DO:
         -   A new basis for cardiac drift: HRDriftRate. If measured HR drifts
             upward faster than simulated, then the true drift is greater and
             can be quantified by the error Vs running TSS.
+            >   Try on 2018-08-25-17-27-32.fit (M6 by Kim with lots of drift)
     *   zone_detect
         -   Can I plot the variable-increment data and avoid the vertical lines
             to zero?
