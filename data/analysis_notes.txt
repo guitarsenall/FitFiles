@@ -4805,6 +4805,46 @@ files from my Garmin Edge 810.
                     HRDriftRate     :  0.15     ; BPM/TSS
                 On strong days, her FTHR can run about 5-BPM lower.
             >   Commit & push.
+                                        Thursday, January 10, 2019 (8:02 AM)
+        -   I noticed fitfileanalyses.bat is set up to work either on
+            the desktop or laptop, and I have to edit it to switch.
+            >   Research.
+                    https://docs.microsoft.com/en-us/windows-server
+                        /administration/windows-commands/windows-commands
+                The old "DOS Prompt" is now referred to as the
+                "Windows Command Shell."
+                    https://www.windows-commandline.com
+                        /batch-file-get-current-directory/
+                This the current directory is in environment variable CD:
+                    set base=%CD%
+                and this fixes the problem!
+
+    *   A new basis for cardiac drift: HRDriftRate.
+        -   If measured HR drifts upward faster than simulated, then the true
+            drift is greater and can be quantified by the error Vs running TSS.
+            I think this amounts to performing linear regression between
+            TSS and the error and extracting the slope.
+            >   Weight by HR.
+        -   Try on 2018-08-25-17-27-32.fit (M6 by Kim with lots of drift)
+        -   Actually, I can also get an estimate for FTHR from a single
+            simulation to tell me if my HR is running high. Simply use
+            the error.
+            >   Can I weight it by HR?
+            >   Would this come from the offset in linear regression?
+                I think so.
+        -   When did I do linear regression before? compare_two_powers.py:
+                coef    = polyfit( x, y, deg=1 )
+                slope   = coef[0]
+                offset  = coef[1]
+            polyfit() is in NumPy:
+                https://docs.scipy.org/doc/numpy-1.15.0/reference/generated
+                    /numpy.polyfit.html
+            and it includes weights:
+                numpy.polyfit(x, y, deg, rcond=None, full=False,
+                                w=None, cov=False)[source]
+            I think we can do this.
+            >   Commit & push.
+
 
 
 d:
@@ -4839,8 +4879,6 @@ TO DO:
             >   Example:
                     https://www.dcrainmaker.com/analyzer
     *   General
-        -   Make sure fitfileanalyses.bat works correctly on desktop and
-            laptop without editing.
         -   I need a plot title control!
         -   I need a "close plots" button!
         -   Time axis for time plots has the day-of-month number.
@@ -4855,10 +4893,6 @@ TO DO:
     *   endurance_summery
         -   Eventually included percent seated time.
         -   Power balance while seated. Degrading with fatigue?
-        -   A new basis for cardiac drift: HRDriftRate. If measured HR drifts
-            upward faster than simulated, then the true drift is greater and
-            can be quantified by the error Vs running TSS.
-            >   Try on 2018-08-25-17-27-32.fit (M6 by Kim with lots of drift)
     *   zone_detect
         -   Can I plot the variable-increment data and avoid the vertical lines
             to zero?

@@ -1,7 +1,10 @@
 ECHO OFF
 
+echo Currently running in %CD%
+
+set base=%CD%
 REM set base=S:\will\documents\OneDrive\2018\fitfiles
-set base=D:\Users\Owner\Documents\OneDrive\2018\fitfiles
+REM set base=D:\Users\Owner\Documents\OneDrive\2018\fitfiles
 
 REM s:
 REM cd S:\will\documents\2018\fitfiles\
