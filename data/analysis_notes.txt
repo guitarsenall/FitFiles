@@ -4956,6 +4956,8 @@ files from my Garmin Edge 810.
                 see pwhr_estimate_e.png
             Looking good!
             Commit & push (capture the debug plot)
+            Remove the debug plot
+            Commit & push.
 
 
 

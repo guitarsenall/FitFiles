@@ -266,19 +266,6 @@ def pwhr_transfer_function(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
                         % NewThresholdHR
     print >> OutStream, 'Estimated HRDriftRate : %7.4f BPM/TSS' \
                         % NewHRDriftRate
-    # debug plots
-    print 'coef = ', coef
-    CrossPlotFig    = plt.figure()
-    sc = plt.scatter(TSS[time_idx], -err[time_idx], s=5 )
-    plt.title('negated err Vs TSS')
-    plt.xlabel('TSS')
-    plt.ylabel('BPM')
-    plt.grid(b=True, which='major', axis='both')
-    a = plt.axis()
-    #plt.axis([ 0, a[1], 0, a[3] ])
-    plt.show()
-
-
 
     #
     # time plot
