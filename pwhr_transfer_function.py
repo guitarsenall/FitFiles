@@ -92,16 +92,22 @@ class HeartRateSimulator():
 
 def pwhr_transfer_function(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
 
+    # this needs to stay INSIDE the function or bad things happen
+    import matplotlib.pyplot as plt
+
     (FilePath, FitFileName) = os.path.split(FitFilePath)
 
     if ConfigFile is None:
         # attempt to find appropriate config file
+        # consider adding os.getcwd() to search path
         if 'will' in FilePath.split('\\'):
             ConfigFile = FilePath + r'\cyclingconfig_will.txt'
             print >> OutStream, 'ConfigFile:'
             print >> OutStream, ConfigFile
         elif 'kim' in FilePath.split('\\'):
             ConfigFile = FilePath + r'\cyclingconfig_kim.txt'
+            print >> OutStream, 'ConfigFile:'
+            print >> OutStream, ConfigFile
 
     print >> OutStream, 'ConfigFile type = ', type(ConfigFile)
 
@@ -199,20 +205,6 @@ def pwhr_transfer_function(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
             print >> OutStream, '   ' + s
         raise IOError(msg)
 
-    '''
-    # get the FTP
-    FTP = 250.0 #assume if not present
-    records = activity.get_records_by_type('zones_target')
-    for record in records:
-        valid_field_names = record.get_valid_field_names()
-        for field_name in valid_field_names:
-            if 'functional_threshold_power' in field_name:
-                field_data = record.get_data(field_name)
-                field_units = record.get_units(field_name)
-                print >> OutStream, 'FTP setting = %i %s' % (field_data, field_units)
-                FTP = field_data
-    '''
-
     # resample to constant-increment (1 Hz) with zeros at missing samples
     time_idx                = signals['time'].astype('int')
     power_vi                = signals['power']
@@ -239,7 +231,6 @@ def pwhr_transfer_function(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     #
     SampleRate  = 1.0
     tau         = HRTimeConstant    # 63.0 seconds
-    #HRDriftRate = 0.17  # BPM/TSS
     PwHRTable   = np.array( [
                     [    0    ,  0.50*FTHR ],   # Active resting HR
                     [ 0.55*FTP,  0.70*FTHR ],   # Recovery
@@ -255,18 +246,44 @@ def pwhr_transfer_function(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     heart_rate_sim = odeint( heartrate_dot, heart_rate_ci[0], time_ci )
     err     = np.squeeze( heart_rate_sim ) \
             - np.squeeze( heart_rate_ci  )
-    RMSError    = np.sqrt(np.average( err**2 ))
-    print >> OutStream, 'Average  measured HR: %3i BPM' \
+    RMSError    = np.sqrt(np.average( err[time_idx]**2 ))
+    print >> OutStream, 'Average  measured HR  : %7i BPM' \
                         % np.average(heart_rate_ci)
-    print >> OutStream, 'Average simulated HR: %3i BPM' \
+    print >> OutStream, 'Average simulated HR  : %7i BPM' \
                         % np.average(heart_rate_sim)
-    print >> OutStream, 'RMS error           : %3i BPM' % RMSError
+    print >> OutStream, 'RMS error             : %7i BPM' % RMSError
+
+    #
+    # Estimate better values for FTHR and HRDriftRate
+    #
+    coef    = np.polyfit( TSS[time_idx], -err[time_idx], deg=1,
+                          w = heart_rate_ci[time_idx]-0.50*FTHR )
+    slope   = coef[0]
+    offset  = coef[1]
+    NewThresholdHR  = offset + ThresholdHR
+    NewHRDriftRate  = slope + HRDriftRate
+    print >> OutStream, 'Estimated ThresholdHR : %7.1f BPM' \
+                        % NewThresholdHR
+    print >> OutStream, 'Estimated HRDriftRate : %7.4f BPM/TSS' \
+                        % NewHRDriftRate
+    # debug plots
+    print 'coef = ', coef
+    CrossPlotFig    = plt.figure()
+    sc = plt.scatter(TSS[time_idx], -err[time_idx], s=5 )
+    plt.title('negated err Vs TSS')
+    plt.xlabel('TSS')
+    plt.ylabel('BPM')
+    plt.grid(b=True, which='major', axis='both')
+    a = plt.axis()
+    #plt.axis([ 0, a[1], 0, a[3] ])
+    plt.show()
+
+
 
     #
     # time plot
     #
 
-    import matplotlib.pyplot as plt
     import matplotlib.dates as md
     from matplotlib.dates import date2num, DateFormatter
     import datetime as dt

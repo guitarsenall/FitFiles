@@ -136,6 +136,9 @@ analyses_labels = [ 'Endurance Laps',
                     'Heart Rate',
                     'Pw-HR Simulation',
                     'Compare Two Powers']
+
+# make sure matplotlib is imported INSIDE the analysis functions
+# or bad things happen (e.g., code freezes until plot is closed, etc...).
 from endurance_summary import endurance_summary
 from zone_detect import zone_detect
 from plot_heartrate import plot_heartrate

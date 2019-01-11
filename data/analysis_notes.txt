@@ -4825,7 +4825,6 @@ files from my Garmin Edge 810.
             I think this amounts to performing linear regression between
             TSS and the error and extracting the slope.
             >   Weight by HR.
-        -   Try on 2018-08-25-17-27-32.fit (M6 by Kim with lots of drift)
         -   Actually, I can also get an estimate for FTHR from a single
             simulation to tell me if my HR is running high. Simply use
             the error.
@@ -4844,6 +4843,119 @@ files from my Garmin Edge 810.
                                 w=None, cov=False)[source]
             I think we can do this.
             >   Commit & push.
+                                            Friday, January 11, 2019 (7:37 AM)
+        -   Execute in pwhr_transfer_function.py. The error needs to be
+            negated since it is defined as simulated minus measured.
+            Other than that, this is quite easy:
+                coef    = np.polyfit( TSS, -err, deg=1, w=heart_rate_ci )
+                slope   = coef[0]
+                offset  = coef[1]
+                NewThresholdHR  = offset + ThresholdHR
+                NewHRDriftRate  = slope + HRDriftRate
+        -   Try it on 2018-08-25-17-27-32.fit (M6 by Kim with lots of drift)
+                EndurancePower :  105.0
+                ThresholdPower :  150.0
+                EnduranceHR    :  135.0
+                ThresholdHR    :  165.0
+                HRTimeConstant :  50.0
+                HRDriftRate    :  0.15
+                Average  measured HR  :     142 BPM
+                Average simulated HR  :     139 BPM
+                RMS error             :      11 BPM
+                Estimated ThresholdHR :   159.9 BPM
+                Estimated HRDriftRate :  0.4318 BPM/TSS
+            Are these truly better values? ThresholdHR seems low, and
+            HRDriftRate seems high.
+                see pwhr_estimate_a.png
+            and output is
+                EndurancePower :  105.0
+                ThresholdPower :  150.0
+                EnduranceHR    :  135.0
+                ThresholdHR    :  169.9
+                HRTimeConstant :  50.0
+                HRDriftRate    :  0.4318
+                Average  measured HR  :     142 BPM
+                Average simulated HR  :     152 BPM
+                RMS error             :      13 BPM
+                Estimated ThresholdHR :   160.8 BPM
+                Estimated HRDriftRate :  0.4359 BPM/TSS
+            The drift rate makes sense, but not FTHR. Have I misunderstood
+            the sign? The offset from regression is for a line
+                x = TSS
+                y = heart_rate_ci - heart_rate_sim
+            A positive offset means sim > meas. So increasing FTHR should
+            correct it, not exacerbate it. But notice the new
+            Estimated are the same, meaning the correction worked.
+            I need a plot.
+                CrossPlotFig    = plt.figure()
+                sc = plt.scatter(TSS, -err, s=5 )
+                plt.title('negated err Vs TSS')
+                plt.xlabel('TSS')
+                plt.ylabel('BPM')
+                plt.grid(b=True, which='major', axis='both')
+                a = plt.axis()
+                #plt.axis([ 0, a[1], 0, a[3] ])
+                plt.show()
+            gives,
+                see pwhr_estimate_b.png
+            Shouldn't the offset be roughly -10 BPM for this? It is:
+                coef =  [ 4.06020299e-03 -9.07561056e+00]
+            Zoom in on the outlier points:
+                see pwhr_estimate_c.png
+            This is really not making sense.
+            I screwed up and entered ThresholdHR=169.9 in the config.
+            Try again. Output:
+                EndurancePower :  105.0
+                ThresholdPower :  150.0
+                EnduranceHR    :  135.0
+                ThresholdHR    :  159.9
+                HRTimeConstant :  50.0
+                HRDriftRate    :  0.4318
+                executing Wills version of profile.def
+                Average  measured HR  :     142 BPM
+                Average simulated HR  :     144 BPM
+                RMS error             :       9 BPM
+                Estimated ThresholdHR :   159.5 BPM
+                Estimated HRDriftRate :  0.4281 BPM/TSS
+                coef =  [-0.00367132 -0.41887397]
+            Plot:
+                see pwhr_estimate_d.png
+            IT WORKED!!
+        -   I think I can improve the weighting. Zero weight should not be
+            zero BPM but rather low BPM--namely, Active resting HR, which
+            is set to 0.50*FTHR.
+            Also, use only active time indices:
+                coef    = np.polyfit( TSS[time_idx], -err[time_idx], deg=1,
+                                      w = heart_rate_ci[time_idx]-0.50*FTHR )
+            which gives,
+                EnduranceHR    :  135.0
+                ThresholdHR    :  165.0
+                HRTimeConstant :  50.0
+                HRDriftRate    :  0.15
+                executing Wills version of profile.def
+                Average  measured HR  :     142 BPM
+                Average simulated HR  :     139 BPM
+                RMS error             :       9 BPM
+                Estimated ThresholdHR :   160.8 BPM
+                Estimated HRDriftRate :  0.4323 BPM/TSS
+                coef =  [ 0.28228188 -4.24679638]
+            Try the new values:
+                ThresholdPower :  150.0
+                EnduranceHR    :  135.0
+                ThresholdHR    :  160.8
+                HRTimeConstant :  50.0
+                HRDriftRate    :  0.4323
+                executing Wills version of profile.def
+                Average  measured HR  :     142 BPM
+                Average simulated HR  :     145 BPM
+                RMS error             :       6 BPM
+                Estimated ThresholdHR :   160.7 BPM
+                Estimated HRDriftRate :  0.4265 BPM/TSS
+                coef =  [-0.00575196 -0.13777047]
+            plot:
+                see pwhr_estimate_e.png
+            Looking good!
+            Commit & push (capture the debug plot)
 
 
 
@@ -4890,6 +5002,8 @@ TO DO:
         -   Consider automatically forming the name of ConfigFile from the
             folder the FIT file is in: e.g., cyclingconfig_user.txt for
             .\path\user\*.fit
+        -   consider adding os.getcwd() to search path for ConfigFile.
+
     *   endurance_summery
         -   Eventually included percent seated time.
         -   Power balance while seated. Degrading with fatigue?
