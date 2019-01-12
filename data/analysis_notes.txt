@@ -4958,7 +4958,26 @@ files from my Garmin Edge 810.
             Commit & push (capture the debug plot)
             Remove the debug plot
             Commit & push.
-
+                                        Saturday, January 12, 2019 (8:59 AM)
+        -   Actually, I still want the debug code in there, but commented
+            out. I will use it for presentation with 2019-01-11-12-41-44.fit
+            (drift rate = 0.25 BPM/TSS)
+            >   Use zero for the drift rate to accent it in the plot.
+                    EndurancePower :  175.0
+                    ThresholdPower :  250.0
+                    EnduranceHR    :  140.0
+                    ThresholdHR    :  170.0
+                    HRTimeConstant :  63.0
+                    HRDriftRate    :  0.0
+                    executing Wills version of profile.def
+                    Average  measured HR  :     144 BPM
+                    Average simulated HR  :     136 BPM
+                    RMS error             :      13 BPM
+                    Estimated ThresholdHR :   166.5 BPM
+                    Estimated HRDriftRate :  0.2467 BPM/TSS
+                    coef =  [ 0.24668648 -3.46994603]
+            >   Add the fitted line to the plot.
+                    see pwhr_estimate_f.png
 
 
 d:
@@ -4993,6 +5012,8 @@ TO DO:
             >   Example:
                     https://www.dcrainmaker.com/analyzer
     *   General
+        -   Add os.getcwd() to search path for ConfigFile. Use a list
+            of paths, and prioritize the code path.
         -   I need a plot title control!
         -   I need a "close plots" button!
         -   Time axis for time plots has the day-of-month number.
@@ -5004,7 +5025,6 @@ TO DO:
         -   Consider automatically forming the name of ConfigFile from the
             folder the FIT file is in: e.g., cyclingconfig_user.txt for
             .\path\user\*.fit
-        -   consider adding os.getcwd() to search path for ConfigFile.
 
     *   endurance_summery
         -   Eventually included percent seated time.
