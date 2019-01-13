@@ -5008,6 +5008,25 @@ files from my Garmin Edge 810.
             That is, with a given HRDriftRate, HR drifts higher and higher
             the longer the workout is, so cardiac drift (as a percentage
             change in EF) increases, even though the drift rate is the same.
+                                            Sunday, January 13, 2019 (9:19 AM)
+        -   Get fitfileanalyses.bat to work on both laptop and desktop
+            if file is drag-dropped onto fitfileanalyses.bat.
+            >   Experiment in scratch.bat.
+            >   See
+                    https://stackoverflow.com/questions/659647
+                        /how-to-get-folder-path-from-file-path-with-cmd
+                    https://stackoverflow.com/questions/9681863
+                        /windows-batch-variables-wont-set
+                    https://stackoverflow.com/questions/7805510
+                        /set-variable-in-if-block
+            >   This seems to be working on both machines:
+                    echo.input file is %~1
+                    echo.drive letter is %~d1
+                    set base=S:\will\documents\OneDrive\2018\fitfiles
+                    if "%~d1" == "D:" (
+                        set base=D:\Users\Owner\Documents\OneDrive\2018\fitfiles
+                    )
+            >   Commit & push.
 
 
 
@@ -5043,15 +5062,6 @@ TO DO:
             >   Example:
                     https://www.dcrainmaker.com/analyzer
     *   General
-        -   Get fitfileanalyses.bat to work on both laptop and desktop
-            if file is drag-dropped onto fitfileanalyses.bat.
-            >   See
-                    https://stackoverflow.com/questions/659647
-                        /how-to-get-folder-path-from-file-path-with-cmd
-                    https://stackoverflow.com/questions/9681863
-                        /windows-batch-variables-wont-set
-                    https://stackoverflow.com/questions/7805510
-                        /set-variable-in-if-block
         -   Add os.getcwd() to search path for ConfigFile. Use a list
             of paths, and prioritize the code path.
         -   I need a plot title control!
