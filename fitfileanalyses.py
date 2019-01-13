@@ -343,7 +343,10 @@ vbox.Add(OutputTextCtl, proportion=1,
          flag=wx.EXPAND | wx.LEFT | wx.BOTTOM | wx.RIGHT, border=5)
 bkg.SetSizer(vbox)
 
-# attempt to load file specified in command line
+# attempt to load file specified in command line.
+# Recall, sys.argv[0] is the name of the python routine with the
+# full path, so it is the CodePath.
+# sys.argv[1:] is the first argument (hopefully the FIT file).
 import sys
 if len(sys.argv) >= 1:
     (CodePath, PyFileName)      = os.path.split(sys.argv[0])

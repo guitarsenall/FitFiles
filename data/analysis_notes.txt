@@ -5027,6 +5027,44 @@ files from my Garmin Edge 810.
                         set base=D:\Users\Owner\Documents\OneDrive\2018\fitfiles
                     )
             >   Commit & push.
+        -   Back to the analysis of cardiac drift. HR will gradually increase
+            from HRbeg to HRend over the duration d. So the first and
+            second halves will have averages
+                HRmid   = (HRbeg+HRend)/2
+                AvBeg   = (HRbeg+HRmid)/2
+                AvEnd   = (HRmid+HRend)/2
+            So an increase of CD=1.06 (6%) would look like
+                CD  = AvEnd/AvBeg
+            thus,
+                AvEnd   = AvBeg*CD = (HRbeg+HRmid)/2 * CD
+                        = ( HRbeg + (HRbeg+HRend)/2 )/2 * CD
+                        = ( 1.5*HRbeg + HRend/2 )/2 * CD
+                        = ( 0.75*HRbeg + 0.25*HRend ) * CD
+            The other expression for AvEnd is,
+                AvEnd   = ( HRmid + HRend )/2
+                        = ( (HRbeg+HRend)/2 + HRend )/2
+                        =   0.25*HRbeg + 0.75*HRend
+            Set these equal:
+                0.25*HRbeg + 0.75*HRend = ( 0.75*HRbeg + 0.25*HRend ) * CD
+                0.75*HRend - 0.25*CD*HRend = 0.75*CD*HRbeg - 0.25*HRbeg
+                (0.75-0.25*CD)*HRend = (0.75*CD-0.25)*HRbeg
+                HRend = (0.75*CD-0.25)/(0.75-0.25*CD) * HRbeg
+            Try it:
+                >>> HRbeg=140.0
+                >>> CD=1.06
+                >>> HRend = (0.75*CD-0.25)/(0.75-0.25*CD) * HRbeg
+                >>> HRend
+                157.31958762886597
+                >>> HRmid   = (HRbeg+HRend)/2
+                >>> AvBeg   = (HRbeg+HRmid)/2
+                >>> AvEnd   = (HRmid+HRend)/2
+                >>> AvBeg, AvEnd
+                (144.3298969072165, 152.98969072164948)
+                >>>
+            It is making sense.
+            Now, over a 2-hour ride, this is an increase of 17 BPM
+            over 100 TSS, or 0.17 BPM/TSS. But over a 4-hour ride, it
+            is half that, or 0.08 BPM/TSS.
 
 
 
