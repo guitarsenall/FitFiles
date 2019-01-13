@@ -248,9 +248,9 @@ def pwhr_transfer_function(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
             - np.squeeze( heart_rate_ci  )
     RMSError    = np.sqrt(np.average( err[time_idx]**2 ))
     print >> OutStream, 'Average  measured HR  : %7i BPM' \
-                        % np.average(heart_rate_ci)
+                        % np.average(heart_rate_ci[time_idx])
     print >> OutStream, 'Average simulated HR  : %7i BPM' \
-                        % np.average(heart_rate_sim)
+                        % np.average(heart_rate_sim[time_idx])
     print >> OutStream, 'RMS error             : %7i BPM' % RMSError
 
     #
@@ -266,6 +266,7 @@ def pwhr_transfer_function(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
                         % NewThresholdHR
     print >> OutStream, 'Estimated HRDriftRate : %7.4f BPM/TSS' \
                         % NewHRDriftRate
+
     # -------------- debug ---------------
     print 'coef = ', coef
     CrossPlotFig    = plt.figure()

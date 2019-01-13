@@ -4979,6 +4979,37 @@ files from my Garmin Edge 810.
             >   Add the fitted line to the plot.
                     see pwhr_estimate_f.png
 
+    *   Create presentation slides in
+        -   What is a 6% cardiac drift for a 3-hour workout?
+            Beginning HR would be
+                >>> HRbeg = 0.82*FTHR
+                >>> HRbeg
+                139.4
+            efficiency factor would be
+                    >>> FTP = 250.0
+                    >>> FTHR = 170.0
+                    >>> EF = (0.70*FTP) / (0.82*FTHR)
+                    >>> EF
+                    1.2553802008608321
+            A 6% change means the EF drops to
+                >>> EF*0.94
+                1.180057388809182
+            which implies a HR of
+                >>> HRnew = (0.70*FTP) / (EF*0.94)
+                >>> HRnew
+                148.29787234042556
+            This would occur over 150 TSS:
+                >>> HRdrift = (HRnew-HRbeg)/150
+                >>> HRdrift
+                0.05931914893617034
+            The fact that 6% drift equates to 0.06 BPM/TSS is coincidental.
+            Wait! This is not adequate because EF is computed for first
+            and second halves of the workout while HR is drifting linearly.
+            That is, with a given HRDriftRate, HR drifts higher and higher
+            the longer the workout is, so cardiac drift (as a percentage
+            change in EF) increases, even though the drift rate is the same.
+
+
 
 d:
 cd D:\Users\Owner\Documents\OneDrive\2018\notesparser\wxPython-demo-4.0.3\demo
@@ -5012,6 +5043,15 @@ TO DO:
             >   Example:
                     https://www.dcrainmaker.com/analyzer
     *   General
+        -   Get fitfileanalyses.bat to work on both laptop and desktop
+            if file is drag-dropped onto fitfileanalyses.bat.
+            >   See
+                    https://stackoverflow.com/questions/659647
+                        /how-to-get-folder-path-from-file-path-with-cmd
+                    https://stackoverflow.com/questions/9681863
+                        /windows-batch-variables-wont-set
+                    https://stackoverflow.com/questions/7805510
+                        /set-variable-in-if-block
         -   Add os.getcwd() to search path for ConfigFile. Use a list
             of paths, and prioritize the code path.
         -   I need a plot title control!
@@ -5025,7 +5065,6 @@ TO DO:
         -   Consider automatically forming the name of ConfigFile from the
             folder the FIT file is in: e.g., cyclingconfig_user.txt for
             .\path\user\*.fit
-
     *   endurance_summery
         -   Eventually included percent seated time.
         -   Power balance while seated. Degrading with fatigue?
