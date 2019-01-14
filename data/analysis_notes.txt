@@ -5065,7 +5065,11 @@ files from my Garmin Edge 810.
             Now, over a 2-hour ride, this is an increase of 17 BPM
             over 100 TSS, or 0.17 BPM/TSS. But over a 4-hour ride, it
             is half that, or 0.08 BPM/TSS.
-
+                                            Monday, January 14, 2019 (8:00 AM)
+        -   Tag this version as v1.2:
+            "pwhr_transfer_function.py estimates FTHR and drift.
+            fitfileanalyses.bat works on desktop or laptop."
+            Commit & push (include tags).
 
 
 d:
