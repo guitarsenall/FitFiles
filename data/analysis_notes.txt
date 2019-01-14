@@ -4979,7 +4979,7 @@ files from my Garmin Edge 810.
             >   Add the fitted line to the plot.
                     see pwhr_estimate_f.png
 
-    *   Create presentation slides in
+    *   Create presentation slides in FitFiles.pptx
         -   What is a 6% cardiac drift for a 3-hour workout?
             Beginning HR would be
                 >>> HRbeg = 0.82*FTHR
@@ -5081,8 +5081,6 @@ TO DO:
             leg force. Create by calculating crank torque and revolutions
             from power and cadence.
         -   Candence analysis: histogram, seated intervals.
-        -   Heart-rate transfer-function parameter inference.
-            >   See discussion above
         -   Analyses for Comparing two files.
             >   File control for second file should be disabled unless
                 the analysis uses it.
@@ -5113,6 +5111,8 @@ TO DO:
         -   Consider automatically forming the name of ConfigFile from the
             folder the FIT file is in: e.g., cyclingconfig_user.txt for
             .\path\user\*.fit
+        -   Collect dependencies (e.g., MatPlotLib) and instructions on how
+            to install them.
     *   endurance_summery
         -   Eventually included percent seated time.
         -   Power balance while seated. Degrading with fatigue?
