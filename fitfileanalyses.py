@@ -32,27 +32,17 @@ wildcard = "FIT files (*.fit)|*.fit|"  \
 #           classes & functions           #
 ###########################################
 
+from activity_tools import FindConfigFile
+
 def AutoFillConfigFile(FilePath):
     CodePath    = stBar.GetStatusText()
     (FitFilePath, FITFileName) = os.path.split( FileNameCtl.GetLabel() )
     print 'AutoFillConfigFile called. CodePath: ' + CodePath
-    # attempt to find appropriate config file
-    if 'will' in FilePath.split('\\')[-1]:
-        ConfigFilename = 'cyclingconfig_will.txt'
-        print 'searching for  ' + CodePath + '\\' + ConfigFilename
-        if os.path.exists(CodePath + '\\' + ConfigFilename):
-            ConfigFileCtl.SetLabel(CodePath + '\\' + ConfigFilename)
-        elif os.path.exists( FitFilePath + '\\' + ConfigFilename):
-            ConfigFileCtl.SetLabel(FitFilePath + '\\' + ConfigFilename)
-    elif 'kim' in FilePath.split('\\')[-1]:
-        ConfigFilename = 'cyclingconfig_kim.txt'
-        print 'searching for  ' + CodePath + '\\' + ConfigFilename
-        if os.path.exists(CodePath + '\\' + ConfigFilename):
-            ConfigFileCtl.SetLabel(CodePath + '\\' + ConfigFilename)
-        elif os.path.exists( FitFilePath + '\\' + ConfigFilename):
-            ConfigFileCtl.SetLabel(FitFilePath + '\\' + ConfigFilename)
-    else:
+    ConfigFile  = FindConfigFile(CodePath, FilePath)
+    if ConfigFile is None:
         ConfigFileCtl.SetLabel('')
+    else:
+        ConfigFileCtl.SetLabel(ConfigFile)
 
 class MyFileDropTarget(wx.FileDropTarget):
     def __init__(self, window):
@@ -67,7 +57,7 @@ class MyFileDropTarget(wx.FileDropTarget):
         OutStr.append( 'FILE: %s' % FileName )
         OutputTextCtl.SetValue( '\n'.join(OutStr) )
         print >> OutputTextCtl, '\n'
-        os.chdir(FilePath)
+        #os.chdir(FilePath)
         #win.SetStatusText(os.getcwd(), number=0)
         SetFileNameText(filenames[0])
         AutoFillConfigFile(FilePath)
@@ -94,8 +84,6 @@ def LoadFitFile(event):
         OutStr.append( 'FILE: %s' % FileName )
         OutputTextCtl.SetValue( '\n'.join(OutStr) )
         print >> OutputTextCtl, '\n'
-        for s in OutStr:
-            print s  #OutStr
         SetFileNameText(paths[0])
         win.SetStatusText(os.getcwd(), number=0)
         AutoFillConfigFile(FilePath)

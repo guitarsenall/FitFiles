@@ -205,3 +205,18 @@ def find_delay(a, b, MinDelay=0, MaxDelay=20):
     return iMin
 # end find_delay()
 
+import os
+
+def FindConfigFile(CodePath, FilePath):
+    # attempt to find appropriate config file
+    # add os.getcwd() to search path, prioritize CodePath.
+    search_paths   = [ CodePath, os.getcwd(), FilePath ]
+    if 'kim' in FilePath.split('\\')[-1]:
+        ConfigFileName = r'\cyclingconfig_kim.txt'
+    else:
+        ConfigFileName = r'\cyclingconfig_will.txt'
+    for SearchPath in search_paths:
+        if os.path.exists(SearchPath + '\\' + ConfigFileName):
+            return SearchPath + '\\' + ConfigFileName
+    return None
+

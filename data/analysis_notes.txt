@@ -27,7 +27,10 @@ files from my Garmin Edge 810.
                     >>> print u"\u2248"
             However, the resulting text file cannot be saved in default
             ANSI format. Probably Unicode.
-
+    *   Power-meter calibration check: Process all "indoor cycling" workouts
+        (should be in FIT file) for average and normalized power from
+        power meter and trainer curve.
+        -   Neglect first 15 minutes while trainer warms up.
 
 
 +   Get it all working.
@@ -5071,6 +5074,26 @@ files from my Garmin Edge 810.
             fitfileanalyses.bat works on desktop or laptop."
             Commit & push (include tags).
 
+                                            Tuesday, January 15, 2019 (8:10 AM)
+    *   General improvements
+        -   I want to eliminate the need for a ConfigFile within the
+            FIT file folder and default to using the one in the
+            CodePath.
+            >   Add os.getcwd() to search path for ConfigFile. Use a list
+                of paths, and prioritize the code path. Actually, encapsulate
+                into one function within activity_tools.py:
+                    activity_tools.FindConfigFile(CodePath, FilePath)
+            >   How do I get an analysis function to know where the
+                CodePath is?
+                :   It only needs to know about it when running
+                    stand-alone--that is, not from fitfileanalyses.py.
+                    Thus, I can enter an empty string and rely on
+                    os.getcwd().
+
+
+D:\Users\Owner\Documents\OneDrive\bike\activities\will\2019-01-14-09-19-08.fit
+D:\Users\Owner\Documents\OneDrive\bike\activities\kim\2019-01-05-16-05-27.fit
+
 
 d:
 cd D:\Users\Owner\Documents\OneDrive\2018\notesparser\wxPython-demo-4.0.3\demo
@@ -5102,8 +5125,6 @@ TO DO:
             >   Example:
                     https://www.dcrainmaker.com/analyzer
     *   General
-        -   Add os.getcwd() to search path for ConfigFile. Use a list
-            of paths, and prioritize the code path.
         -   I need a plot title control!
         -   I need a "close plots" button!
         -   Time axis for time plots has the day-of-month number.

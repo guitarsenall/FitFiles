@@ -14,6 +14,8 @@ import os
 #              plot_heartrate function def                 #
 ############################################################
 
+from activity_tools import FindConfigFile
+
 def plot_heartrate(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
 
     verbose = False
@@ -21,13 +23,7 @@ def plot_heartrate(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     (FilePath, FitFileName) = os.path.split(FitFilePath)
 
     if ConfigFile is None:
-        # attempt to find appropriate config file
-        if 'will' in FilePath.split('\\'):
-            ConfigFile = FilePath + r'\cyclingconfig_will.txt'
-            print >> OutStream, 'ConfigFile:'
-            print >> OutStream, ConfigFile
-        elif 'kim' in FilePath.split('\\'):
-            ConfigFile = FilePath + r'\cyclingconfig_kim.txt'
+        ConfigFile = FindConfigFile('', FilePath)
     if (ConfigFile is None) or (not os.path.exists(ConfigFile)):
         raise IOError('Configuration file not specified or found')
 

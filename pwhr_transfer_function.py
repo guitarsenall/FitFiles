@@ -90,6 +90,8 @@ class HeartRateSimulator():
 #           pwhr_transfer_function function def            #
 ############################################################
 
+from activity_tools import FindConfigFile
+
 def pwhr_transfer_function(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
 
     # this needs to stay INSIDE the function or bad things happen
@@ -98,18 +100,9 @@ def pwhr_transfer_function(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     (FilePath, FitFileName) = os.path.split(FitFilePath)
 
     if ConfigFile is None:
-        # attempt to find appropriate config file
-        # consider adding os.getcwd() to search path
-        if 'will' in FilePath.split('\\'):
-            ConfigFile = FilePath + r'\cyclingconfig_will.txt'
-            print >> OutStream, 'ConfigFile:'
-            print >> OutStream, ConfigFile
-        elif 'kim' in FilePath.split('\\'):
-            ConfigFile = FilePath + r'\cyclingconfig_kim.txt'
-            print >> OutStream, 'ConfigFile:'
-            print >> OutStream, ConfigFile
-
-    print >> OutStream, 'ConfigFile type = ', type(ConfigFile)
+        ConfigFile = FindConfigFile('', FilePath)
+    if (ConfigFile is None) or (not os.path.exists(ConfigFile)):
+        raise IOError('Configuration file not specified or found')
 
     #
     #   Parse the configuration file
