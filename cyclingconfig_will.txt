@@ -8,8 +8,8 @@ sex         : male          ; male or female
 
 [power]
 
-EndurancePower  : 175.0     ; watts
-ThresholdPower  : 250.0     ; watts
+EndurancePower  : 182.0     ; watts
+ThresholdPower  : 260.0     ; watts
 EnduranceHR     : 140.0     ; BPM
 ThresholdHR     : 170.0     ; BPM
 HRTimeConstant  :  63.0     ; seconds

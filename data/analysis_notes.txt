@@ -30,6 +30,7 @@ files from my Garmin Edge 810.
     *   Power-meter calibration check: Process all "indoor cycling" workouts
         (should be in FIT file) for average and normalized power from
         power meter and trainer curve.
+        -   See search_records.py for finding "indoor cycling" ride type.
         -   Neglect first 15 minutes while trainer warms up.
 
 
@@ -5089,6 +5090,45 @@ files from my Garmin Edge 810.
                     stand-alone--that is, not from fitfileanalyses.py.
                     Thus, I can enter an empty string and rely on
                     os.getcwd().
+
+
+                                            Monday, January 28, 2019 (9:30 AM)
++   Improve documentation with readme.md.
+    I want readme.md to provide instructions for installing the repository
+    and all dependencies.
+
+    *   Study README files for GitHub
+                https://help.github.com/articles/about-readmes/
+                https://github.com/18F/open-source-guide/blob/18f-pages/pages
+                    /making-readmes-readable.md
+        -   For instructions on formatting and syntax:
+                https://help.github.com/articles
+                    /basic-writing-and-formatting-syntax/
+        -   This example has a row containing three screenshots:
+                https://github.com/openopps/openopps-platform/blob/dev
+                    /README.md
+
+    *   What do I want it to cover?
+        -   Overview of capabilities
+            >   Fast access to custom analyses of selected FIT file
+            >   Endurance laps
+            >   Power-zone detection
+            >   Intervals
+            >   Heartrate zone analysis
+            >   Heartrate simulation from power
+        -   How to launch using the batch file (fitfileanalyses.bat)
+            >   May need to edit to set the base code directory.
+        -   User config files.
+        -   How to install
+            >   Python 2.7
+            >   NumPy
+            >   SciPy
+            >   MatPlotLib
+            >   FitParse
+            >   wxPython GUI library
+                    c:\Python27>python -m pip install -U wxPython
+
+
 
 
 D:\Users\Owner\Documents\OneDrive\bike\activities\will\2019-01-14-09-19-08.fit
