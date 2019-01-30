@@ -5128,7 +5128,25 @@ files from my Garmin Edge 810.
             >   wxPython GUI library
                     c:\Python27>python -m pip install -U wxPython
 
-
+                                        Wednesday, January 30, 2019 (9:37 AM)
+    *   Begin writing README.md. The language is called "markdown".
+        -   It looks like the FitParse repository has had some activity.
+            The version I use and modified is probably the one labeled
+            "v1-archive -- Old Version" at
+                https://github.com/dtcooper/python-fitparse/releases
+            Still, I have my own version now. I am going to have to
+            add mine to the repository. Simply add all the files in
+            the folder fitparse_mod to the repository.
+                Add
+                fitparse_mod/__init__.py
+                fitparse_mod/activity.py
+                fitparse_mod/base.py
+                fitparse_mod/exceptions.py
+                fitparse_mod/profile.def
+                fitparse_mod/records.py
+                Success (188 ms @ 1/30/2019 10:15:21 AM)
+            Then the user needs to copy them to
+                C:\Python27\Lib\site-packages\fitparse\
 
 
 D:\Users\Owner\Documents\OneDrive\bike\activities\will\2019-01-14-09-19-08.fit
