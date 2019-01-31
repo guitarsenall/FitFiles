@@ -6,13 +6,13 @@ A collection of analysis routines for .FIT files from Garmin devices.
 <table>
     <tr>
         <td>
-            <img alt="open opps 1" src="data/zone_detect_no_hr_b.png">
+            <img alt="zone_detect_no_hr_b.png" src="data/zone_detect_no_hr_b.png">
         </td>
         <td>
-            <img alt="open opps 2" src="data/fitfileanalyses_gui_f.png">
+            <img alt=fitfileanalyses_gui_f.png" src="data/fitfileanalyses_gui_f.png">
         </td>
         <td>
-            <img alt="open opps 3" src="data/kim_pwhr_a2_c.png">
+            <img alt="kim_pwhr_a2_c.png" src="data/kim_pwhr_a2_c.png">
         </td>
     </tr>
 </table>
