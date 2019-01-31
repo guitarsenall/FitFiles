@@ -5147,7 +5147,22 @@ files from my Garmin Edge 810.
                 Success (188 ms @ 1/30/2019 10:15:21 AM)
             Then the user needs to copy them to
                 C:\Python27\Lib\site-packages\fitparse\
+                                        Thursday, January 31, 2019 (9:08 AM)
+        -   I need to be able to see the rendered version of the markdown
+            file. Google about viewing markdown:
+                    https://imagecomputing.net/damien.rohmer/teaching
+                        /general/markdown_viewer/index.html
+            Add the markdown viewer extension to Chrome:
+                    https://chrome.google.com/webstore/detail/markdown-viewer
+                        /ckkdlimhmcjmikdlpkmbgfkaikojcbjk?hl=en-US
+            Continue editing.
+        -   Need some screenshots
+                fitfileanalyses_gui_f.png
+                zone_detect_no_hr_b.png
+                kim_pwhr_a2_c.png
 
+
+https://help.github.com/articles/basic-writing-and-formatting-syntax/
 
 D:\Users\Owner\Documents\OneDrive\bike\activities\will\2019-01-14-09-19-08.fit
 D:\Users\Owner\Documents\OneDrive\bike\activities\kim\2019-01-05-16-05-27.fit
@@ -5183,6 +5198,8 @@ TO DO:
             >   Example:
                     https://www.dcrainmaker.com/analyzer
     *   General
+        -   Balance is not in every file. Make it optional.
+            interval_laps.py.
         -   I need a plot title control!
         -   I need a "close plots" button!
         -   Time axis for time plots has the day-of-month number.
