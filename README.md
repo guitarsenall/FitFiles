@@ -1,5 +1,5 @@
 # FitFiles
-A collection of analysis routines for .FIT files from Garmin devices.
+The main feature in this project is a GUI which gives access to a collection of custom analysis routines for .FIT files from Garmin devices for cycling activities.
 
 ## Screenshots
 
@@ -18,17 +18,23 @@ A collection of analysis routines for .FIT files from Garmin devices.
 </table>
 
 
-##  Overview of capabilities
--   **Fast access to custom analyses of selected FIT file.**
+##  Features
+-   Fast access to custom analyses of selected FIT file.
+-   Power and heartrate plots have vertical grids at zone boundaries for quick zone identification.
+-   Drag-drop support for quick file access.
+-   Formatted printing of important results for copy-pasting into workout diaries.
+
+
+## Analyses currently available
 -   **Endurance laps.** This analysis plots and prints lap metrics related to an endurance workout (e.g., time, average and normalized power, average heartrate, efficiency factor). It is useful to track the progression of the workout and assess the effects of fatigue.
 -   **Power-zone detection.** This analysis uses an innovative algorithm to detect the power zone at every time instance in a way that requires the power to stay in that zone for a length of time that varies by zone. For example, 5 seconds at 300W (zone 5 for me) is not enough time to say that I am actually in zone 5. This results in a much more realistic power-zone histogram. It is very useful for analyzing races and other hard unstructured workouts.
--   **Intervals.** This analysis detects laps with average powers above the aerobic threshold for tabulation. It completes with a time-averaged power sum so that you can know, for example, how many total minutes you spent in zone 4.
+-   **Interval Laps.** This analysis detects laps with average powers above the aerobic threshold for tabulation. It completes with a time-averaged power sum so that you can know, for example, how many total minutes you spent in zone 4.
 -   **Heartrate zone analysis.** This analysis calculates calories from heartrate and provides a heartrate-zone histogram (both text and plot).
 -   **Heartrate simulation from power.** This analysis uses a first-order dynamic model that computes heartrate from power. Its primary use is to determine heartrate offset ("is it high or low or normal?") and cardiac drift for an arbitrary workout--that is, the workout does not have to be structured; even races can be analyzed. Cardiac drift is modeled as proportional to fatigue in BPM/TSS.
 
-##  How to launch using the batch file (fitfileanalyses.bat)
+##  How to launch using the batch file
 
-The application (fitfileanalyses.py) is most conveniently launched using the Windows Command batch file, fitfileanalyses.bat. This can be done by double-clicking the batch file or by drag-dropping a .FIT file onto it in Windows Explorer.
+The application (fitfileanalyses.py) is most conveniently launched using the Windows Command batch file, [fitfileanalyses.bat](fitfileanalyses.bat). This can be done by double-clicking the batch file or by drag-dropping a .FIT file onto it in Windows Explorer.
 
 **You may need to edit to set the base code directory.** The batch file needs to know where the application (fitfileanalyses.py) is stored. It sets a variable %base% to this folder. If double-clicking the batch, then base can be set to %CD% (comment out lines accordingly using `REM`). However, if you are drag-dropping .FIT files from another folder, you will need to set %base% explicitly to the folder you save the application in.
 
@@ -44,7 +50,7 @@ Most analyses need to know some things about the athlete:
 - **HRTimeConstant** This is used by the heartrate simulation analysis and represents how quickly the heartrate responds to changes in power.
 - **HRDriftRate** This is used by the heartrate simulation analysis and represents cardiac drift as proportional to fatigue in BPM/TSS. Typical values are 0.1-0.2 BPM/TSS once aerobic endurance is developed.
 
-See the files cyclingconfig_will.txt and cyclingconfig_kim.txt for examples. Create your own and select it when running the application.
+See the files [cyclingconfig_will.txt](cyclingconfig_will.txt) and [cyclingconfig_kim.txt](cyclingconfig_kim.txt) for examples. Create your own and select it when running the application.
 
 ##  How to install
 This section lists dependencies with tips on how to install them.

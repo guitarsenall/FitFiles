@@ -5160,6 +5160,9 @@ files from my Garmin Edge 810.
                 fitfileanalyses_gui_f.png
                 zone_detect_no_hr_b.png
                 kim_pwhr_a2_c.png
+        -   Looks pretty good.
+            commit & push.
+
 
 
 https://help.github.com/articles/basic-writing-and-formatting-syntax/
