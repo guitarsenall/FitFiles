@@ -245,6 +245,28 @@ def plot_heartrate(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     print >> OutStream, '      total: %2i:%02i:%02i' % (hh, mm, ss)
 
 
+    ########################################################################
+    ###         Power & TSS Estimation                                   ###
+    ########################################################################
+
+'''
+    # create a phaseless, lowpass-filtered signal for downward transitions
+    # see
+    #   https://docs.scipy.org/doc/scipy/reference/signal.html
+    from scipy import signal
+    poles       = 4
+    cutoff      = 0.1     # Hz
+    Wn          = cutoff / (SampleRate/2)
+    PadLen      = int(SampleRate/cutoff)
+    NumB, DenB  = signal.butter(poles, Wn, btype='lowpass',
+                                output='ba', analog=True)
+    NumF    = signal.convolve( NumB, [1,0])
+    HPtf    = signal.TransferFunction(NumF,DenB)
+    # lpfpower    = signal.filtfilt(b, a, power, padlen=PadLen)
+    signal.bilinear((NumF,DenB, fs=SampleRate)
+    signal.lfilter(b, a, x
+'''
+
     ###########################################################
     ###             plotting                                ###
     ###########################################################

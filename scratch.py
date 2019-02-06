@@ -1,34 +1,57 @@
 
 # scratch.py
 
+# differentiating lowpass filter
+import numpy as np
+from scipy import signal
+poles       = 4
+cutoff      = 0.1     # Hz
+SampleRate  = 1.0
+Wn          = cutoff / (SampleRate/2)
+PadLen      = int(SampleRate/cutoff)
+NumB, DenB  = signal.butter(poles, Wn, btype='lowpass',
+                            output='ba', analog=True)
+NumF    = signal.convolve( NumB, [1,0])
+HPtf    = signal.TransferFunction(NumF,DenB)
+t1, y1  = signal.step(HPtf)
+b, a    = signal.bilinear(NumF,DenB, fs=SampleRate)
+x2      = np.ones(len(t1))  # step
+y2      = signal.lfilter(b, a, x2)
+import matplotlib.pyplot as plt
+plt.figure(1)
+plt.plot(t1, y1, 'r-')
+plt.plot(t1, y2, 'b-')
+plt.show()
 
-# Plot multiple workouts with different solutions for
-# HR-simulation parameters for Kim.
-import sys
-from pwhr_transfer_function import pwhr_transfer_function
-ConfigFile  = r'D:\Users\Owner\Documents\OneDrive\2018\fitfiles\\'  \
-            + r'cyclingconfig_kim.txt'
-OutStream   = sys.stdout
-FilePath    = r'S:\will\documents\OneDrive\bike\activities\kim\\'
-params  = [
-    #         file              FTHR    tau    HRDriftRate
-    ['2018-09-10-18-21-11.fit', '161', ' 67.3', '0.154862' ], # A2
-    ['2018-06-22-18-35-17.fit', '150', ' 56.6', '0.332012' ], # M2
-    ['2018-08-25-17-27-32.fit', '161', ' 66.9', '0.355928' ], # M6
-    ['2018-09-24-18-27-54.fit', '171', '110.7', '0.103539' ], # M6
-    ['2018-09-06-18-23-46.fit', '153', ' 70.1', '0.381981' ], # M1
-    ['2018-12-26-14-51-33.fit', '157', ' 75.8', '0.151274' ]  # E2
-    ] #2:3
-from ConfigParser import ConfigParser
-config      = ConfigParser()
-config.read(ConfigFile)
-for i in range(len(params)):
-    fitfilepath = FilePath + params[i][0]
-    config.set( 'power', 'ThresholdHR',    params[i][1] )
-    config.set( 'power', 'HRTimeConstant', params[i][2] )
-    config.set( 'power', 'HRDriftRate',    params[i][3] )
-    pwhr_transfer_function( fitfilepath, OutStream=sys.stdout,
-                            ConfigFile=config )
+
+
+## Plot multiple workouts with different solutions for
+## HR-simulation parameters for Kim.
+#import sys
+#from pwhr_transfer_function import pwhr_transfer_function
+#ConfigFile  = r'D:\Users\Owner\Documents\OneDrive\2018\fitfiles\\'  \
+#            + r'cyclingconfig_kim.txt'
+#OutStream   = sys.stdout
+#FilePath    = r'S:\will\documents\OneDrive\bike\activities\kim\\'
+#params  = [
+#    #         file              FTHR    tau    HRDriftRate
+#    ['2018-09-10-18-21-11.fit', '161', ' 67.3', '0.154862' ], # A2
+#    ['2018-06-22-18-35-17.fit', '150', ' 56.6', '0.332012' ], # M2
+#    ['2018-08-25-17-27-32.fit', '161', ' 66.9', '0.355928' ], # M6
+#    ['2018-09-24-18-27-54.fit', '171', '110.7', '0.103539' ], # M6
+#    ['2018-09-06-18-23-46.fit', '153', ' 70.1', '0.381981' ], # M1
+#    ['2018-12-26-14-51-33.fit', '157', ' 75.8', '0.151274' ]  # E2
+#    ] #2:3
+#from ConfigParser import ConfigParser
+#config      = ConfigParser()
+#config.read(ConfigFile)
+#for i in range(len(params)):
+#    fitfilepath = FilePath + params[i][0]
+#    config.set( 'power', 'ThresholdHR',    params[i][1] )
+#    config.set( 'power', 'HRTimeConstant', params[i][2] )
+#    config.set( 'power', 'HRDriftRate',    params[i][3] )
+#    pwhr_transfer_function( fitfilepath, OutStream=sys.stdout,
+#                            ConfigFile=config )
 
 
 

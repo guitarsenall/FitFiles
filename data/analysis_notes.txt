@@ -5164,6 +5164,80 @@ files from my Garmin Edge 810.
             commit & push.
 
 
+                                            Tuesday, February 5, 2019 (4:17 PM)
++   Estimate TSS in plot_heartrate.py
+
+    *   Preliminary thoughts
+        -   I can Relate HR zones to power zones to compute intensity.
+            But this would ignore the 30-60 seconds the HR takes to rise
+            during an interval. However, it also decays, so maybe it would
+            be a wash. The method would be to map HR to power through
+            simple interpolation with
+                PwHRTable   = np.array( [
+                            [    0    ,  0.50*FTHR ],   # Active resting HR
+                            [ 0.55*FTP,  0.70*FTHR ],   # Recovery
+                            [ 0.70*FTP,  0.82*FTHR ],   # Aerobic threshold
+                            [ 1.00*FTP,       FTHR ],   # Functional threshold
+                            [ 1.20*FTP,  1.03*FTHR ],   # Aerobic capacity
+                            [ 1.50*FTP,  1.06*FTHR ]])  # Max HR
+            then passing the resulting power through the usual calculation:
+            30-second boxcar average, take fourth power, take average,
+            take fourth root to get normalized power, etc...
+        -   Back-calculate power through transfer function? The model is,
+                HRdot = ( HRp + HRd - HR ) / tau
+            solve for HRp, the HR target corresponding to current power:
+                HRp = HR + tau*HRdot - HRd
+            Recall that HRd comes from drift and is proportional to fatigue.
+            I can approximate using the last sample:
+                HRd[i] = HRDriftRate*TSS[i-1]
+            So I can estimate power with HR and its derivative and an estimate
+            of current fatigue.
+                power[i] = np.interp( HRp[i], PwHRTable[:,1], PwHRTable[:,0] )
+        -   For the derivative, I can construct a differentiating lowpass
+            filter, such as I have done before. See,
+                S:\will\documents\OneDrive\cat_code_backup\primary
+                    \uc_share\butter_diff_lowpass.pro
+                S:\will\documents\OneDrive\cat_code_backup\scratch
+                    \DOE\jerk_filter_z.m
+            For filtering, see line 1182 and zone_detect.py. Also,
+                https://docs.scipy.org/doc/scipy/reference/signal.html
+
+                                        Wednesday, February 6, 2019 (8:16 AM)
+    *   Begin coding.
+        -   For a sample, use
+                D:\Users\Owner\Documents\OneDrive\bike\activities\will
+                    \2019-01-31-19-16-05.fit
+        -   Combining the transfer functions by convolving polynomial
+            coefficients:
+                >>> from scipy import signal
+                >>> signal.convolve( [1,1], [1,1])
+                array([1, 2, 1])
+        -   Made some progress in scratch.py:
+                    # differentiating lowpass filter
+                    import numpy as np
+                    from scipy import signal
+                    poles       = 4
+                    cutoff      = 0.1     # Hz
+                    SampleRate  = 1.0
+                    Wn          = cutoff / (SampleRate/2)
+                    PadLen      = int(SampleRate/cutoff)
+                    NumB, DenB  = signal.butter(poles, Wn, btype='lowpass',
+                                                output='ba', analog=True)
+                    NumF    = signal.convolve( NumB, [1,0])
+                    HPtf    = signal.TransferFunction(NumF,DenB)
+                    t1, y1  = signal.step(HPtf)
+                    b, a    = signal.bilinear(NumF,DenB, fs=SampleRate)
+                    x2      = np.ones(len(t1))  # step
+                    y2      = signal.lfilter(b, a, x2)
+                    import matplotlib.pyplot as plt
+                    plt.figure(1)
+                    plt.plot(t1, y1, 'r-')
+                    plt.plot(t1, y2, 'b-')
+                    plt.show()
+
+
+
+
 
 https://help.github.com/articles/basic-writing-and-formatting-syntax/
 
@@ -5227,14 +5301,6 @@ TO DO:
         -   Print average heart rate
             >   per lap?
         -   Cross-plot CalPerMin Vs HR
-        -   Estimate TSS
-            >   Relate HR zones to power zones to compute intensity.
-            >   Back-calculate power through transfer function?
-                    H(s)/P(s) = k/(tau*s+1)
-                    P(s) = H(s)*(tau*s+1)/k
-                    P(s) = s*H(s)*tau/k + H(s)/k
-                    P(t) = tau/k*H' + H/k
-                So I can estimate power with HR and its derivative.
     *   pwhr_transfer_function
         -   Make measured HR an optional signal.
             >   The initial condition to odeint() should be heart_rate_ci[0]
