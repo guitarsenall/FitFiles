@@ -5239,7 +5239,8 @@ files from my Garmin Edge 810.
             I still need a two-axes plot: one with measured and simulated
             power, the other with the components making up HRp
             (hr_sig, tau*HRdot, HRd).
-
+        -   First results look reasonable:
+                see hrpw_estimate_a.png
 
 
 https://help.github.com/articles/basic-writing-and-formatting-syntax/

@@ -269,6 +269,7 @@ def plot_heartrate(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
 
     FTP         = ThresholdPower
     FTHR        = ThresholdHR
+    tau         = HRTimeConstant
     PwHRTable   = np.array( [
                     [    0    ,  0.50*FTHR ],   # Active resting HR
                     [ 0.55*FTP,  0.70*FTHR ],   # Recovery
@@ -278,7 +279,7 @@ def plot_heartrate(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
                     [ 1.50*FTP,  1.06*FTHR ]])  # Max HR
 
     # loop through the time series building power and TSS
-    power   = np.zeros(nPts)
+    sPower  = np.zeros(nPts)
     TSS     = np.zeros(nPts)
     HRd     = np.zeros(nPts)        # fatigue drift
     HRp     = np.zeros(nPts)        # power target
@@ -286,24 +287,94 @@ def plot_heartrate(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     w       = int(30*SampleRate)    # window for boxcar
     NPower  = np.zeros(nPts)        # normalized power
 
-    for i, range(1,nPts):
+    for i in range(1,nPts):
         HRd[i]      = HRDriftRate*TSS[i-1]
-        HRp[i]      = hr_sig[i] + tau*HRdot[i] - HRd[i]
-        power[i]    = np.interp( HRp[i], PwHRTable[:,1], PwHRTable[:,0] )
+        HRp[i]      = hr_sig[i] + tau*hr_dot[i] - HRd[i]
+        sPower[i]    = np.interp( HRp[i], PwHRTable[:,1], PwHRTable[:,0] )
         if i < w:
-            p30[i]  = np.average(power[:i+1])         # include i
+            p30[i]  = np.average(sPower[:i+1])         # include i
         else:
-            p30[i]  = np.average(power[i-w:i+1])      # include i
+            p30[i]  = np.average(sPower[i-w:i+1])      # include i
         NPower[i]   = np.average( p30[:i]**4 )**(0.25)
         TSS[i]      = t_sig[i]/36*(NPower[i]/FTP)**2
-
 
     ###########################################################
     ###             plotting                                ###
     ###########################################################
 
-    # plot heart rate and calories
+    # power zones from "Cyclist's Training Bible", 5th ed., by Joe Friel, p51
+    pZones  = { 1   : [    0    ,   0.55*FTP ],
+                2   : [ 0.55*FTP,   0.75*FTP ],
+                3   : [ 0.75*FTP,   0.90*FTP ],
+                4   : [ 0.90*FTP,   1.05*FTP ],
+                5   : [ 1.05*FTP,   1.20*FTP ],
+                6   : [ 1.20*FTP,   1.50*FTP ],
+                7   : [ 1.50*FTP,   2.50*FTP ]}
+
+    # heart-rate zones from "Cyclist's Training Bible" 5th ed. by Joe Friel, p50
+    hZones  = { 1   : [     0    ,   0.82*FTHR ],  # 1
+                2   : [ 0.82*FTHR,   0.89*FTHR ],  # 2
+                3   : [ 0.89*FTHR,   0.94*FTHR ],  # 3
+                4   : [ 0.94*FTHR,   1.00*FTHR ],  # 4
+                5   : [ 1.00*FTHR,   1.03*FTHR ],  # 5a
+                6   : [ 1.03*FTHR,   1.06*FTHR ],  # 5b
+                7   : [ 1.07*FTHR,   1.15*FTHR ]}  # 5c
+
+    # get zone bounds for plotting
+    p_zone_bounds   = [ pZones[1][0],
+                        pZones[2][0],
+                        pZones[3][0],
+                        pZones[4][0],
+                        pZones[5][0],
+                        pZones[6][0],
+                        pZones[7][0],
+                        pZones[7][1] ]
+
+    h_zone_bounds   = [     0.4*FTHR,   # better plotting
+                        hZones[2][0],
+                        hZones[3][0],
+                        hZones[4][0],
+                        hZones[5][0],
+                        hZones[6][0],
+                        hZones[7][0],
+                        hZones[7][1] ]
+
+    # power simulation plot
     import matplotlib.pyplot as plt
+    import matplotlib.dates as md
+    from matplotlib.dates import date2num, DateFormatter
+    import datetime as dt
+    base = dt.datetime(2014, 1, 1, 0, 0, 0)
+    x = [base + dt.timedelta(seconds=t) for t in t_sig.astype('float')]
+    x = date2num(x) # Convert to matplotlib format
+    fig1, (ax0, ax1) = plt.subplots(nrows=2, sharex=True)
+    ax0.plot_date( x, hr_sig,  'r-', linewidth=2 );
+    ax0.plot_date( x, tau*hr_dot, 'b-', linewidth=2 );
+    ax0.plot_date( x, HRd, 'g-', linewidth=2 );
+    ax0.plot_date( x, HRp, 'k-', linewidth=2 );
+    ax0.set_yticks( h_zone_bounds, minor=False)
+    ax0.grid(True)
+    ax0.legend( ['HR', 'tau*HRdot', 'HRd', 'HRp' ], loc='upper left');
+    ax0.set_title('heart rate, BPM')
+    ax1.plot_date( x, sPower,            'b-', linewidth=2 );
+    if 'power' in signals.keys():
+        mPower  = signals['power']
+        ax1.plot_date( x, mPower, 'k-', linewidth=1);
+        ax1.legend( ['simulated power', 'measured power' ], loc='upper left');
+    else:
+        ax1.legend( ['simulated power' ], loc='upper left');
+    ax1.xaxis.set_major_formatter(DateFormatter('%H:%M:%S'))
+    ax1.set_yticks( p_zone_bounds, minor=False)
+    ax1.grid(True)
+    ax1.set_title('power, watts')
+    fig1.autofmt_xdate()
+    fig1.suptitle('Pw:HR Transfer Function', fontsize=20)
+    fig1.tight_layout()
+    fig1.canvas.set_window_title(FitFilePath)
+    plt.show()
+
+
+    # plot heart rate and calories
     import matplotlib.dates as md
     from matplotlib.dates import date2num, DateFormatter
     import datetime as dt
