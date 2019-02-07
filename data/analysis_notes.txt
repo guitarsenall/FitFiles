@@ -5234,8 +5234,11 @@ files from my Garmin Edge 810.
                     plt.plot(t1, y1, 'r-')
                     plt.plot(t1, y2, 'b-')
                     plt.show()
-
-
+                                        Thursday, February 7, 2019 (8:01 AM)
+        -   Made progress in plot_heartrate.py.
+            I still need a two-axes plot: one with measured and simulated
+            power, the other with the components making up HRp
+            (hr_sig, tau*HRdot, HRd).
 
 
 

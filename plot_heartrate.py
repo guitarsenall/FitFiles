@@ -43,6 +43,8 @@ def plot_heartrate(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     ThresholdPower  = config.getfloat( 'power', 'ThresholdPower' )
     EnduranceHR     = config.getfloat( 'power', 'EnduranceHR'    )
     ThresholdHR     = config.getfloat( 'power', 'ThresholdHR'    )
+    HRTimeConstant  = config.getfloat( 'power', 'HRTimeConstant' )
+    HRDriftRate     = config.getfloat( 'power', 'HRDriftRate'    )
     print >> OutStream,  'WeightEntry   : ', WeightEntry
     print >> OutStream,  'WeightToKg    : ', WeightToKg
     print >> OutStream,  'weight        : ', weight
@@ -52,6 +54,8 @@ def plot_heartrate(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     print >> OutStream,  'ThresholdPower: ', ThresholdPower
     print >> OutStream,  'EnduranceHR   : ', EnduranceHR
     print >> OutStream,  'ThresholdHR   : ', ThresholdHR
+    print >> OutStream, 'HRTimeConstant : ', HRTimeConstant
+    print >> OutStream, 'HRDriftRate    : ', HRDriftRate
 
     from datetime import datetime
     from fitparse import Activity
@@ -249,23 +253,50 @@ def plot_heartrate(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     ###         Power & TSS Estimation                                   ###
     ########################################################################
 
-'''
     # create a phaseless, lowpass-filtered signal for downward transitions
     # see
     #   https://docs.scipy.org/doc/scipy/reference/signal.html
     from scipy import signal
-    poles       = 4
+    poles       = 3
     cutoff      = 0.1     # Hz
     Wn          = cutoff / (SampleRate/2)
     PadLen      = int(SampleRate/cutoff)
     NumB, DenB  = signal.butter(poles, Wn, btype='lowpass',
                                 output='ba', analog=True)
-    NumF    = signal.convolve( NumB, [1,0])
-    HPtf    = signal.TransferFunction(NumF,DenB)
-    # lpfpower    = signal.filtfilt(b, a, power, padlen=PadLen)
-    signal.bilinear((NumF,DenB, fs=SampleRate)
-    signal.lfilter(b, a, x
-'''
+    NumF        = signal.convolve( NumB, [1,0])     # add differentiator
+    b, a        = signal.bilinear( NumF,DenB, fs=SampleRate )
+    hr_dot      = signal.lfilter(b, a, hr_sig)
+
+    FTP         = ThresholdPower
+    FTHR        = ThresholdHR
+    PwHRTable   = np.array( [
+                    [    0    ,  0.50*FTHR ],   # Active resting HR
+                    [ 0.55*FTP,  0.70*FTHR ],   # Recovery
+                    [ 0.70*FTP,  0.82*FTHR ],   # Aerobic threshold
+                    [ 1.00*FTP,       FTHR ],   # Functional threshold
+                    [ 1.20*FTP,  1.03*FTHR ],   # Aerobic capacity
+                    [ 1.50*FTP,  1.06*FTHR ]])  # Max HR
+
+    # loop through the time series building power and TSS
+    power   = np.zeros(nPts)
+    TSS     = np.zeros(nPts)
+    HRd     = np.zeros(nPts)        # fatigue drift
+    HRp     = np.zeros(nPts)        # power target
+    p30     = np.zeros(nPts)        # 30-sec boxcar average
+    w       = int(30*SampleRate)    # window for boxcar
+    NPower  = np.zeros(nPts)        # normalized power
+
+    for i, range(1,nPts):
+        HRd[i]      = HRDriftRate*TSS[i-1]
+        HRp[i]      = hr_sig[i] + tau*HRdot[i] - HRd[i]
+        power[i]    = np.interp( HRp[i], PwHRTable[:,1], PwHRTable[:,0] )
+        if i < w:
+            p30[i]  = np.average(power[:i+1])         # include i
+        else:
+            p30[i]  = np.average(power[i-w:i+1])      # include i
+        NPower[i]   = np.average( p30[:i]**4 )**(0.25)
+        TSS[i]      = t_sig[i]/36*(NPower[i]/FTP)**2
+
 
     ###########################################################
     ###             plotting                                ###
