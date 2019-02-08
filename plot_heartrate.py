@@ -253,12 +253,14 @@ def plot_heartrate(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     ###         Power & TSS Estimation                                   ###
     ########################################################################
 
+    from endurance_summary import BackwardMovingAverage
+
     # create a phaseless, lowpass-filtered signal for downward transitions
     # see
     #   https://docs.scipy.org/doc/scipy/reference/signal.html
     from scipy import signal
     poles       = 3
-    cutoff      = 0.1     # Hz
+    cutoff      = 0.10    # Hz
     Wn          = cutoff / (SampleRate/2)
     PadLen      = int(SampleRate/cutoff)
     NumB, DenB  = signal.butter(poles, Wn, btype='lowpass',
@@ -278,7 +280,8 @@ def plot_heartrate(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
                     [ 1.20*FTP,  1.03*FTHR ],   # Aerobic capacity
                     [ 1.50*FTP,  1.06*FTHR ]])  # Max HR
 
-    # loop through the time series building power and TSS
+    # loop through the time series building running power and TSS.
+    # Notice this is necessary because HRd[i] depends on TSS[i-1].
     sPower  = np.zeros(nPts)
     TSS     = np.zeros(nPts)
     HRd     = np.zeros(nPts)        # fatigue drift
@@ -290,13 +293,27 @@ def plot_heartrate(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     for i in range(1,nPts):
         HRd[i]      = HRDriftRate*TSS[i-1]
         HRp[i]      = hr_sig[i] + tau*hr_dot[i] - HRd[i]
-        sPower[i]    = np.interp( HRp[i], PwHRTable[:,1], PwHRTable[:,0] )
+        sPower[i]   = np.interp( HRp[i], PwHRTable[:,1], PwHRTable[:,0] )
         if i < w:
             p30[i]  = np.average(sPower[:i+1])         # include i
         else:
             p30[i]  = np.average(sPower[i-w:i+1])      # include i
         NPower[i]   = np.average( p30[:i]**4 )**(0.25)
         TSS[i]      = t_sig[i]/36*(NPower[i]/FTP)**2
+
+    print >> OutStream, 'estimated NP   = %6i W' % NPower[-1]
+    print >> OutStream, 'estimated work = %6i kJ' % \
+                ( np.cumsum(sPower)[-1] / 1e3 / SampleRate )
+    print >> OutStream, 'estimated TSS  = %6i TSS' % TSS[-1]
+    if 'power' in signals.keys():
+        mPower  = signals['power']
+        print >> OutStream, 'measured work  = %6i kJ' % \
+                ( np.cumsum( mPower )[-1] / 1e3 / SampleRate )
+        mP30    = BackwardMovingAverage( mPower )
+        mNPower = np.average( mP30**4 )**(0.25)
+        mTSS    = t_sig[-1]/36*(mNPower/FTP)**2
+        print >> OutStream, 'measured NP    = %6i W' % mNPower
+        print >> OutStream, 'measured TSS   = %6i TSS' % mTSS
 
     ###########################################################
     ###             plotting                                ###

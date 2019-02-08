@@ -5241,6 +5241,73 @@ files from my Garmin Edge 810.
             (hr_sig, tau*HRdot, HRd).
         -   First results look reasonable:
                 see hrpw_estimate_a.png
+                                            Friday, February 8, 2019 (6:38 AM)
+        -   Print out TSS and work (kJ).
+            >   dragdrop.py has a work calculation:
+                    if 'power' in signals.keys():
+                        print 'total work           = %5i kJ' % \
+                                ( cumsum( signals['power'] )[-1] / 1e3 )
+            >   Got it:
+                    estimated NP   =    177 W
+                    estimated work =    782 kJ
+                    estimated TSS  =     69 TSS
+                    measured work  =    819 kJ
+                    measured NP    =    193 W
+                    measured TSS   =     83 TSS
+                Looking at the plot, I don't think I can do better. Heartrate
+                simply has large variability.
+        -   Try on 2018-12-02-13-13-19.fit (gym workout, no power signal).
+                see hrpw_estimate_b.png
+            The high derivative causes the power to saturate.
+            Output:
+                reading config file D:\...\cyclingconfig_will.txt
+                WeightEntry   :  190.0
+                WeightToKg    :  0.45359237
+                weight        :  86.1825503
+                age           :  52.0
+                sex           :  male
+                EndurancePower:  182.0
+                ThresholdPower:  260.0
+                EnduranceHR   :  140.0
+                ThresholdHR   :  170.0
+                HRTimeConstant :  63.0
+                HRDriftRate    :  0.15
+                executing Wills version of profile.def
+                EnduranceBurn = 10.92 cal/min
+                ThresholdBurn = 15.60 cal/min
+                total calories = 671
+                Heart-Rate Zone Histogram:
+                    Zone  1:  1:16:43 (92%)
+                    Zone  2:  0:03:46 ( 4%)
+                    Zone  3:  0:01:57 ( 2%)
+                    Zone  4:  0:00:11 ( 0%)
+                    Zone 5a:  0:00:00 ( 0%)
+                    Zone 5b:  0:00:00 ( 0%)
+                    Zone 5c:  0:00:00 ( 0%)
+                      total:  1:22:37
+                estimated NP   =    190 W
+                estimated work =    532 kJ
+                estimated TSS  =     73 TSS
+            Not half bad.
+            >   Try a higher cutoff for the lowpass filter--say, 0.05 Hz
+                (20-sec period).
+                    see hrpw_estimate_c.png
+                and
+                    estimated NP   =    196 W
+                    estimated work =    528 kJ
+                    estimated TSS  =     78 TSS
+                I don't think this is helping. The HR derivative is simply
+                quite high. And this correlates with my perceived exertion
+                during squats and seated row pulls.
+                Back to 0.10 Hz and zoom in on the same segment:
+                    see hrpw_estimate_d.png
+            >   There are still some features I don't like:
+                First, a starting transient is quite large due to not
+                prewarming the filter.
+                Second, the phase lag makes it hard to associate spikes in
+                tau*hr_dot with their counterparts in HR.
+                I think I want to filtfilt() with the lowpass filter before
+                taking the derivative.
 
 
 https://help.github.com/articles/basic-writing-and-formatting-syntax/
