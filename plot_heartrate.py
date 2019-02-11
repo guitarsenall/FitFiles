@@ -255,19 +255,28 @@ def plot_heartrate(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
 
     from endurance_summary import BackwardMovingAverage
 
-    # create a phaseless, lowpass-filtered signal for downward transitions
     # see
     #   https://docs.scipy.org/doc/scipy/reference/signal.html
     from scipy import signal
     poles       = 3
     cutoff      = 0.10    # Hz
     Wn          = cutoff / (SampleRate/2)
-    PadLen      = int(SampleRate/cutoff)
+
+    '''
+    # construct and apply a differentiating, lowpass filter
     NumB, DenB  = signal.butter(poles, Wn, btype='lowpass',
                                 output='ba', analog=True)
     NumF        = signal.convolve( NumB, [1,0])     # add differentiator
-    b, a        = signal.bilinear( NumF,DenB, fs=SampleRate )
-    hr_dot      = signal.lfilter(b, a, hr_sig)
+    bDLP, aDLP  = signal.bilinear( NumF,DenB, fs=SampleRate )
+    hr_dot      = signal.lfilter(bDLP, aDLP, hr_sig)
+    '''
+
+    # apply a phaseless lowpass filter, then differentiate.
+    PadLen      = int(SampleRate/cutoff)    # one period of cutoff
+    bLPF, aLPF  = signal.butter(poles, Wn, btype='lowpass',
+                                output='ba', analog=False)
+    hr_lpf      = signal.filtfilt(bLPF, aLPF, hr_sig, padlen=PadLen)
+    hr_dot      = np.gradient(hr_lpf, 1/SampleRate)
 
     FTP         = ThresholdPower
     FTHR        = ThresholdHR

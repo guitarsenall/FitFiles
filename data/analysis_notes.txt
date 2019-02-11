@@ -5309,6 +5309,20 @@ files from my Garmin Edge 810.
                 I think I want to filtfilt() with the lowpass filter before
                 taking the derivative.
 
+                                            Monday, February 11, 2019 (7:31 AM)
+    *   Switch to bidirectional filtering via filtfilt() with filter
+        prewarming.
+        -   google("differentiating a signal in python")
+                    https://docs.scipy.org/doc/numpy/reference/generated
+                        /numpy.gradient.html
+        -   Try it
+                see hrpw_estimate_e.png
+            The lowpass filter seems less effective, even though it has
+            twice as many poles.
+            commit & push.
+
+
+
 
 https://help.github.com/articles/basic-writing-and-formatting-syntax/
 
