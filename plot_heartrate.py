@@ -272,9 +272,13 @@ def plot_heartrate(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     '''
 
     # apply a phaseless lowpass filter, then differentiate.
+    # for some reason, running the Butterworth analog filter
+    # through bilinear() gives a better result. Otherwise,
+    # set analog=False to get coefficients directly.
     PadLen      = int(SampleRate/cutoff)    # one period of cutoff
-    bLPF, aLPF  = signal.butter(poles, Wn, btype='lowpass',
-                                output='ba', analog=False)
+    NumB, DenB  = signal.butter(poles, Wn, btype='lowpass',
+                                output='ba', analog=True)
+    bLPF, aLPF  = signal.bilinear( NumB,DenB, fs=SampleRate )
     hr_lpf      = signal.filtfilt(bLPF, aLPF, hr_sig, padlen=PadLen)
     hr_dot      = np.gradient(hr_lpf, 1/SampleRate)
 

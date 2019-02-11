@@ -5320,7 +5320,18 @@ files from my Garmin Edge 810.
             The lowpass filter seems less effective, even though it has
             twice as many poles.
             commit & push.
-
+            >   Try running the analog butterworth filter through
+                bilinear(). This looks much better.
+                    see hrpw_estimate_f.png
+                Why? It must be the warping close to Nyquist. But
+                Nyquist occurs at 0.5 Hz (2 seconds)--very fast--and the
+                problems were much slower, around 0.05-0.10 Hz.
+                Whatever it did, it looks much better. It also solves
+                the phase lag problem:
+                    see hrpw_estimate_g.png
+                Peaks in the derivative clearly coincide with increases
+                in the HR slope.
+            >   commit & push.
 
 
 
