@@ -55,17 +55,13 @@ def endurance_summary(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     WeightToKg      = config.getfloat( 'user', 'WeightToKg' )
     weight          = WeightEntry * WeightToKg
     age             = config.getfloat( 'user', 'age' )
-    EndurancePower  = config.getfloat( 'power', 'EndurancePower' )
     ThresholdPower  = config.getfloat( 'power', 'ThresholdPower' )
-    EnduranceHR     = config.getfloat( 'power', 'EnduranceHR'    )
     ThresholdHR     = config.getfloat( 'power', 'ThresholdHR'    )
     print >> OutStream, 'WeightEntry   : ', WeightEntry
     print >> OutStream, 'WeightToKg    : ', WeightToKg
     print >> OutStream, 'weight        : ', weight
     print >> OutStream, 'age           : ', age
-    print >> OutStream, 'EndurancePower: ', EndurancePower
     print >> OutStream, 'ThresholdPower: ', ThresholdPower
-    print >> OutStream, 'EnduranceHR   : ', EnduranceHR
     print >> OutStream, 'ThresholdHR   : ', ThresholdHR
 
     # power zones from "Cyclist's Training Bible", 5th ed., by Joe Friel, p51
@@ -130,6 +126,7 @@ def endurance_summary(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
             print >> OutStream, '   ' + s
         raise IOError(msg)
 
+    '''
     # get the FTP
     # FTP = 270.0 #assume if not present
     records = activity.get_records_by_type('zones_target')
@@ -141,7 +138,7 @@ def endurance_summary(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
                 field_units = record.get_units(field_name)
                 print >> OutStream, 'FTP setting = %i %s' % (field_data, field_units)
                 FTP = field_data
-
+    '''
 
     # Get Records of type 'lap'
     # types: [ 'record', 'lap', 'event', 'session', 'activity', ... ]
@@ -245,7 +242,7 @@ def endurance_summary(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     lap_avg_power   = zeros(nLaps)
     lap_norm_power  = zeros(nLaps)
     lap_avg_hr      = zeros(nLaps)
-    lap_ef          = zeros(nLaps)
+    lap_if          = zeros(nLaps)      # intensity factor
 
     #time    = array(elapsed_time)
     cadence = array(avg_cadence)
@@ -253,7 +250,7 @@ def endurance_summary(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     max_hr  = array(max_heart_rate)
     balance = array(balance)
     names1  = [    '', '  lap', '  avg', ' norm', 'avg',  'max',    '' ]
-    names2  = [ 'lap', ' time', 'power', 'power', ' HR',  ' HR', ' EF' ]
+    names2  = [ 'lap', ' time', 'power', 'power', ' HR',  ' HR', ' IF' ]
     fmt     = "%8s"+"%10s"+"%8s"*5
     print >> OutStream, fmt % tuple(names1)
     print >> OutStream, fmt % tuple(names2)
@@ -268,7 +265,7 @@ def endurance_summary(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
         lap_avg_hr[i]       = average(heart_rate_vi[ii])
         lap_avg_power[i]    = average(power[time_idx[ii]])
         lap_norm_power[i]   = average( p30[time_idx[ii]]**4 )**(0.25)
-        lap_ef[i]           = lap_norm_power[i] / lap_avg_hr[i]
+        lap_if[i]           = lap_norm_power[i] / FTP
 
         # duration from lap metrics
         dur = (lap_timestamp[i] - lap_start_time[i]).total_seconds()
@@ -282,7 +279,7 @@ def endurance_summary(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
                     lap_norm_power[i],
                     avg_heart_rate[i],
                     max_heart_rate[i],
-                    lap_ef[i]           )
+                    lap_if[i]           )
 
         # plot lap results as continuous time signals
         lap_avg_hr_c    [time_idx[ii]]  = lap_avg_hr[i]
@@ -294,7 +291,7 @@ def endurance_summary(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     #
     print >> OutStream, 'ride-level results:'
     names1  = [    '', 'moving', '  avg', ' norm', 'avg',    '',  'Pw:' ]
-    names2  = [ 'seg', '  time', 'power', 'power', ' HR', ' EF',  ' HR' ]
+    names2  = [ 'seg', '  time', 'power', 'power', ' HR', ' IF',  ' HR' ]
     fmt     = "%8s"+"%10s"+"%8s"*5
     print >> OutStream, fmt % tuple(names1)
     print >> OutStream, fmt % tuple(names2)
@@ -313,7 +310,7 @@ def endurance_summary(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     all_avg_power   = average(power_vi[ii])
     all_norm_power  = average( p30[time_idx[ii]]**4 )**(0.25)
     all_max_hr      = max(heart_rate_vi[ii])
-    all_ef          = all_norm_power / all_avg_hr
+    all_if          = all_norm_power / FTP
     # aerobic decoupling
     iiH1            = ii[0:nPts/2]
     h1_norm_power   = average( p30[time_idx[iiH1]]**4 )**(0.25)
@@ -331,7 +328,7 @@ def endurance_summary(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
                 all_avg_power,
                 all_norm_power,
                 all_avg_hr,
-                all_ef,
+                all_if,
                 all_pw_hr          )
 
     # without end laps
@@ -348,7 +345,7 @@ def endurance_summary(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     mid_avg_power   = average(power_vi[ii])
     mid_norm_power  = average( p30[time_idx[ii]]**4 )**(0.25)
     mid_max_hr      = max(heart_rate_vi[ii])
-    mid_ef          = mid_norm_power / mid_avg_hr
+    mid_if          = mid_norm_power / FTP
     # aerobic decoupling
     iiH1            = ii[0:nPts/2]
     h1_norm_power   = average( p30[time_idx[iiH1]]**4 )**(0.25)
@@ -366,7 +363,7 @@ def endurance_summary(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
                 mid_avg_power,
                 mid_norm_power,
                 mid_avg_hr,
-                mid_ef,
+                mid_if,
                 mid_pw_hr          )
 
     print

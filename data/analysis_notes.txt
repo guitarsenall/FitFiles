@@ -5334,6 +5334,16 @@ files from my Garmin Edge 810.
             >   commit & push.
 
 
+                                        Tuesday, February 12, 2019 (7:18 AM)
++   Back to endurance_summary.py.
+    EF (efficiency factor) is no longer useful since I track cardiac
+    drift as an increase in HR proportional to fatigue (BPM/TSS).
+    Replace it with IF (intensity factor).
+    Done. Easy.
+    commit & push.
+
+
+
 
 https://help.github.com/articles/basic-writing-and-formatting-syntax/
 
