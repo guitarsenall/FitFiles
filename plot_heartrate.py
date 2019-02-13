@@ -386,12 +386,13 @@ def plot_heartrate(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     ax0.grid(True)
     ax0.legend( ['HR', 'tau*HRdot', 'HRd', 'HRp' ], loc='upper left');
     ax0.set_title('heart rate, BPM')
-    ax1.plot_date( x, sPower,            'b-', linewidth=2 );
     if 'power' in signals.keys():
         mPower  = signals['power']
         ax1.plot_date( x, mPower, 'k-', linewidth=1);
-        ax1.legend( ['simulated power', 'measured power' ], loc='upper left');
+        ax1.plot_date( x, sPower, 'b-', linewidth=2 );
+        ax1.legend( ['measured power', 'simulated power' ], loc='upper left');
     else:
+        ax1.plot_date( x, sPower, 'b-', linewidth=2 );
         ax1.legend( ['simulated power' ], loc='upper left');
     ax1.xaxis.set_major_formatter(DateFormatter('%H:%M:%S'))
     ax1.set_yticks( p_zone_bounds, minor=False)

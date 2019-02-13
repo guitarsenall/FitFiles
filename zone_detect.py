@@ -63,21 +63,9 @@ def zone_detect(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     config      = ConfigParser()
     config.read(ConfigFile)
     print >> OutStream, 'reading config file ' + ConfigFile
-    WeightEntry     = config.getfloat( 'user', 'weight' )
-    WeightToKg      = config.getfloat( 'user', 'WeightToKg' )
-    weight          = WeightEntry * WeightToKg
-    age             = config.getfloat( 'user', 'age' )
-    EndurancePower  = config.getfloat( 'power', 'EndurancePower' )
     ThresholdPower  = config.getfloat( 'power', 'ThresholdPower' )
-    EnduranceHR     = config.getfloat( 'power', 'EnduranceHR'    )
     ThresholdHR     = config.getfloat( 'power', 'ThresholdHR'    )
-    print >> OutStream,  'WeightEntry   : ', WeightEntry
-    print >> OutStream,  'WeightToKg    : ', WeightToKg
-    print >> OutStream,  'weight        : ', weight
-    print >> OutStream,  'age           : ', age
-    print >> OutStream,  'EndurancePower: ', EndurancePower
     print >> OutStream,  'ThresholdPower: ', ThresholdPower
-    print >> OutStream,  'EnduranceHR   : ', EnduranceHR
     print >> OutStream,  'ThresholdHR   : ', ThresholdHR
 
     from datetime import datetime

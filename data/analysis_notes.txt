@@ -5341,7 +5341,12 @@ files from my Garmin Edge 810.
     Replace it with IF (intensity factor).
     Done. Easy.
     commit & push.
-
+                                        Wednesday, February 13, 2019 (7:45 AM)
+    -   A rather minor thing, but I want the analyses to extract and print
+        only the configuration parameters that they actually use.
+        >   This was prompted by a concern about EnduranceHR, about which
+            there is some ambiguity: is it FTHR-30 or is it 0.82*FTHR?
+    -   Work on FitFiles.pptx. It is time to make this project presentable.
 
 
 
@@ -5411,6 +5416,8 @@ TO DO:
         -   Make measured HR an optional signal.
             >   The initial condition to odeint() should be heart_rate_ci[0]
                 if it is available, else 0.50*FTHR or PwHRTable[0,1] if not.
+        -   Eliminate first 20 TSS (warmup) from regression for offset and
+            drift.
     *   pwhr_tf_params.py
 
 

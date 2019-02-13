@@ -51,16 +51,8 @@ def endurance_summary(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     config      = ConfigParser()
     config.read(ConfigFile)
     print >> OutStream, 'reading config file ' + ConfigFile
-    WeightEntry     = config.getfloat( 'user', 'weight' )
-    WeightToKg      = config.getfloat( 'user', 'WeightToKg' )
-    weight          = WeightEntry * WeightToKg
-    age             = config.getfloat( 'user', 'age' )
     ThresholdPower  = config.getfloat( 'power', 'ThresholdPower' )
     ThresholdHR     = config.getfloat( 'power', 'ThresholdHR'    )
-    print >> OutStream, 'WeightEntry   : ', WeightEntry
-    print >> OutStream, 'WeightToKg    : ', WeightToKg
-    print >> OutStream, 'weight        : ', weight
-    print >> OutStream, 'age           : ', age
     print >> OutStream, 'ThresholdPower: ', ThresholdPower
     print >> OutStream, 'ThresholdHR   : ', ThresholdHR
 
