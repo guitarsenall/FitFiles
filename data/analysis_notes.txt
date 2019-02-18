@@ -5349,6 +5349,18 @@ files from my Garmin Edge 810.
     -   Work on FitFiles.pptx. It is time to make this project presentable.
 
 
+                                            Monday, February 18, 2019 (12:48 PM)
++   interval_laps.py: Separate interval sets by zone.
+    -   Test workouts:
+        >   A2, Aug 9.  2018-08-09-13-30-31.fit
+        >   A2, May 19. 2018-05-19-16-17-41.fit
+    -   How do I want it to work?
+        >   Groups:
+            Tempo intervals:    75-88  %FTP
+            Cruise intervals:   88-105 %FTP.
+            VO2max intervals:  105-200 %FTP.
+        >   I will need to extract FTP from the configuration file.
+
 
 https://help.github.com/articles/basic-writing-and-formatting-syntax/
 
@@ -5386,6 +5398,8 @@ TO DO:
             >   Example:
                     https://www.dcrainmaker.com/analyzer
     *   General
+        -   I need a table-printing utility that handles the title line(s)
+            and makes columns optional.
         -   Balance is not in every file. Make it optional.
             interval_laps.py.
         -   I need a plot title control!
@@ -5419,6 +5433,9 @@ TO DO:
         -   Eliminate first 20 TSS (warmup) from regression for offset and
             drift.
     *   pwhr_tf_params.py
+    *   interval_laps.py
+        -   Separate interval sets by zone.
+
 
 
 D:\Users\Owner\Documents\OneDrive\2018\fitfiles\cyclingconfig_will.txt

@@ -15,11 +15,29 @@ import sys
 #              interval_laps function def                  #
 ############################################################
 
+from activity_tools import FindConfigFile
+
 def interval_laps(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
 
-    # ConfigFile not currently used, but maintain calling format.
-
     (FilePath, FitFileName) = os.path.split(FitFilePath)
+
+    if ConfigFile is None:
+        ConfigFile = FindConfigFile('', FilePath)
+    if (ConfigFile is None) or (not os.path.exists(ConfigFile)):
+        raise IOError('Configuration file not specified or found')
+
+    #
+    #   Parse the configuration file
+    #
+    from ConfigParser import ConfigParser
+    config      = ConfigParser()
+    config.read(ConfigFile)
+    print >> OutStream, 'reading config file ' + ConfigFile
+    ThresholdPower  = config.getfloat( 'power', 'ThresholdPower' )
+    ThresholdHR     = config.getfloat( 'power', 'ThresholdHR'    )
+    print >> OutStream,  'ThresholdPower: ', ThresholdPower
+    print >> OutStream,  'ThresholdHR   : ', ThresholdHR
+
 
     from datetime import datetime
     from fitparse import Activity
@@ -27,6 +45,7 @@ def interval_laps(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     activity = Activity(FitFilePath)
     activity.parse()
 
+    '''
     # get the FTP
     FTP = 250.0 #assume if not present
     records = activity.get_records_by_type('zones_target')
@@ -38,6 +57,8 @@ def interval_laps(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
                 field_units = record.get_units(field_name)
                 print >> OutStream, 'FTP setting = %i %s' % (field_data, field_units)
                 FTP = field_data
+    '''
+    FTP = ThresholdPower
 
     # set the interval threshold. Intervals with average power below this
     # value are ignored.
@@ -104,15 +125,19 @@ def interval_laps(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
             if 'left_right_balance' in field_name:
                 balance.append(field_data)
 
-    from numpy import nonzero, array, arange, zeros, average
-    power = array(avg_power)
-    ii = nonzero( power > IntervalThreshold )[0]   # index array
-    print >> OutStream, 'processing %d laps above %d watts...' % (len(ii), IntervalThreshold)
+    from numpy import nonzero, array, arange, zeros, average, logical_and
+
+    power   = array(avg_power)
     time    = array(elapsed_time)
     cadence = array(avg_cadence)
     avg_hr  = array(avg_heart_rate)
     max_hr  = array(max_heart_rate)
     balance = array(balance)
+
+    #   Tempo intervals:    75-88  %FTP
+    ii = nonzero(logical_and( power>=0.75*FTP, power<0.88*FTP ))[0]   # index array
+    print >> OutStream, 'processing %d tempo laps between %d and %d watts...' \
+                        % (len(ii), 0.75*FTP, 0.88*FTP)
     names1 = [ '',    '',     'avg',   'avg', 'avg', 'max', 'avg' ]
     names2 = [ 'lap', 'time', 'power', 'cad',  'HR',  'HR', 'bal'  ]
     print >> OutStream, "%8s"*7 % tuple(names1)
@@ -135,7 +160,61 @@ def interval_laps(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
                 sum( avg_hr[ii]*time[ii]) / sum(time[ii]),
                 max(max_hr[ii]),
                 sum(balance[ii]*time[ii]) / sum(time[ii]) )
-    #print >> OutStream, "average interval power: %d watts" % (sum(power[ii]*time[ii]) / sum(time[ii]))
+
+    #   Cruise intervals:   88-105 %FTP.
+    ii = nonzero(logical_and( power>=0.88*FTP, power<1.05*FTP ))[0]   # index array
+    print >> OutStream, 'processing %d threshold laps between %d and %d watts...' \
+                        % (len(ii), 0.88*FTP, 1.05*FTP)
+    names1 = [ '',    '',     'avg',   'avg', 'avg', 'max', 'avg' ]
+    names2 = [ 'lap', 'time', 'power', 'cad',  'HR',  'HR', 'bal'  ]
+    print >> OutStream, "%8s"*7 % tuple(names1)
+    print >> OutStream, "%8s"*7 % tuple(names2)
+    for i in range(len(ii)):
+        mm = time[ii[i]] // 60
+        ss = time[ii[i]]  % 60
+        print >> OutStream, '%8d%5i:%02i%8d%8d%8d%8d%8.1f' \
+                % (ii[i], mm, ss, power[ii[i]],
+                    cadence[ii[i]],
+                    avg_hr[ii[i]],
+                    max_hr[ii[i]],
+                    balance[ii[i]] )
+    mm = sum(time[ii]) // 60
+    ss = sum(time[ii])  % 60
+    print >> OutStream, '%8s%5i:%02i%8d%8d%8d%8d%8.1f' \
+            % ("AVERAGE", mm, ss,
+                sum(  power[ii]*time[ii]) / sum(time[ii]),
+                sum(cadence[ii]*time[ii]) / sum(time[ii]),
+                sum( avg_hr[ii]*time[ii]) / sum(time[ii]),
+                max(max_hr[ii]),
+                sum(balance[ii]*time[ii]) / sum(time[ii]) )
+
+    #   VO2max intervals:  105-200 %FTP.
+    ii = nonzero(logical_and( power>=1.05*FTP, power<2.00*FTP ))[0]   # index array
+    print >> OutStream, 'processing %d VO2max laps between %d and %d watts...' \
+                        % (len(ii), 1.05*FTP, 2.00*FTP)
+    names1 = [ '',    '',     'avg',   'avg', 'avg', 'max', 'avg' ]
+    names2 = [ 'lap', 'time', 'power', 'cad',  'HR',  'HR', 'bal'  ]
+    print >> OutStream, "%8s"*7 % tuple(names1)
+    print >> OutStream, "%8s"*7 % tuple(names2)
+    for i in range(len(ii)):
+        mm = time[ii[i]] // 60
+        ss = time[ii[i]]  % 60
+        print >> OutStream, '%8d%5i:%02i%8d%8d%8d%8d%8.1f' \
+                % (ii[i], mm, ss, power[ii[i]],
+                    cadence[ii[i]],
+                    avg_hr[ii[i]],
+                    max_hr[ii[i]],
+                    balance[ii[i]] )
+    mm = sum(time[ii]) // 60
+    ss = sum(time[ii])  % 60
+    print >> OutStream, '%8s%5i:%02i%8d%8d%8d%8d%8.1f' \
+            % ("AVERAGE", mm, ss,
+                sum(  power[ii]*time[ii]) / sum(time[ii]),
+                sum(cadence[ii]*time[ii]) / sum(time[ii]),
+                sum( avg_hr[ii]*time[ii]) / sum(time[ii]),
+                max(max_hr[ii]),
+                sum(balance[ii]*time[ii]) / sum(time[ii]) )
+
 
 # end interval_laps()
 
