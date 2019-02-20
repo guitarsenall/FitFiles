@@ -5434,7 +5434,13 @@ TO DO:
             drift.
     *   pwhr_tf_params.py
     *   interval_laps.py
-        -   Separate interval sets by zone.
+        -   Include duration in criteria for lap zones. For example, an
+            interval should last at least 30 seconds to be considered for
+            VO2max:
+                zone        min duration
+                tempo:      6:00
+                threshold:  4:00
+                VO2max:     0:30
 
 
 

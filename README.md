@@ -1,6 +1,8 @@
 # FitFiles
 The main feature in this project is a GUI which gives access to a collection of custom analysis routines for .FIT files from Garmin devices for cycling activities.
 
+## [See Presentation](data/FitFiles.pdf)
+
 ## Screenshots
 
 <table>
