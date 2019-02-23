@@ -5360,6 +5360,17 @@ files from my Garmin Edge 810.
             Cruise intervals:   88-105 %FTP.
             VO2max intervals:  105-200 %FTP.
         >   I will need to extract FTP from the configuration file.
+                                        Saturday, February 23, 2019 (8:08 AM)
+    -   Error with 2019-02-22-18-23-16.fit:
+            File "D:\Users\Owner\Documents\OneDrive\2018\fitfiles
+                    \interval_laps.py", line 158, in interval_laps
+                sum(  power[ii]*time[ii]) / sum(time[ii]),
+            ZeroDivisionError: integer division or modulo by zero
+        Well, DUH! There is no guarantee that any laps will fall into a
+        given range.
+    -   Also, find a more robust way to detect which machine I am running
+        on in fitfileanalyses.bat. The variable ComputerName is available.
+
 
 
 https://help.github.com/articles/basic-writing-and-formatting-syntax/
@@ -5434,13 +5445,6 @@ TO DO:
             drift.
     *   pwhr_tf_params.py
     *   interval_laps.py
-        -   Include duration in criteria for lap zones. For example, an
-            interval should last at least 30 seconds to be considered for
-            VO2max:
-                zone        min duration
-                tempo:      6:00
-                threshold:  4:00
-                VO2max:     0:30
 
 
 

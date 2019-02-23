@@ -132,88 +132,100 @@ def interval_laps(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     cadence = array(avg_cadence)
     avg_hr  = array(avg_heart_rate)
     max_hr  = array(max_heart_rate)
-    balance = array(balance)
+    if len(balance) == 0:
+        balance = zeros(len(power))
+    else:
+        balance = array(balance)
 
     #   Tempo intervals:    75-88  %FTP
     ii = nonzero(logical_and( power>=0.75*FTP, power<0.88*FTP ))[0]   # index array
-    print >> OutStream, 'processing %d tempo laps between %d and %d watts...' \
-                        % (len(ii), 0.75*FTP, 0.88*FTP)
-    names1 = [ '',    '',     'avg',   'avg', 'avg', 'max', 'avg' ]
-    names2 = [ 'lap', 'time', 'power', 'cad',  'HR',  'HR', 'bal'  ]
-    print >> OutStream, "%8s"*7 % tuple(names1)
-    print >> OutStream, "%8s"*7 % tuple(names2)
-    for i in range(len(ii)):
-        mm = time[ii[i]] // 60
-        ss = time[ii[i]]  % 60
-        print >> OutStream, '%8d%5i:%02i%8d%8d%8d%8d%8.1f' \
-                % (ii[i], mm, ss, power[ii[i]],
-                    cadence[ii[i]],
-                    avg_hr[ii[i]],
-                    max_hr[ii[i]],
-                    balance[ii[i]] )
-    mm = sum(time[ii]) // 60
-    ss = sum(time[ii])  % 60
-    print >> OutStream, '%8s%5i:%02i%8d%8d%8d%8d%8.1f' \
-            % ("AVERAGE", mm, ss,
-                sum(  power[ii]*time[ii]) / sum(time[ii]),
-                sum(cadence[ii]*time[ii]) / sum(time[ii]),
-                sum( avg_hr[ii]*time[ii]) / sum(time[ii]),
-                max(max_hr[ii]),
-                sum(balance[ii]*time[ii]) / sum(time[ii]) )
+    if len(ii) > 0:
+        print >> OutStream, 'processing %d tempo laps between %d and %d watts...' \
+                            % (len(ii), 0.75*FTP, 0.88*FTP)
+        names1 = [ '',    '',     'avg',   'avg', 'avg', 'max', 'avg' ]
+        names2 = [ 'lap', 'time', 'power', 'cad',  'HR',  'HR', 'bal'  ]
+        print >> OutStream, "%8s"*7 % tuple(names1)
+        print >> OutStream, "%8s"*7 % tuple(names2)
+        for i in range(len(ii)):
+            mm = time[ii[i]] // 60
+            ss = time[ii[i]]  % 60
+            print >> OutStream, '%8d%5i:%02i%8d%8d%8d%8d%8.1f' \
+                    % (ii[i], mm, ss, power[ii[i]],
+                        cadence[ii[i]],
+                        avg_hr[ii[i]],
+                        max_hr[ii[i]],
+                        balance[ii[i]] )
+        mm = sum(time[ii]) // 60
+        ss = sum(time[ii])  % 60
+        print >> OutStream, '%8s%5i:%02i%8d%8d%8d%8d%8.1f' \
+                % ("AVERAGE", mm, ss,
+                    sum(  power[ii]*time[ii]) / sum(time[ii]),
+                    sum(cadence[ii]*time[ii]) / sum(time[ii]),
+                    sum( avg_hr[ii]*time[ii]) / sum(time[ii]),
+                    max(max_hr[ii]),
+                    sum(balance[ii]*time[ii]) / sum(time[ii]) )
+    else:
+        print >> OutStream, 'No tempo laps found.' \
 
     #   Cruise intervals:   88-105 %FTP.
     ii = nonzero(logical_and( power>=0.88*FTP, power<1.05*FTP ))[0]   # index array
-    print >> OutStream, 'processing %d threshold laps between %d and %d watts...' \
-                        % (len(ii), 0.88*FTP, 1.05*FTP)
-    names1 = [ '',    '',     'avg',   'avg', 'avg', 'max', 'avg' ]
-    names2 = [ 'lap', 'time', 'power', 'cad',  'HR',  'HR', 'bal'  ]
-    print >> OutStream, "%8s"*7 % tuple(names1)
-    print >> OutStream, "%8s"*7 % tuple(names2)
-    for i in range(len(ii)):
-        mm = time[ii[i]] // 60
-        ss = time[ii[i]]  % 60
-        print >> OutStream, '%8d%5i:%02i%8d%8d%8d%8d%8.1f' \
-                % (ii[i], mm, ss, power[ii[i]],
-                    cadence[ii[i]],
-                    avg_hr[ii[i]],
-                    max_hr[ii[i]],
-                    balance[ii[i]] )
-    mm = sum(time[ii]) // 60
-    ss = sum(time[ii])  % 60
-    print >> OutStream, '%8s%5i:%02i%8d%8d%8d%8d%8.1f' \
-            % ("AVERAGE", mm, ss,
-                sum(  power[ii]*time[ii]) / sum(time[ii]),
-                sum(cadence[ii]*time[ii]) / sum(time[ii]),
-                sum( avg_hr[ii]*time[ii]) / sum(time[ii]),
-                max(max_hr[ii]),
-                sum(balance[ii]*time[ii]) / sum(time[ii]) )
+    if len(ii) > 0:
+        print >> OutStream, 'processing %d threshold laps between %d and %d watts...' \
+                            % (len(ii), 0.88*FTP, 1.05*FTP)
+        names1 = [ '',    '',     'avg',   'avg', 'avg', 'max', 'avg' ]
+        names2 = [ 'lap', 'time', 'power', 'cad',  'HR',  'HR', 'bal'  ]
+        print >> OutStream, "%8s"*7 % tuple(names1)
+        print >> OutStream, "%8s"*7 % tuple(names2)
+        for i in range(len(ii)):
+            mm = time[ii[i]] // 60
+            ss = time[ii[i]]  % 60
+            print >> OutStream, '%8d%5i:%02i%8d%8d%8d%8d%8.1f' \
+                    % (ii[i], mm, ss, power[ii[i]],
+                        cadence[ii[i]],
+                        avg_hr[ii[i]],
+                        max_hr[ii[i]],
+                        balance[ii[i]] )
+        mm = sum(time[ii]) // 60
+        ss = sum(time[ii])  % 60
+        print >> OutStream, '%8s%5i:%02i%8d%8d%8d%8d%8.1f' \
+                % ("AVERAGE", mm, ss,
+                    sum(  power[ii]*time[ii]) / sum(time[ii]),
+                    sum(cadence[ii]*time[ii]) / sum(time[ii]),
+                    sum( avg_hr[ii]*time[ii]) / sum(time[ii]),
+                    max(max_hr[ii]),
+                    sum(balance[ii]*time[ii]) / sum(time[ii]) )
+    else:
+        print >> OutStream, 'No threshold laps found.' \
 
     #   VO2max intervals:  105-200 %FTP.
     ii = nonzero(logical_and( power>=1.05*FTP, power<2.00*FTP ))[0]   # index array
-    print >> OutStream, 'processing %d VO2max laps between %d and %d watts...' \
-                        % (len(ii), 1.05*FTP, 2.00*FTP)
-    names1 = [ '',    '',     'avg',   'avg', 'avg', 'max', 'avg' ]
-    names2 = [ 'lap', 'time', 'power', 'cad',  'HR',  'HR', 'bal'  ]
-    print >> OutStream, "%8s"*7 % tuple(names1)
-    print >> OutStream, "%8s"*7 % tuple(names2)
-    for i in range(len(ii)):
-        mm = time[ii[i]] // 60
-        ss = time[ii[i]]  % 60
-        print >> OutStream, '%8d%5i:%02i%8d%8d%8d%8d%8.1f' \
-                % (ii[i], mm, ss, power[ii[i]],
-                    cadence[ii[i]],
-                    avg_hr[ii[i]],
-                    max_hr[ii[i]],
-                    balance[ii[i]] )
-    mm = sum(time[ii]) // 60
-    ss = sum(time[ii])  % 60
-    print >> OutStream, '%8s%5i:%02i%8d%8d%8d%8d%8.1f' \
-            % ("AVERAGE", mm, ss,
-                sum(  power[ii]*time[ii]) / sum(time[ii]),
-                sum(cadence[ii]*time[ii]) / sum(time[ii]),
-                sum( avg_hr[ii]*time[ii]) / sum(time[ii]),
-                max(max_hr[ii]),
-                sum(balance[ii]*time[ii]) / sum(time[ii]) )
+    if len(ii) > 0:
+        print >> OutStream, 'processing %d VO2max laps between %d and %d watts...' \
+                            % (len(ii), 1.05*FTP, 2.00*FTP)
+        names1 = [ '',    '',     'avg',   'avg', 'avg', 'max', 'avg' ]
+        names2 = [ 'lap', 'time', 'power', 'cad',  'HR',  'HR', 'bal'  ]
+        print >> OutStream, "%8s"*7 % tuple(names1)
+        print >> OutStream, "%8s"*7 % tuple(names2)
+        for i in range(len(ii)):
+            mm = time[ii[i]] // 60
+            ss = time[ii[i]]  % 60
+            print >> OutStream, '%8d%5i:%02i%8d%8d%8d%8d%8.1f' \
+                    % (ii[i], mm, ss, power[ii[i]],
+                        cadence[ii[i]],
+                        avg_hr[ii[i]],
+                        max_hr[ii[i]],
+                        balance[ii[i]] )
+        mm = sum(time[ii]) // 60
+        ss = sum(time[ii])  % 60
+        print >> OutStream, '%8s%5i:%02i%8d%8d%8d%8d%8.1f' \
+                % ("AVERAGE", mm, ss,
+                    sum(  power[ii]*time[ii]) / sum(time[ii]),
+                    sum(cadence[ii]*time[ii]) / sum(time[ii]),
+                    sum( avg_hr[ii]*time[ii]) / sum(time[ii]),
+                    max(max_hr[ii]),
+                    sum(balance[ii]*time[ii]) / sum(time[ii]) )
+    else:
+        print >> OutStream, 'No VO2max laps found.' \
 
 
 # end interval_laps()
