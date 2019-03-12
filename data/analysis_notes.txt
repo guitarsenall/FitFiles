@@ -5372,6 +5372,34 @@ files from my Garmin Edge 810.
         on in fitfileanalyses.bat. The variable ComputerName is available.
 
 
+                                            Tuesday, March 12, 2019 (3:11 PM)
++   New project: force analysis.
+    I want to create a histogram containing pedal-force bins on the X axis
+    and revolutions and work on the Y axes.
+    Sample data: 2019-03-09-12-31-33.fit, a moderate-hill repeat.
+
+    *   Preliminary considerations.
+        -   The force on the pedal times the crank radius creates the
+            torque:
+                torque  = CrankRadius*PedalForce
+            The power is the torque times the angular velocity in rad/sec:
+                power   = torque * RPM * (2*pi/60)
+            where RPM is the cadence.
+            So, equating torque expressions,
+                torque = power / cadence / (2*pi/60) = CrankRadius*PedalForce
+            gives,
+                PedalForce  = power / cadence / (2*pi/60) / CrankRadius
+        -   The configuration file will need to have the crank radius
+            added.
+        -   The number of revs associated with a single sample is
+                revs    = cadence / 60 * dt
+        -   The work associated with a single sample is simply
+                work    = power * dt
+            in joules.
+
+    *   Begin coding force_analysis.py
+
+
 
 https://help.github.com/articles/basic-writing-and-formatting-syntax/
 
