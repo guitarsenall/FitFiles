@@ -12,8 +12,9 @@ from datetime import datetime
 from fitparse import Activity
 from activity_tools import extract_activity_signals, find_delay
 
-EdgeFilePath    = r'2018-05-25-19-00-18_kim_edge.fit'
-ZwiftFilePath   = r'2018-05-25-18-37-29_kim_zwift.fit'
+FilePath        = r's:\will\Documents\OneDrive\bike\activities\kim\\'
+EdgeFilePath    = FilePath + r'2019-03-12-18-20-16.fit'
+ZwiftFilePath   = FilePath + r'2019-03-12-18-16-52_zwift.fit'
 
 #EdgeFilePath    = r'2017-01-02-16-12-43_edge.fit'
 #ZwiftFilePath   = r'2017-01-02-16-07-51_zwift.fit'
@@ -45,7 +46,6 @@ zwift_hr        = ZwiftSignals['heart_rate']
 zwift_t         = arange(len(zwift_hr))
 zwift_power     = ZwiftSignals['power']
 
-'''
 zwift_hr_r   = interp(edge_t, zwift_t, zwift_hr)
 HRDelay = find_delay( edge_hr, zwift_hr_r, MinDelay=-20, MaxDelay=20 )
 print 'heart rate optimum delay: ', HRDelay
@@ -54,7 +54,6 @@ zwift_cad   = ZwiftSignals['cadence']
 zwift_cad_r   = interp(edge_t, zwift_t, zwift_cad)
 CadenceDelay = find_delay( edge_cad, zwift_cad_r, MinDelay=-20, MaxDelay=20 )
 print 'cadence optimum delay: ', CadenceDelay
-'''
 
 #
 #   remove delay and scaling error in heart rate

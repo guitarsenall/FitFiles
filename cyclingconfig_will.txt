@@ -14,5 +14,5 @@ EnduranceHR     : 140.0     ; BPM
 ThresholdHR     : 170.0     ; BPM
 HRTimeConstant  :  63.0     ; seconds
 HRDriftRate     : 0.150     ; BPM/TSS
-CrankRadius     : 172.0     ; mm
+CrankRadius     : 175.0     ; mm
 

@@ -5396,9 +5396,40 @@ files from my Garmin Edge 810.
         -   The work associated with a single sample is simply
                 work    = power * dt
             in joules.
+                                            Friday, March 15, 2019 (7:58 AM)
+        -   Reference from squat: At the end of the Anatomic Adaptation
+            phase, I could squat 160lbx4x25. With 75% of my body weight
+            (190 lbs), the total leg force was 300 lbs, or 150 lbs per leg.
+            This went through a depth of 16 inches. So each leg performed
+            work of 100 reps times 300 lbs times 16 inches, or
+            240,000 in*lb, which is 27.117 kJ at 150 lb.
 
     *   Begin coding force_analysis.py
-
+        -   There is a difficult ambiguity to deal with. The force
+            histogram is taken by,
+                ForceCounts, ForceBins  = np.histogram( leg_force,
+                                                        bins=force_bins )
+            But how do I actually get the number of revs or the work
+            associated with the counts? At a given instance, I have both
+            force and velocity (cadence), and this step throws the
+            velocity away.
+            I think I need to perform the histogram myself:
+                Loop over the force bins;
+                Find the indices at which the force is in the bin
+                    ii = np.nonzero(logical_and(
+                                leg_force >= BinLo,
+                                leg_force <  BinHi )    )[0]
+                Compute the revs and work at these indices:
+                    revs[i]     = sum(cadence[ii]) / 60 / SampleRate
+                    work[i]     = sum(power[ii]) / SampleRate
+        -   I am going to have to accommodate an overflow bin:
+                see force_analysis_dev_a.png
+            Most of the work is around 50 lb. But there are short spikes
+            exceeding 200 lbs.
+                see force_analysis_dev_b.png
+        -   I like it:
+                see force_analysis_dev_c.png
+                see force_analysis_dev_d.png
 
 
 https://help.github.com/articles/basic-writing-and-formatting-syntax/
