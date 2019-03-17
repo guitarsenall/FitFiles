@@ -5431,6 +5431,55 @@ files from my Garmin Edge 810.
                 see force_analysis_dev_c.png
                 see force_analysis_dev_d.png
 
+                                            Saturday, March 16, 2019 (8:01 AM)
+    *   Bring it into the GUI (fitfileanalyses.py).
+        -   That was embarrassingly easy.
+                see force_analysis_dev_e.png
+
+    *   Begin the "exposure histogram"--that is, a two-way histogram of work as
+        a function of pedal force and cadence. This would improve on
+        the Force histogram by allowing power contours to be overplotted.
+        -   Find MatPlotLib examples that get close to the plot I
+            want--that is, a 2D-color bar chart (containing work) overlaid
+            by line contours indicating power. Also, I would like dots
+            for the individual points.
+            >   This one covers the line contours well.
+                    https://matplotlib.org/gallery/images_contours_and_fields
+                        /contour_demo.html
+            >   I may need to use matplotlib.pyplot.imshow to get the
+                2D color bar plot. But the colorbar is a lot of work.
+                    https://matplotlib.org/gallery/images_contours_and_fields
+                        /image_annotated_heatmap.html
+            >   This has bar edges and easy colorbar.
+                    https://matplotlib.org/gallery/images_contours_and_fields
+                        /pcolor_demo.html
+            >   This calls pcolormesh.
+                    https://matplotlib.org/gallery/subplots_axes_and_figures
+                        /colorbar_placement.html
+            >   Scatterplot (plt.scatter)
+                    https://matplotlib.org/gallery/shapes_and_collections
+                        /scatter.html
+            >   Interesting. This adds 1D histograms at the sides of
+                a 2D scatter plot.
+                    https://matplotlib.org/gallery/axes_grid1
+                        /scatter_hist_locatable_axes.html
+                So I would get both a cadence histogram at the top and the
+                force histogram at the right.
+            >   This does a scatterplot using a simple call to
+                ax1.plot(x, y, 'ko', ms=3).
+                    https://matplotlib.org/gallery/images_contours_and_fields
+                        /irregulardatagrid.html
+                and overplots it on a color contour plot.
+            >   Google("matplotlib plot line contours on color contour")
+                    https://stackoverflow.com/questions/39710994
+                        /how-to-add-lines-to-contour-plot-in-python-matplotlib
+                I may want to look at this.
+                                            Sunday, March 17, 2019 (6:10 AM)
+        -   Start with the 2D color contour of the histogram using
+            pcolor.
+            >   I need to handle the overflow bin properly rather than
+                making the last bin extend to the data maximum.
+
 
 https://help.github.com/articles/basic-writing-and-formatting-syntax/
 
@@ -5447,9 +5496,9 @@ python demo.py
 TO DO:
 +   fitfileanalyses
     *   Major features
-        -   Force analysis: A histogram of either reps or work at
-            leg force. Create by calculating crank torque and revolutions
-            from power and cadence.
+        -   An "exposure histogram"--that is, a two-way histogram of work as
+            a function of pedal force and cadence. This would improve on
+            the Force histogram by allowing power contours to be overplotted.
         -   Candence analysis: histogram, seated intervals.
         -   Analyses for Comparing two files.
             >   File control for second file should be disabled unless

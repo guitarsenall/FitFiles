@@ -123,6 +123,7 @@ analyses_labels = [ 'Endurance Laps',
                     'Interval Laps',
                     'Heart Rate',
                     'Pw-HR Simulation',
+                    'Force Analysis',
                     'Compare Two Powers']
 
 # make sure matplotlib is imported INSIDE the analysis functions
@@ -132,6 +133,7 @@ from zone_detect import zone_detect
 from plot_heartrate import plot_heartrate
 from pwhr_transfer_function import pwhr_transfer_function
 from interval_laps import interval_laps
+from force_analysis import force_analysis
 
 class MyLaunchButton(wx.Button):
     ''' class to hold plot-closer functions to be called when application is closed'''
@@ -212,6 +214,19 @@ class MyLaunchButton(wx.Button):
             print >> OutputTextCtl, ''
             try:
                 PlotCloserFcn = pwhr_transfer_function( FITFileName, ConfigFile,
+                                                OutStream=OutputTextCtl )
+                self.plot_closer_fcns.append(PlotCloserFcn)
+            except IOError, ErrorObj:
+                dlg = wx.MessageDialog(win, ErrorObj.message, AnalysesChoice,
+                            wx.OK | wx.ICON_INFORMATION )
+                dlg.ShowModal()
+                dlg.Destroy()
+
+        elif AnalysesChoice == 'Force Analysis':
+            print 'Running Force Analysis on ' + FITFileName
+            print >> OutputTextCtl, ''
+            try:
+                PlotCloserFcn = force_analysis( FITFileName, ConfigFile,
                                                 OutStream=OutputTextCtl )
                 self.plot_closer_fcns.append(PlotCloserFcn)
             except IOError, ErrorObj:

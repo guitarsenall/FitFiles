@@ -15,7 +15,7 @@ import os
 import numpy as np
 
 ############################################################
-#              plot_heartrate function def                 #
+#              force_analysis function def                 #
 ############################################################
 
 from activity_tools import FindConfigFile
@@ -95,28 +95,43 @@ def force_analysis(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     # compute the histogram
     force_bins  = np.concatenate( (                     \
                         np.arange(0, 100, 5),           \
-                        np.array([100, MaxForce*1.1]) ) )
-    nBins   = len(force_bins)-1
-    force_mids  = (force_bins[0:nBins] + force_bins[1:nBins+1]) / 2.0
+                        np.array([100, 105) ) )
+    nFBins  = len(force_bins)-1
+    force_mids  = (force_bins[0:nFBins] + force_bins[1:nFBins+1]) / 2.0
     force_mids[-1]  = 110.0
-    force_width = (force_bins[1:nBins+1] - force_bins[0:nBins]) * 0.95
+    force_width = (force_bins[1:nFBins+1] - force_bins[0:nFBins]) * 0.95
     force_width[-1] = 20.0*0.95
     #ForceCounts, ForceBins  = np.histogram( leg_force, bins=force_bins )
 
     # Instead of counts, we have revs and work as a function of force.
     # So we have to perform the histogram manually.
     # Loop over the force bins
-    revs    = np.zeros(nBins)
-    work    = np.zeros(nBins)
-    for i in range(len(force_bins)-1):
+    revs    = np.zeros(nFBins)
+    work    = np.zeros(nFBins)
+    for i in range(nFBins):
         # Find the indices at which the force is in the bin
+        if i < nFBins:
+            FBinHi   = force_bins[i+1]
+        else:   # overflow bin
+            FBinHi   = leg_force.max()*1.1
         ii = np.nonzero( np.logical_and(
                     leg_force >= force_bins[i],
-                    leg_force <  force_bins[i+1] ) )[0]
+                    leg_force <  FBinHi ) )[0]
         # Compute the revs and work at these indices:
         revs[i]     = sum(cadence[ii]) / 60 / SampleRate
         work[i]     = sum(power[ii]) / SampleRate   \
                     / 1000.0                        # J -> kJ
+
+    #
+    #   Exposure Histogram
+    #
+    MaxCadence      = max( 130, cadence.max() )
+    cadence_bins    = np.arange(0, 135, 5)
+    nCBins          = len(cadence_bins)-1
+    for i in range(nFBins):
+        FBinHi = force_bins[i+1] if i < nFBins else leg_force.max()*1.1
+        for j in range(nCBins):
+            CBinHi = cadence_bins[j+1] if j < nCBins else cadence.max()*1.1
 
 
     ###########################################################
@@ -170,6 +185,21 @@ def force_analysis(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     fig2.tight_layout()
     fig2.canvas.set_window_title(FitFilePath)
     plt.show()
+
+    '''
+    # exposure histogram plot
+    # clone from
+    #   https://matplotlib.org/gallery/images_contours_and_fields/pcolor_demo.html
+    fig3, ax3 = plt.subplots()
+    c   = ax3.pcolor( force_bins, cadence_bins, exp_hist,
+                      cmap='RdBu', vmin=z_min, vmax=z_max)
+    ax3.axis([   force_bins.min(), force_bins.max(),
+                cadence_bins.min(), cadence_bins.max()])
+    fig.colorbar(c, ax=ax3)
+    ax3.set_title('Pedal Exposure Histogram')
+    fig.tight_layout()
+    plt.show()
+    '''
 
     def ClosePlots():
         plt.close('all')

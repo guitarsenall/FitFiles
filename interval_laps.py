@@ -137,6 +137,36 @@ def interval_laps(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     else:
         balance = array(balance)
 
+    #   All high-intensity intervals:    >80 %FTP
+    ii = nonzero( power>=0.80*FTP )[0]   # index array
+    if len(ii) > 0:
+        print >> OutStream, 'processing %d all laps above %d watts...' \
+                            % (len(ii), 0.80*FTP)
+        names1 = [ '',    '',     'avg',   'avg', 'avg', 'max', 'avg' ]
+        names2 = [ 'lap', 'time', 'power', 'cad',  'HR',  'HR', 'bal'  ]
+        print >> OutStream, "%8s"*7 % tuple(names1)
+        print >> OutStream, "%8s"*7 % tuple(names2)
+        for i in range(len(ii)):
+            mm = time[ii[i]] // 60
+            ss = time[ii[i]]  % 60
+            print >> OutStream, '%8d%5i:%02i%8d%8d%8d%8d%8.1f' \
+                    % (ii[i], mm, ss, power[ii[i]],
+                        cadence[ii[i]],
+                        avg_hr[ii[i]],
+                        max_hr[ii[i]],
+                        balance[ii[i]] )
+        mm = sum(time[ii]) // 60
+        ss = sum(time[ii])  % 60
+        print >> OutStream, '%8s%5i:%02i%8d%8d%8d%8d%8.1f' \
+                % ("AVERAGE", mm, ss,
+                    sum(  power[ii]*time[ii]) / sum(time[ii]),
+                    sum(cadence[ii]*time[ii]) / sum(time[ii]),
+                    sum( avg_hr[ii]*time[ii]) / sum(time[ii]),
+                    max(max_hr[ii]),
+                    sum(balance[ii]*time[ii]) / sum(time[ii]) )
+    else:
+        print >> OutStream, 'No high-intensity laps found.' \
+
     #   Tempo intervals:    75-88  %FTP
     ii = nonzero(logical_and( power>=0.75*FTP, power<0.88*FTP ))[0]   # index array
     if len(ii) > 0:
