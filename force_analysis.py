@@ -92,10 +92,13 @@ def force_analysis(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
 
     MaxForce    = max( SquatLegForce, max(leg_force) )
 
+    # Histogram bin edges. The first bin is underflow (includes data
+    # down to the minimum regardless of the first edge), and the last
+    # is overflow (includes data up to maximum regardless of the last edge).
+    force_bins      = np.arange(10, 85, 5)
+    cadence_bins    = np.arange(50, 125, 5)
+
     # compute the histogram
-    force_bins  = np.concatenate( (                     \
-                        np.arange(0, 100, 5),           \
-                        np.array([100, 105]) ) )
     nFBins  = len(force_bins)-1
     force_mids  = (force_bins[0:nFBins] + force_bins[1:nFBins+1]) / 2.0
     force_mids[-1]  = 110.0
@@ -109,13 +112,10 @@ def force_analysis(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     revs    = np.zeros(nFBins)
     work    = np.zeros(nFBins)
     for i in range(nFBins):
-        # Find the indices at which the force is in the bin
-        if i < nFBins:
-            FBinHi   = force_bins[i+1]
-        else:   # overflow bin
-            FBinHi   = leg_force.max()*1.1
+        FBinLo  = force_bins[i] if i>1 else leg_force.min()
+        FBinHi  = force_bins[i+1] if i<nFBins else leg_force.max()*1.1
         ii = np.nonzero( np.logical_and(
-                    leg_force >= force_bins[i],
+                    leg_force >= FBinLo,
                     leg_force <  FBinHi ) )[0]
         # Compute the revs and work at these indices:
         revs[i]     = sum(cadence[ii]) / 60 / SampleRate
@@ -131,42 +131,36 @@ def force_analysis(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     #    be best to do so right up front since np.meshgrid() formats
     #    the coordinates this way.
     MaxCadence      = max( 130, cadence.max() )
-    cadence_bins    = np.arange(0, 135, 5)
     nCBins          = len(cadence_bins)-1
     work2d          = np.zeros([nCBins  ,nFBins  ])     # note shape!
     power_grid      = np.zeros([nCBins+1,nFBins+1])
     force_grid, cadence_grid = np.meshgrid(force_bins, cadence_bins)
     for i in range(nFBins):
+        FBinLo = force_bins[i] if i>1 else leg_force.min()
         FBinHi = force_bins[i+1] if i < nFBins else leg_force.max()*1.1
         ii = np.nonzero( np.logical_and(
-                    leg_force >= force_bins[i],
+                    leg_force >= FBinLo,
                     leg_force <  FBinHi ) )[0]
         for j in range(nCBins):
+            CBinLo = cadence_bins[j] if j > 1 else cadence.min()
             CBinHi = cadence_bins[j+1] if j < nCBins else cadence.max()*1.1
             jj = np.nonzero( np.logical_and(
-                    cadence[ii] >= cadence_bins[j],
-                    cadence[ii] <  CBinHi           ))[0]
+                    cadence[ii] >= CBinLo,
+                    cadence[ii] <  CBinHi  ))[0]
             work2d[j,i]     = sum(power[ii[jj]])    \
                             / SampleRate / 1000.0   # J -> kJ
             TorqueNM        = force_bins[i] * CrankRadius / 8.8507
             power_grid[j,i] = TorqueNM * cadence_bins[j] * (2*pi/60)
     # last grid column
     i += 1
-    TorqueNM        = force_bins[i] * CrankRadius / 8.8507
+    TorqueNM    = force_bins[i] * CrankRadius / 8.8507
     for j in range(nCBins+1):
         power_grid[j,i] = TorqueNM * cadence_bins[j] * (2*pi/60)
     # last grid row. Leave j = nCBins
     for i in range(nFBins+1):
         TorqueNM        = force_bins[i] * CrankRadius / 8.8507
         power_grid[j,i] = TorqueNM * cadence_bins[j] * (2*pi/60)
-    #power_lines = np.linspace(100, power_grid.max(), 10)
     power_lines = np.arange(50, power_grid.max(), 50)
-
-
-
-#    ii      = nonzero( logical_and( edge_t>2,      \
-#                       logical_and(edge_power>1,   \
-#                                   edge_power<400) ))
 
 
     ###########################################################
@@ -194,6 +188,7 @@ def force_analysis(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     ax1.xaxis.set_major_formatter(DateFormatter('%H:%M:%S'))
     ax1.grid(True)
     ax1.set_title('cadence, RPM')
+    ax1.set_yticks( cadence_bins, minor=False)
     fig1.autofmt_xdate()
     fig1.suptitle('Force Analysis', fontsize=20)
     fig1.tight_layout()

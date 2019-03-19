@@ -5560,7 +5560,12 @@ files from my Garmin Edge 810.
             >   Looking good!!
                     see force_analysis_dev_g.png
             >   Commit & push.
-
+        -   I don't want bins all the way down to zero. Add underflow bin.
+            Simple. Here is a fast-RPM interval session:
+                see force_analysis_dev_h.png
+            There is enough energy below 50 RPM to highlight the cadence
+            underflow bins.
+            >   Commit & push.
 
 
 https://help.github.com/articles/basic-writing-and-formatting-syntax/
@@ -5578,10 +5583,8 @@ python demo.py
 TO DO:
 +   fitfileanalyses
     *   Major features
-        -   An "exposure histogram"--that is, a two-way histogram of work as
-            a function of pedal force and cadence. This would improve on
-            the Force histogram by allowing power contours to be overplotted.
-        -   Candence analysis: histogram, seated intervals.
+        -   Wear energy for gears. Each gear would calculate the
+            energy per tooth in a given date range.
         -   Analyses for Comparing two files.
             >   File control for second file should be disabled unless
                 the analysis uses it.
