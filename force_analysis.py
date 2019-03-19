@@ -95,7 +95,7 @@ def force_analysis(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     # compute the histogram
     force_bins  = np.concatenate( (                     \
                         np.arange(0, 100, 5),           \
-                        np.array([100, 105) ) )
+                        np.array([100, 105]) ) )
     nFBins  = len(force_bins)-1
     force_mids  = (force_bins[0:nFBins] + force_bins[1:nFBins+1]) / 2.0
     force_mids[-1]  = 110.0
@@ -125,13 +125,34 @@ def force_analysis(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     #
     #   Exposure Histogram
     #
+    #    I want the plot to display force on the X axis, but this is
+    #    the column (2nd) index, and the Y axis is the row (1st) index.
+    #    So I need to transpose work2d at some point; it would probably
+    #    be best to do so right up front since np.meshgrid() formats
+    #    the coordinates this way.
     MaxCadence      = max( 130, cadence.max() )
     cadence_bins    = np.arange(0, 135, 5)
     nCBins          = len(cadence_bins)-1
+    work2d          = np.zeros([nCBins,nFBins])     # note shape!
+    force_grid, cadence_grid = np.meshgrid(force_bins, cadence_bins)
     for i in range(nFBins):
         FBinHi = force_bins[i+1] if i < nFBins else leg_force.max()*1.1
+        ii = np.nonzero( np.logical_and(
+                    leg_force >= force_bins[i],
+                    leg_force <  FBinHi ) )[0]
         for j in range(nCBins):
             CBinHi = cadence_bins[j+1] if j < nCBins else cadence.max()*1.1
+            jj = np.nonzero( np.logical_and(
+                    cadence[ii] >= cadence_bins[j],
+                    cadence[ii] <  CBinHi           ))[0]
+            work2d[j,i] = sum(power[ii[jj]]) / SampleRate   \
+                        / 1000.0                        # J -> kJ
+
+
+
+#    ii      = nonzero( logical_and( edge_t>2,      \
+#                       logical_and(edge_power>1,   \
+#                                   edge_power<400) ))
 
 
     ###########################################################
@@ -186,20 +207,22 @@ def force_analysis(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     fig2.canvas.set_window_title(FitFilePath)
     plt.show()
 
-    '''
     # exposure histogram plot
     # clone from
     #   https://matplotlib.org/gallery/images_contours_and_fields/pcolor_demo.html
     fig3, ax3 = plt.subplots()
-    c   = ax3.pcolor( force_bins, cadence_bins, exp_hist,
-                      cmap='RdBu', vmin=z_min, vmax=z_max)
+    c   = ax3.pcolor( force_grid, cadence_grid, work2d,
+                      cmap='rainbow', vmin=work2d.min(), vmax=work2d.max() )
     ax3.axis([   force_bins.min(), force_bins.max(),
                 cadence_bins.min(), cadence_bins.max()])
-    fig.colorbar(c, ax=ax3)
+    cbar    = fig3.colorbar(c, ax=ax3)
+    cbar.ax.set_ylabel('work, kJ')
+    ax3.set_xlabel('Pedal Force, lb')
+    ax3.set_ylabel('cadence, RPM')
     ax3.set_title('Pedal Exposure Histogram')
-    fig.tight_layout()
+    fig3.tight_layout()
+    fig3.canvas.set_window_title(FitFilePath)
     plt.show()
-    '''
 
     def ClosePlots():
         plt.close('all')

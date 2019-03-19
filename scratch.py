@@ -1,27 +1,39 @@
 
 # scratch.py
 
-# differentiating lowpass filter
+#double-nested array indices
 import numpy as np
-from scipy import signal
-poles       = 4
-cutoff      = 0.1     # Hz
-SampleRate  = 1.0
-Wn          = cutoff / (SampleRate/2)
-PadLen      = int(SampleRate/cutoff)
-NumB, DenB  = signal.butter(poles, Wn, btype='lowpass',
-                            output='ba', analog=True)
-NumF    = signal.convolve( NumB, [1,0])
-HPtf    = signal.TransferFunction(NumF,DenB)
-t1, y1  = signal.step(HPtf)
-b, a    = signal.bilinear(NumF,DenB, fs=SampleRate)
-x2      = np.ones(len(t1))  # step
-y2      = signal.lfilter(b, a, x2)
-import matplotlib.pyplot as plt
-plt.figure(1)
-plt.plot(t1, y1, 'r-')
-plt.plot(t1, y2, 'b-')
-plt.show()
+x   = np.arange(1,6,1)
+y   = x+5
+xg, yg  = np.meshgrid(x,y)
+z   = np.arange(101, 120, 1)
+ii  = np.nonzero( z     > 104 )[0]
+jj  = np.nonzero( z[ii] < 108 )[0]
+#    >>> z[ii[jj]]
+#    array([105, 106, 107])
+
+
+## differentiating lowpass filter
+#import numpy as np
+#from scipy import signal
+#poles       = 4
+#cutoff      = 0.1     # Hz
+#SampleRate  = 1.0
+#Wn          = cutoff / (SampleRate/2)
+#PadLen      = int(SampleRate/cutoff)
+#NumB, DenB  = signal.butter(poles, Wn, btype='lowpass',
+#                            output='ba', analog=True)
+#NumF    = signal.convolve( NumB, [1,0])
+#HPtf    = signal.TransferFunction(NumF,DenB)
+#t1, y1  = signal.step(HPtf)
+#b, a    = signal.bilinear(NumF,DenB, fs=SampleRate)
+#x2      = np.ones(len(t1))  # step
+#y2      = signal.lfilter(b, a, x2)
+#import matplotlib.pyplot as plt
+#plt.figure(1)
+#plt.plot(t1, y1, 'r-')
+#plt.plot(t1, y2, 'b-')
+#plt.show()
 
 
 

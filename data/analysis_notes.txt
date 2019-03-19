@@ -5479,6 +5479,76 @@ files from my Garmin Edge 810.
             pcolor.
             >   I need to handle the overflow bin properly rather than
                 making the last bin extend to the data maximum.
+                                            Monday, March 18, 2019 (7:46 AM)
+            >   pcolor() needs gridded arrays of the axis coordinates.
+                I can get this with numpy.meshgrid(), but I might need to
+                be careful:
+                    >>> x
+                    [1, 2, 3, 4]
+                    >>> y
+                    [6, 7, 8]
+                    >>> xv, yv = np.meshgrid(x,y)
+                    >>> xv
+                    array([[1, 2, 3, 4],
+                           [1, 2, 3, 4],
+                           [1, 2, 3, 4]])
+                    >>> yv
+                    array([[6, 6, 6, 6],
+                           [7, 7, 7, 7],
+                           [8, 8, 8, 8]])
+                    >>> xv[0]
+                    array([1, 2, 3, 4])
+                    >>> xv[:,0]
+                    array([1, 1, 1])
+                Am I clear on which array dimension is for x and which
+                is for y?
+            >   pcolor() is giving an error:
+                    "TypeError: Dimensions of C (21, 26) are incompatible
+                    with X (22) and/or Y (27); see help(pcolor)"
+                But I don't see the flaw in the code or even in the error.
+                The dimensions of X and Y should be 1 greater than C,
+                which they are.
+                    [Dbg]>>> work2d.shape
+                    (21, 26)
+                    [Dbg]>>> force_grid.shape
+                    (27, 22)
+                    [Dbg]>>> cadence_grid.shape
+                    (27, 22)
+                    [Dbg]>>> force_bins.shape
+                    (22,)
+                    [Dbg]>>> cadence_bins.shape
+                    (27,)
+                It looks like I transposed something. I took the grid with,
+                    force_grid, cadence_grid = np.meshgrid(force_bins,
+                                                           cadence_bins)
+                But I was right to keep my eye on dimensions and indexing.
+                In the code above, xv.shape is (3,4), but x has 4
+                elements while y has 3. Documentation for pcolor() says,
+                    "The grid orientation follows the standard matrix
+                    convention: An array C with shape (nrows, ncolumns) is
+                    plotted with the column number as X and the row
+                    number as Y."
+                I need to ponder this.
+                                            Tuesday, March 19, 2019 (7:11 AM)
+                I want the plot to display force on the X axis, but this is
+                the column (2nd) index, and the Y axis is the row (1st) index.
+                So I need to transpose work2d at some point; it would probably
+                be best to do so right up front since np.meshgrid() formats
+                the coordinates this way.
+                    work2d          = np.zeros([nCBins,nFBins])
+                    for i in range(nFBins):
+                        for j in range(nCBins):
+                            work2d[j,i] = sum(power[ii[jj]])   \
+                                        / SampleRate / 1000.0
+                Nailed it!
+                    see force_analysis_dev_f.png
+            >   Browse the MatPlotLib gallery to find how to set the
+                color axis title:
+                    cbar.ax.set_ylabel('verbosity coefficient')
+            >   Colormaps:
+                    https://matplotlib.org/gallery/color/colormap_reference.html
+            >   Commit & push.
+
 
 
 https://help.github.com/articles/basic-writing-and-formatting-syntax/
