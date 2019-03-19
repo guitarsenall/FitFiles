@@ -133,7 +133,8 @@ def force_analysis(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     MaxCadence      = max( 130, cadence.max() )
     cadence_bins    = np.arange(0, 135, 5)
     nCBins          = len(cadence_bins)-1
-    work2d          = np.zeros([nCBins,nFBins])     # note shape!
+    work2d          = np.zeros([nCBins  ,nFBins  ])     # note shape!
+    power_grid      = np.zeros([nCBins+1,nFBins+1])
     force_grid, cadence_grid = np.meshgrid(force_bins, cadence_bins)
     for i in range(nFBins):
         FBinHi = force_bins[i+1] if i < nFBins else leg_force.max()*1.1
@@ -145,8 +146,21 @@ def force_analysis(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
             jj = np.nonzero( np.logical_and(
                     cadence[ii] >= cadence_bins[j],
                     cadence[ii] <  CBinHi           ))[0]
-            work2d[j,i] = sum(power[ii[jj]]) / SampleRate   \
-                        / 1000.0                        # J -> kJ
+            work2d[j,i]     = sum(power[ii[jj]])    \
+                            / SampleRate / 1000.0   # J -> kJ
+            TorqueNM        = force_bins[i] * CrankRadius / 8.8507
+            power_grid[j,i] = TorqueNM * cadence_bins[j] * (2*pi/60)
+    # last grid column
+    i += 1
+    TorqueNM        = force_bins[i] * CrankRadius / 8.8507
+    for j in range(nCBins+1):
+        power_grid[j,i] = TorqueNM * cadence_bins[j] * (2*pi/60)
+    # last grid row. Leave j = nCBins
+    for i in range(nFBins+1):
+        TorqueNM        = force_bins[i] * CrankRadius / 8.8507
+        power_grid[j,i] = TorqueNM * cadence_bins[j] * (2*pi/60)
+    #power_lines = np.linspace(100, power_grid.max(), 10)
+    power_lines = np.arange(50, power_grid.max(), 50)
 
 
 
@@ -217,6 +231,9 @@ def force_analysis(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
                 cadence_bins.min(), cadence_bins.max()])
     cbar    = fig3.colorbar(c, ax=ax3)
     cbar.ax.set_ylabel('work, kJ')
+    CS = ax3.contour( force_grid, cadence_grid, power_grid,
+                      power_lines, colors='k' )
+    ax3.clabel(CS, fontsize=9, inline=1)
     ax3.set_xlabel('Pedal Force, lb')
     ax3.set_ylabel('cadence, RPM')
     ax3.set_title('Pedal Exposure Histogram')

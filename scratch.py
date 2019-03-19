@@ -1,16 +1,19 @@
 
 # scratch.py
 
-#double-nested array indices
-import numpy as np
-x   = np.arange(1,6,1)
-y   = x+5
-xg, yg  = np.meshgrid(x,y)
-z   = np.arange(101, 120, 1)
-ii  = np.nonzero( z     > 104 )[0]
-jj  = np.nonzero( z[ii] < 108 )[0]
-#    >>> z[ii[jj]]
-#    array([105, 106, 107])
+for i in range(5):
+    print i
+
+##double-nested array indices
+#import numpy as np
+#x   = np.arange(1,6,1)
+#y   = x+5
+#xg, yg  = np.meshgrid(x,y)
+#z   = np.arange(101, 120, 1)
+#ii  = np.nonzero( z     > 104 )[0]
+#jj  = np.nonzero( z[ii] < 108 )[0]
+##    >>> z[ii[jj]]
+##    array([105, 106, 107])
 
 
 ## differentiating lowpass filter

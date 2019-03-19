@@ -5548,6 +5548,18 @@ files from my Garmin Edge 810.
             >   Colormaps:
                     https://matplotlib.org/gallery/color/colormap_reference.html
             >   Commit & push.
+        -   Add the power contour lines.
+            >   Review
+                    https://matplotlib.org/gallery/images_contours_and_fields
+                        /contour_demo.html
+                    https://matplotlib.org/api/_as_gen
+                        /matplotlib.axes.Axes.contour.html
+                I will need to compute power at the grid coordinates:
+                    "X and Y must both be 2-D with the same shape as Z
+                    (e.g. created via numpy.meshgrid())..."
+            >   Looking good!!
+                    see force_analysis_dev_g.png
+            >   Commit & push.
 
 
 
