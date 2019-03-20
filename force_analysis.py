@@ -68,10 +68,13 @@ def force_analysis(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     time_signal = signals['time']
     power       = signals['power']
     cadence     = signals['cadence']
+    nPts        = len(power)
 
     # Calculate leg force and reps
     from math import pi
-    torque  = power / cadence / (2*pi/60)      \
+    torque  = np.zeros(nPts)
+    ii  = cadence.nonzero()[0]
+    torque[ii]  = power[ii] / cadence[ii] / (2*pi/60)      \
             * 8.8507                                # N*m -> in*lb
     leg_force   = torque / CrankRadius
 
@@ -96,14 +99,14 @@ def force_analysis(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     # down to the minimum regardless of the first edge), and the last
     # is overflow (includes data up to maximum regardless of the last edge).
     force_bins      = np.arange(10, 85, 5)
-    cadence_bins    = np.arange(50, 125, 5)
+    cadence_bins    = np.arange(35, 125, 5)
 
     # compute the histogram
     nFBins  = len(force_bins)-1
     force_mids  = (force_bins[0:nFBins] + force_bins[1:nFBins+1]) / 2.0
     force_mids[-1]  = 110.0
     force_width = (force_bins[1:nFBins+1] - force_bins[0:nFBins]) * 0.95
-    force_width[-1] = 20.0*0.95
+    #force_width[-1] = 20.0*0.95
     #ForceCounts, ForceBins  = np.histogram( leg_force, bins=force_bins )
 
     # Instead of counts, we have revs and work as a function of force.
@@ -170,7 +173,8 @@ def force_analysis(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     # this needs to stay INSIDE the function or bad things happen
     import matplotlib.pyplot as plt
 
-    # force & cadence time plot
+    # force & cadence time plot with grids at valid bin edges so that
+    # underflow and overflow bins are shown accurately.
     import matplotlib.dates as md
     from matplotlib.dates import date2num, DateFormatter
     import datetime as dt
@@ -182,13 +186,13 @@ def force_analysis(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     ax0.grid(True)
     ax0.legend( ['leg_force' ], loc='upper left');
     ax0.set_title('Leg Force, lb')
-    ax0.set_yticks( force_bins, minor=False)
+    ax0.set_yticks( force_bins[1:-1], minor=False)
     ax1.plot_date( x, cadence,  'g-+', linewidth=1 );
     ax1.legend( ['cadence' ], loc='upper left');
     ax1.xaxis.set_major_formatter(DateFormatter('%H:%M:%S'))
     ax1.grid(True)
     ax1.set_title('cadence, RPM')
-    ax1.set_yticks( cadence_bins, minor=False)
+    ax1.set_yticks( cadence_bins[1:-1], minor=False)
     fig1.autofmt_xdate()
     fig1.suptitle('Force Analysis', fontsize=20)
     fig1.tight_layout()
@@ -203,8 +207,8 @@ def force_analysis(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     #error_config = {'ecolor': '0.3'}
     zone_ints   = np.arange(7)+1
     LogY = False
-    rects1 = ax2.bar(force_mids, work, force_width,
-                    align='center',alpha=opacity, color='r', log=LogY,
+    rects1 = ax2.bar(force_bins[:-1], work, force_width,
+                    align='edge',alpha=opacity, color='r', log=LogY,
                     label='force')
     ax2.set_xlabel('Pedal Force, lb')
     ax2.set_ylabel('work, kJ')
