@@ -5574,6 +5574,8 @@ files from my Garmin Edge 810.
                 fitfileanalyses_gui_g.png
                 force_analysis_dev_i.png
             >   Commit & push.
+            >   Tag as v1.4
+            >   Commit & push with tags included.
 
 
 
