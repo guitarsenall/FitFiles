@@ -5156,6 +5156,9 @@ files from my Garmin Edge 810.
                     https://chrome.google.com/webstore/detail/markdown-viewer
                         /ckkdlimhmcjmikdlpkmbgfkaikojcbjk?hl=en-US
             Continue editing.
+            To use, drag-drop the README.md file onto the link bar, then
+            reload the file using the 'M' extension icon.
+                see view_markdown_chrome_a.png
         -   Need some screenshots
                 fitfileanalyses_gui_f.png
                 zone_detect_no_hr_b.png
@@ -5566,6 +5569,12 @@ files from my Garmin Edge 810.
             There is enough energy below 50 RPM to highlight the cadence
             underflow bins.
             >   Commit & push.
+                                            Thursday, March 21, 2019 (7:40 AM)
+        -   Update documentation (README.md)
+                fitfileanalyses_gui_g.png
+                force_analysis_dev_i.png
+            >   Commit & push.
+
 
 
 https://help.github.com/articles/basic-writing-and-formatting-syntax/

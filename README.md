@@ -11,10 +11,15 @@ The main feature in this project is a GUI which gives access to a collection of 
             <img alt="zone_detect_no_hr_b.png" src="data/zone_detect_no_hr_b.png">
         </td>
         <td>
-            <img alt=fitfileanalyses_gui_f.png" src="data/fitfileanalyses_gui_f.png">
+            <img alt=fitfileanalyses_gui_f.png" src="data/fitfileanalyses_gui_g.png">
         </td>
+    </tr>
+    <tr>
         <td>
             <img alt="kim_pwhr_a2_c.png" src="data/kim_pwhr_a2_c.png">
+        </td>
+        <td>
+            <img alt="force_analysis_dev_i.png" src="data/force_analysis_dev_i.png">
         </td>
     </tr>
 </table>
@@ -33,6 +38,7 @@ The main feature in this project is a GUI which gives access to a collection of 
 -   **Interval Laps.** This analysis detects laps with average powers above the aerobic threshold for tabulation. It completes with a time-averaged power sum so that you can know, for example, how many total minutes you spent in zone 4.
 -   **Heartrate zone analysis.** This analysis calculates calories from heartrate and provides a heartrate-zone histogram (both text and plot).
 -   **Heartrate simulation from power.** This analysis uses a first-order dynamic model that computes heartrate from power. Its primary use is to determine heartrate offset ("is it high or low or normal?") and cardiac drift for an arbitrary workout--that is, the workout does not have to be structured; even races can be analyzed. Cardiac drift is modeled as proportional to fatigue in BPM/TSS.
+-   **Force Analysis.** This analysis plots histograms contain work (in kilojoules) as a function of pedal force and cadence. One plot is a one-way histogram of pedal force only which is useful for checking the amount of high-force work done in a hill repeat (like counting weight and reps when lifting weights). The second plot is a two-way histogram of pedal force on the X-axis (identical to the first plot) and cadence on the Y axis with power contour lines drawn. This is useful for learning the force-cadence-power conditions in which the most work is done in an arbitrary ride (e.g., fast-RPM VO2max intervals).
 
 ##  How to launch using the batch file
 
