@@ -5577,6 +5577,17 @@ files from my Garmin Edge 810.
             >   Tag as v1.4
             >   Commit & push with tags included.
 
+                                            Monday, March 25, 2019 (8:08 AM)
+    *   Add a cadence-work histogram, but have the bars horizontal so they
+        match the orientation of the exposure histogram.
+        -   Research MatPlotLib for a horizontal bar plot.
+                https://matplotlib.org/gallery/lines_bars_and_markers
+                    /barh.html
+                https://matplotlib.org/api/_as_gen
+                    /matplotlib.axes.Axes.barh.html
+        -   Nailed it in one edit!
+                see force_analysis_dev_j.png
+        -   Commit & push.
 
 
 https://help.github.com/articles/basic-writing-and-formatting-syntax/

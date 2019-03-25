@@ -98,22 +98,17 @@ def force_analysis(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     # Histogram bin edges. The first bin is underflow (includes data
     # down to the minimum regardless of the first edge), and the last
     # is overflow (includes data up to maximum regardless of the last edge).
-    force_bins      = np.arange(10, 85, 5)
-    cadence_bins    = np.arange(35, 125, 5)
+    force_bins      = np.arange(0, 85, 5)
+    cadence_bins    = np.arange(25, 125, 5)
 
-    # compute the histogram
-    nFBins  = len(force_bins)-1
-    force_mids  = (force_bins[0:nFBins] + force_bins[1:nFBins+1]) / 2.0
-    force_mids[-1]  = 110.0
-    force_width = (force_bins[1:nFBins+1] - force_bins[0:nFBins]) * 0.95
-    #force_width[-1] = 20.0*0.95
-    #ForceCounts, ForceBins  = np.histogram( leg_force, bins=force_bins )
-
+    # compute the force-work histogram
     # Instead of counts, we have revs and work as a function of force.
     # So we have to perform the histogram manually.
-    # Loop over the force bins
+    nFBins  = len(force_bins)-1
+    force_width = (force_bins[1:nFBins+1] - force_bins[0:nFBins]) * 0.95
+
     revs    = np.zeros(nFBins)
-    work    = np.zeros(nFBins)
+    force_work    = np.zeros(nFBins)
     for i in range(nFBins):
         FBinLo  = force_bins[i] if i>1 else leg_force.min()
         FBinHi  = force_bins[i+1] if i<nFBins else leg_force.max()*1.1
@@ -121,9 +116,23 @@ def force_analysis(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
                     leg_force >= FBinLo,
                     leg_force <  FBinHi ) )[0]
         # Compute the revs and work at these indices:
-        revs[i]     = sum(cadence[ii]) / 60 / SampleRate
-        work[i]     = sum(power[ii]) / SampleRate   \
-                    / 1000.0                        # J -> kJ
+        revs[i]         = sum(cadence[ii]) / 60 / SampleRate
+        force_work[i]   = sum(power[ii]) / SampleRate   \
+                        / 1000.0                        # J -> kJ
+
+    # compute the cadence-work histogram
+    nCBins          = len(cadence_bins)-1
+    cadence_width   = (cadence_bins[1:nCBins+1] - cadence_bins[0:nCBins]) * 0.95
+    cadence_work    = np.zeros(nCBins)
+    for i in range(nCBins):
+        CBinLo  = cadence_bins[i] if i>1 else leg_force.min()
+        CBinHi  = cadence_bins[i+1] if i<nCBins else cadence.max()*1.1
+        ii = np.nonzero( np.logical_and(
+                    cadence >= CBinLo,
+                    cadence <  CBinHi ) )[0]
+        cadence_work[i] = sum(power[ii]) / SampleRate   \
+                        / 1000.0                        # J -> kJ
+
 
     #
     #   Exposure Histogram
@@ -133,8 +142,6 @@ def force_analysis(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     #    So I need to transpose work2d at some point; it would probably
     #    be best to do so right up front since np.meshgrid() formats
     #    the coordinates this way.
-    MaxCadence      = max( 130, cadence.max() )
-    nCBins          = len(cadence_bins)-1
     work2d          = np.zeros([nCBins  ,nFBins  ])     # note shape!
     power_grid      = np.zeros([nCBins+1,nFBins+1])
     force_grid, cadence_grid = np.meshgrid(force_bins, cadence_bins)
@@ -200,24 +207,33 @@ def force_analysis(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     plt.show()
 
 
-    # work histogram plot
+    # force_work histogram plot
     fig2, ax2 = plt.subplots()
-    #bar_width = 0.80    # 0.35
     opacity = 0.8
-    #error_config = {'ecolor': '0.3'}
-    zone_ints   = np.arange(7)+1
     LogY = False
-    rects1 = ax2.bar(force_bins[:-1], work, force_width,
+    rects1 = ax2.bar(force_bins[:-1], force_work, force_width,
                     align='edge',alpha=opacity, color='r', log=LogY,
                     label='force')
     ax2.set_xlabel('Pedal Force, lb')
     ax2.set_ylabel('work, kJ')
     ax2.set_title('Pedal Force Work Histogram')
-    #ax2.set_xticks(zone_ints + bar_width / 2)
-    #ax2.set_xticklabels(h_zone_labels)
     ax2.legend()
     fig2.tight_layout()
     fig2.canvas.set_window_title(FitFilePath)
+    plt.show()
+
+    # cadence_work histogram plot
+    fig4, ax4 = plt.subplots()
+    opacity = 0.8
+    rects4 = ax4.barh(cadence_bins[:-1], cadence_work, cadence_width,
+                    align='edge',alpha=opacity, color='g', log=False,
+                    label='cadence')
+    ax4.set_ylabel('cadence, RPM')
+    ax4.set_xlabel('work, kJ')
+    ax4.set_title('Cadence-Work Histogram')
+    ax4.legend()
+    fig4.tight_layout()
+    fig4.canvas.set_window_title(FitFilePath)
     plt.show()
 
     # exposure histogram plot
