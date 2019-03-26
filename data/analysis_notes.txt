@@ -3381,6 +3381,11 @@ files from my Garmin Edge 810.
             >   The wxPython demo has a sample file-drop under
                     Clipboard and DnD -> DragAndDrop
                 The code subclasses wx.FileDropTarget.
+                BTW, to run the wxPython demo, use a command window, cd to
+                    D:\Users\Owner\Documents\OneDrive\2018\notesparser
+                        \wxPython-demo-4.0.3\demo\
+                then enter,
+                    >python demo.py
             >   Wait. What about the file browser?
                     More Windows Controls -> FileBrowseButton
                 Does it already support DnD? No. And this encapsulates
@@ -5611,6 +5616,14 @@ TO DO:
             >   File control for second file should be disabled unless
                 the analysis uses it.
         -   A list of channels in the file with a plot button.
+            >   Perhaps implement with a button on the main dialog
+                that launches a new dialog for querying the selected
+                file. Or it could be another analysis that is launched.
+                BTW, to run the wxPython demo, use a command window, cd to
+                    D:\Users\Owner\Documents\OneDrive\2018\notesparser
+                        \wxPython-demo-4.0.3\demo\
+                then enter,
+                    >python demo.py
         -   The ability to signal-process a channel into a new version
             (e.g., low-pass filtering), save to a .PKL file with the
             same prefix. This file can be searched for when the .FIT
@@ -5642,6 +5655,7 @@ TO DO:
         -   Collect dependencies (e.g., MatPlotLib) and instructions on how
             to install them.
     *   endurance_summery
+        -   Crashes if no laps.
         -   Eventually included percent seated time.
         -   Power balance while seated. Degrading with fatigue?
     *   zone_detect

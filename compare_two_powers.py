@@ -13,8 +13,8 @@ from fitparse import Activity
 from activity_tools import extract_activity_signals, find_delay
 
 FilePath        = r's:\will\Documents\OneDrive\bike\activities\kim\\'
-EdgeFilePath    = FilePath + r'2019-03-12-18-20-16.fit'
-ZwiftFilePath   = FilePath + r'2019-03-12-18-16-52_zwift.fit'
+EdgeFilePath    = FilePath + r'2019-03-23-16-39-03.fit'
+ZwiftFilePath   = FilePath + r'2019-03-23-16-41-05_zwift.fit'
 
 #EdgeFilePath    = r'2017-01-02-16-12-43_edge.fit'
 #ZwiftFilePath   = r'2017-01-02-16-07-51_zwift.fit'
@@ -47,12 +47,12 @@ zwift_t         = arange(len(zwift_hr))
 zwift_power     = ZwiftSignals['power']
 
 zwift_hr_r   = interp(edge_t, zwift_t, zwift_hr)
-HRDelay = find_delay( edge_hr, zwift_hr_r, MinDelay=-20, MaxDelay=20 )
+HRDelay = find_delay( edge_hr, zwift_hr_r, MinDelay=-40, MaxDelay=40 )
 print 'heart rate optimum delay: ', HRDelay
 edge_cad    = EdgeSignals['cadence']
 zwift_cad   = ZwiftSignals['cadence']
 zwift_cad_r   = interp(edge_t, zwift_t, zwift_cad)
-CadenceDelay = find_delay( edge_cad, zwift_cad_r, MinDelay=-20, MaxDelay=20 )
+CadenceDelay = find_delay( edge_cad, zwift_cad_r, MinDelay=-40, MaxDelay=40 )
 print 'cadence optimum delay: ', CadenceDelay
 
 #
@@ -77,7 +77,7 @@ def ScaleDelayError(ScaleNDelay):
     return RMSError
 
 from scipy.optimize import minimize
-x0  = [1.2, 10]
+x0  = [1.0, 0.0]
 bnds = ( (0.95, 1.05), (-60, 60) )
 res = minimize(ScaleDelayError, x0, method='SLSQP', bounds=bnds)
 print res.message
