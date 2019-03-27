@@ -5638,6 +5638,18 @@ files from my Garmin Edge 810.
                 channel_inspect_anls_a.png
                 channel_inspect_anls_b.png
 
+    *   Roll it into fitfileanalyses.py.
+        -   I need the parent window.
+                https://wxpython.org/Phoenix/docs/html/wx.Button.html
+            Follow class hierarchy. wx.Window.GetParent(self).
+            This works:
+                parent  = super(wx.Button, self).GetParent()
+            even though it has to "pass through" superclasses
+            wx.AnyButton and wx.Control to reach wx.Window to retrieve
+            the method.
+
+
+
 
 https://help.github.com/articles/basic-writing-and-formatting-syntax/
 

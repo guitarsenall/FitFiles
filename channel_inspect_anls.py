@@ -39,6 +39,10 @@ def channel_inspect_anls(FitFilePath, ConfigFile=None, OutStream=sys.stdout,
     ChannelList.remove('time')
     ChannelList.remove('metadata')
 
+    print >> OutStream, 'Signals contained:'
+    for s in ChannelList:
+        print >> OutStream, '   ' + s
+
     if ParentWin is None:
         app = wx.App()
 
@@ -50,7 +54,7 @@ def channel_inspect_anls(FitFilePath, ConfigFile=None, OutStream=sys.stdout,
     if (dlg.ShowModal() == wx.ID_OK):
         selections = dlg.GetSelections()
         ChannelNames = [ ChannelList[x] for x in selections ]
-        print >> OutStream, "Selections: %s -> %s\n" % (selections, ChannelNames)
+        print >> OutStream, "Plotting: %s" % (ChannelNames)
 
     dlg.Destroy()
 

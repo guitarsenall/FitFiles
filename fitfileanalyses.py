@@ -118,7 +118,8 @@ def LoadConfigFile(event):
     dlg.Destroy()
 
 
-analyses_labels = [ 'Endurance Laps',
+analyses_labels = [ 'Channel Inspector',
+                    'Endurance Laps',
                     'Zone Detection',
                     'Interval Laps',
                     'Heart Rate',
@@ -128,6 +129,7 @@ analyses_labels = [ 'Endurance Laps',
 
 # make sure matplotlib is imported INSIDE the analysis functions
 # or bad things happen (e.g., code freezes until plot is closed, etc...).
+from channel_inspect_anls import channel_inspect_anls
 from endurance_summary import endurance_summary
 from zone_detect import zone_detect
 from plot_heartrate import plot_heartrate
@@ -157,7 +159,23 @@ class MyLaunchButton(wx.Button):
             dlg.Destroy()
             return
 
-        if AnalysesChoice == 'Endurance Laps':
+        parent  = super(wx.Button, self).GetParent()
+
+        if AnalysesChoice == 'Channel Inspector':
+            print 'Running channel inspector on ' + FITFileName
+            print >> OutputTextCtl, ''
+            try:
+                PlotCloserFcn = channel_inspect_anls( FITFileName, ConfigFile,
+                                      OutStream=OutputTextCtl,
+                                      ParentWin=parent )
+                self.plot_closer_fcns.append(PlotCloserFcn)
+            except IOError, ErrorObj:
+                dlg = wx.MessageDialog(win, ErrorObj.message, AnalysesChoice,
+                            wx.OK | wx.ICON_INFORMATION )
+                dlg.ShowModal()
+                dlg.Destroy()
+
+        elif AnalysesChoice == 'Endurance Laps':
             print 'Running endurance summary on ' + FITFileName
             print >> OutputTextCtl, ''
             try:
@@ -239,7 +257,7 @@ class MyLaunchButton(wx.Button):
             print 'Analysis not yet supported: ' + AnalysesChoice
             dlg = wx.MessageDialog(win,
                         'Analysis not supported: ' + AnalysesChoice,
-                        'WARNING',
+                        'SORRY',
                         wx.OK | wx.ICON_INFORMATION
                         )
             dlg.ShowModal()
