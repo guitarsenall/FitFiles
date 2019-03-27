@@ -5629,6 +5629,14 @@ files from my Garmin Edge 810.
             runtime.
                 https://stackoverflow.com/questions/12319796
                     /dynamically-add-create-subplots-in-matplotlib
+                                            Wednesday, March 27, 2019 (7:00 AM)
+                https://stackoverflow.com/questions/31726643
+                    /how-do-i-get-multiple-subplots-in-matplotlib
+        -   I will want various colors.
+                https://matplotlib.org/examples/color/named_colors.html
+        -   Definitely getting somewhere!
+                channel_inspect_anls_a.png
+                channel_inspect_anls_b.png
 
 
 https://help.github.com/articles/basic-writing-and-formatting-syntax/

@@ -35,9 +35,6 @@ def channel_inspect_anls(FitFilePath, ConfigFile=None, OutStream=sys.stdout,
     activity = Activity(FitFilePath)
     signals     = extract_activity_signals(activity, resample='existing')
 
-#    ChannelList = [ 'apple', 'pear', 'banana', 'coconut', 'orange', 'grape', 'pineapple',
-#            'blueberry', 'raspberry', 'blackberry', 'snozzleberry',
-#            'etc', 'etc..', 'etc...' ]
     ChannelList = signals.keys()
     ChannelList.remove('time')
     ChannelList.remove('metadata')
@@ -60,6 +57,14 @@ def channel_inspect_anls(FitFilePath, ConfigFile=None, OutStream=sys.stdout,
     #
     # time plot
     #
+    nPlots  = len(ChannelNames)
+
+    PlotColors  = { 'power'         : 'm'       ,
+                    'heart_rate'    : 'r'       ,
+                    'cadence'       : 'g'       ,
+                    'speed'         : 'b'       ,
+                    'temperature'   : 'brown'   }
+
 
     import matplotlib.pyplot as plt
     import matplotlib.dates as md
@@ -68,26 +73,29 @@ def channel_inspect_anls(FitFilePath, ConfigFile=None, OutStream=sys.stdout,
     base = dt.datetime(2014, 1, 1, 0, 0, 0)
     x = [base + dt.timedelta(seconds=t) for t in signals['time'].astype('float')]
     x = date2num(x) # Convert to matplotlib format
-    fig1, (ax0, ax1) = plt.subplots(nrows=2, sharex=True)
-    ax0.plot_date( x, heart_rate_ci, 'r-', linewidth=1 );
-    ax0.plot_date( x, lap_avg_hr_c,  'r-', linewidth=3 );
-    ax0.set_yticks( h_zone_bounds, minor=False)
-    ax0.grid(True)
-    ax0.set_title('heart rate, BPM')
-    ax1.plot_date( x, power,            'k-', linewidth=1 );
-    ax1.plot_date( x, p30,              'm-', linewidth=1);
-    ax1.plot_date( x, lap_avg_power_c,  'b-', linewidth=3);
-    ax1.plot_date( x, lap_norm_power_c, 'g-', linewidth=3);
-    ax1.xaxis.set_major_formatter(DateFormatter('%H:%M:%S'))
-    ax1.set_yticks( p_zone_bounds, minor=False)
-    ax1.grid(True)
-    ax1.set_title('power, watts')
-    fig1.autofmt_xdate()
-    ax1.legend(['power', 'p30', 'lap_avg_power', 'lap_norm_power'],
-                loc='upper left');
-    fig1.suptitle('Endurance Power Results', fontsize=20)
-    fig1.tight_layout()
-    fig1.canvas.set_window_title(FitFilePath)
+    #fig1, (ax0, ax1) = plt.subplots(nrows=2, sharex=True)
+    axislist    = []
+    fig = plt.figure()
+    for i, channel in zip( range(nPlots), ChannelNames ):
+        if PlotColors.has_key(channel):
+            pcolor  = PlotColors[channel]
+        else:
+            pcolor  = 'k-'
+        if i > 0:
+            ax  = plt.subplot( nPlots, 1, i+1, sharex=axislist[0] )
+        else:
+            ax  = plt.subplot( nPlots, 1, i+1 )
+        ax.plot_date( x, signals[channel], pcolor, linewidth=1, linestyle='-' );
+        ax.grid(True)
+        ax.set_ylabel(channel)
+        ax.xaxis.set_major_formatter(DateFormatter('%H:%M:%S'))
+        ax.grid(True)
+        axislist.append(ax)
+    fig.autofmt_xdate()
+    fig.suptitle(FitFileName, fontsize=20)
+    fig.tight_layout()
+    fig.canvas.set_window_title(FitFilePath)
+    fig.subplots_adjust(hspace=0)   # Remove horizontal space between axes
     plt.show()
 
 
