@@ -5595,6 +5595,42 @@ files from my Garmin Edge 810.
         -   Commit & push.
 
 
+                                            Tuesday, March 26, 2019 (6:07 PM)
++   New project: Channel list & plot.
+    I want a simple dialog listing the channels available in a file,
+    allowing them to be selected, and plotting them.
+
+    *   Begin coding channel_inspect_anls.py. The suffix "_anls" indicates
+        it is an analysis routine.
+        -   I need a list control. Run the wxPython demo: use a command
+            window, cd to
+                    D:\Users\Owner\Documents\OneDrive\2018\notesparser
+                        \wxPython-demo-4.0.3\demo\
+            then enter,
+                >python demo.py
+            >   Actually, the ChoiceListBox demo is perfect.
+        -   Now how do I turn this into a modal dialog?
+            >   The wxPython demo has a dialog class:
+                    Frames and Dialogs : Dialog
+                which looks like it will work.
+            >   There might be a better example in the demo:
+                    Common Dialogs : MultiChoiceDialog
+                This makes it so easy I feel like I'm cheating.
+        -   This might be tricky:
+                "PyNoAppError: The wx.App object must be created first!"
+            I am trying to run channel_inspect_anls.py by itself. But I
+            intend to run it from within fitfileanalyses.py (which has its
+            own app).
+            >   Try this:
+                    if ParentWin is None:
+                        app = wx.App()
+                IT WORKED!
+        -   Hmmm... I don't know the number of rows in the subplots until
+            runtime.
+                https://stackoverflow.com/questions/12319796
+                    /dynamically-add-create-subplots-in-matplotlib
+
+
 https://help.github.com/articles/basic-writing-and-formatting-syntax/
 
 D:\Users\Owner\Documents\OneDrive\bike\activities\will\2019-01-14-09-19-08.fit
