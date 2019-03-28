@@ -100,7 +100,7 @@ for i in range(nPts):
 #                  plotting                                #
 ############################################################
 
-# time plot with heart rate
+# time plot
 import matplotlib.pyplot as plt
 import matplotlib.dates as md
 from matplotlib.dates import date2num, DateFormatter
@@ -112,6 +112,7 @@ fig, (ax0, ax1, ax2) = plt.subplots(nrows=3, sharex=True)
 ax0.plot_date( x, signals['power'], 'b-', linewidth=1 );
 ax0.grid(True)
 ax0.set_ylabel('power, W')
+ax0.set_title('Saddle Endurance')
 ax1.plot_date( x, signals['cadence'],   'g-', linewidth=1 );
 ax1.plot_date( x, cad_fwd_min_3_8,      'm-', linewidth=1 );
 ax1.plot_date( x, cad_fwd_min_1_8,   'brown', linestyle='-', linewidth=1 );
@@ -120,8 +121,12 @@ ax1.set_ylabel('cadence, RPM')
 ax1.legend(['cadence', 'cad_fwd_min_3_8', 'cad_fwd_min_1_8'],
             loc='upper left');
 ax2.plot_date( x, seated_state, 'r-', linewidth=3 );
+ax2.xaxis.set_major_formatter(DateFormatter('%H:%M:%S'))
 ax2.grid(True)
 ax2.set_ylabel('seated')
+ax2.set_yticks([0,1])
+ax2.set_yticklabels(('standing', 'seated'))
+fig.canvas.set_window_title(FitFilePath)
 fig.tight_layout()
 fig.subplots_adjust(hspace=0)   # Remove horizontal space between axes
 

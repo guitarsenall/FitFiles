@@ -1,20 +1,8 @@
 
 # scratch.py
 
-# Get indexing right
-boxcar=8
 import numpy as np
-x = np.arange(10)
-nPts = len(x)
-run_min = np.zeros(nPts)
-for i in range(nPts-3):
-    iBeg = i+3  # do not include i
-    iEnd = i+boxcar+1 if i<nPts-boxcar-1 else nPts
-    run_min[i] = min( x[iBeg:iEnd] )
-run_min[-3] = x[-3:].min()
-run_min[-2] = x[-2:].min()
-run_min[-1] = x[-1]
-#return run_min
+ii = np.nonzero( seated_state[1:] != seated_state[0:-1] )[0]
 
 ##double-nested array indices
 #import numpy as np

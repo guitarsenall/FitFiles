@@ -5766,6 +5766,57 @@ files from my Garmin Edge 810.
                 I think it's working!
                     saddle_endurance_g.png
             >   Commit & push
+            >   Clean up the plot
+                    see saddle_endurance_h.png
+
+    *   I need a way to measure the segment durations.
+        -   One approach:
+                ii = np.nonzero( seated_state[1:] != seated_state[0:-1] )[0]
+            But this catches all transitions, and I need to differentiate
+            between standing and sitting transitions. I suppose I could take
+            every odd or even index. But here's another way:
+                >>> iiUp = np.nonzero(   seated_state[1:] \
+                                       - seated_state[0:-1] == 1 )[0]
+                >>> iiUp
+                array([ 148,  618,  784, 1327, 1458, 2126,
+                        2782, 3267, 3894, 3909, 4198,
+                        4527, 4808, 4996, 5013, 5474, 5621,
+                        5744, 5767, 5934, 5988, 6439,
+                        6597, 7001, 7052, 7339, 7449, 7469])
+                >>> iiDn = np.nonzero(   seated_state[1:] \
+                                       - seated_state[0:-1] == -1 )[0]
+                >>> iiDn
+                array([ 140,  558,  766, 1323, 1412, 2090,
+                        2721, 3249, 3563, 3903, 4161,
+                        4486, 4784, 4971, 5008, 5430, 5594,
+                        5740, 5761, 5902, 5968, 6393,
+                        6572, 6883, 7048, 7241, 7361, 7459, 7496])
+            But where will it start? There is no guarantee the first transition
+            is iiDn[0] (a sitting transition). It could remain standing at
+            the first few samples. So I will have to test:
+                if iiUp[0] > iiDn[0]:
+                    ThenWhatDoIDo
+            If this is true, then the first segment (from 0 to iiDn[0])
+            is a seated segment, the next is from iiUp[0] to iiDn[1],
+            and so one. And their lengths are
+                iiDn[0] - 0
+                iiDn[1] - iiUp[0]
+                iiDn[2] - iiUp[1]
+            However,
+                if iiUp[0] < iiDn[0]:
+            then the first segment is standing. Then the first seated
+            segment is from iiUp[0] to iiDn[0], and the seating lengths are,
+                iiDn[0] - iiUp[0]
+                iiDn[1] - iiUp[1]
+                iiDn[2] - iiUp[2]
+            But how far does this go? I can't just write,
+                seg_times = iiDn - iiUp
+            because iiUp may not have enough elements (if it ends in the
+            seated state). If that happens, I need something like,
+                if len(iiUp) < len(iiDn):
+                    seg_times[0:-1] = iiDn[0:-1] - iiUp
+                seg_times[-1] = nPts - iiUp[-1]
+
 
 
 https://help.github.com/articles/basic-writing-and-formatting-syntax/
