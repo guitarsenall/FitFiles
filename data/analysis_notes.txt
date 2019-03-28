@@ -5655,6 +5655,117 @@ files from my Garmin Edge 810.
     *   Begin coding.
         -   Use TortoiseGIT menu to rename plot_cadence.py as
             saddle_endurance_anls.py.
+        -   This is a state machine where the initial state is not seated:
+                seated[0] = 0
+            To transition to seated, the forward minimum over 8 seconds
+            should exceed 30 RPM. So I need a forward minimum function.
+                def FwdRunningMinimum( x, boxcar=8 ):
+                    '''
+                    Like it says, a forward running minimum
+                    over the given boxcar length
+                    '''
+                    from numpy import zeros
+                    nPts = len(x)
+                    run_min = zeros(nPts)
+                    for i in range(nPts):
+                        iBeg = i
+                        iEnd = i+boxcar if i<nPts-boxcar else nPts
+                        run_min[i] = min( x[iBeg:iEnd] )
+                    return run_min
+            Try it:
+                see saddle_endurance_b.png
+            This is a start. I can require that both the raw cadence and the
+            forward minimum drop below 30 to transition to 0 (standing).
+            But these brief cadence lapses toward the right would
+            trigger standing transitions if only for one sample.
+            >   Hmmm...it might help if the forward minimum did NOT
+                include the current sample.
+                    see saddle_endurance_c.png
+                That seems to work to prevent triggers from brief lapses.
+        -   Create the state machine and loop.
+            >   Not quite there yet:
+                    see saddle_endurance_d.png
+                Two successive samples below 30 RPM triggers a standing
+                transition. The original idea was that it would require
+                8 samples.
+            >   So what REALLY should trigger a standing transition?
+                Count the number of samples below the threshold in the
+                forward window?
+                Certainly, there is something that the next 8 seconds
+                must fulfill before a standing transition is allowed.
+                Here is a good one:
+                    see saddle_endurance_e.png
+                It has 2 samples below 30 followed by 4 above followed
+                by 1 below. It is the 1 below 30 7 seconds later that
+                makes it valid. In fact, even if the following 3 samples
+                are below the threshold, I might not want to trigger a
+                standing transition. So I am looking at something like
+                    x[i+3:i+9].min() < 30
+                for a condition. End the index range at i+9 in order
+                to get an actual index at i+8:
+                    >>> import numpy as np
+                    >>> x = np.arange(10)
+                    >>> x[3:9]
+                    array([3, 4, 5, 6, 7, 8])
+            >   After stumbling over index ranges, I now have,
+                    def FwdRunningMinimum( x, boxcar=8 ):
+                        '''
+                        Like it says, a forward running minimum
+                        over the given boxcar length
+                        '''
+                        from numpy import zeros
+                        nPts = len(x)
+                        run_min = zeros(nPts)
+                        for i in range(nPts-3):
+                            iBeg = i+3  # do not include i
+                            iEnd = i+boxcar+1 if i<nPts-boxcar-1 else nPts
+                            run_min[i] = min( x[iBeg:iEnd] )
+                        run_min[-3] = x[-1]
+                        run_min[-2] = x[-1]
+                        run_min[-1] = x[-1]
+                        return run_min
+                    # end FwdRunningMinimum()
+                Which looks better:
+                    see saddle_endurance_f.png
+                However, why does it transition back to seated so soon?
+                Because, at that point, the next low point is only
+                2 seconds away, and there are no more within the window.
+            >   Perhaps a seated transition needs different criteria,
+                such as ALL next 8 samples are above 30. Try this:
+                    def FwdRunningMinimum( x, wBeg=1, wEnd=8 ):
+                        '''
+                        Like it says, a forward running minimum
+                        over a future boxcar i+wBeg through i+wEnd
+                        '''
+                        from numpy import zeros
+                        nPts = len(x)
+                        run_min = zeros(nPts)
+                        for i in range(nPts-3):
+                            iBeg = i+wBeg
+                            iEnd = i+wEnd+1 if i<nPts-wEnd-1 else nPts
+                            run_min[i] = min( x[iBeg:iEnd] )
+                        run_min[-3] = x[-1]
+                        run_min[-2] = x[-1]
+                        run_min[-1] = x[-1]
+                        return run_min
+                    # end FwdRunningMinimum()
+                Then define two different running minima:
+                    cad_fwd_min_3_8 = FwdRunningMinimum( cadence,
+                                                         wBeg=3, wEnd=8 )
+                    cad_fwd_min_1_8 = FwdRunningMinimum( cadence,
+                                                         wBeg=1, wEnd=8 )
+                And the transition loop looks like,
+                    for i in range(nPts):
+                        if state==STANDING:
+                            if cadence[i]>=CThr and cad_fwd_min_1_8[i]>=CThr:
+                                state   = SEATED
+                        else: # state==SEATED:
+                            if cadence[i]< CThr and cad_fwd_min_3_8[i]<CThr:
+                                state   = STANDING
+                        seated_state[i] = state
+                I think it's working!
+                    saddle_endurance_g.png
+            >   Commit & push
 
 
 https://help.github.com/articles/basic-writing-and-formatting-syntax/

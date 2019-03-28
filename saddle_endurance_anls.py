@@ -19,6 +19,24 @@ ConfigFile=None
 OutStream=sys.stdout
 
 
+def FwdRunningMinimum( x, wBeg=1, wEnd=8 ):
+    '''
+    Like it says, a forward running minimum
+    over a future boxcar i+wBeg through i+wEnd
+    '''
+    from numpy import zeros
+    nPts = len(x)
+    run_min = zeros(nPts)
+    for i in range(nPts-3):
+        iBeg = i+wBeg
+        iEnd = i+wEnd+1 if i<nPts-wEnd-1 else nPts
+        run_min[i] = min( x[iBeg:iEnd] )
+    run_min[-3] = x[-1]
+    run_min[-2] = x[-1]
+    run_min[-1] = x[-1]
+    return run_min
+# end FwdRunningMinimum()
+
 
 ############################################################
 #           saddle_endurance_anls function def             #
@@ -34,6 +52,7 @@ from activity_tools import FindConfigFile
 from datetime import datetime
 from fitparse import Activity
 from activity_tools import extract_activity_signals
+import numpy as np
 
 
 required_signals    = [ 'power', 'cadence' ]
@@ -54,9 +73,27 @@ if not all( s in signals.keys() for s in required_signals ):
     raise IOError(msg)
 
 SampleRate  = 1.0
-import numpy as np
+cadence     = signals['cadence']
+nPts        = len(cadence)
 
+cad_fwd_min_3_8 = FwdRunningMinimum( cadence, wBeg=3, wEnd=8 )
+cad_fwd_min_1_8 = FwdRunningMinimum( cadence, wBeg=1, wEnd=8 )
 
+STANDING    = 0
+SEATED      = 1
+state       = STANDING
+
+CThr    = 40.0
+seated_state    = np.zeros(nPts)
+
+for i in range(nPts):
+    if state==STANDING:
+        if cadence[i]>=CThr and cad_fwd_min_1_8[i]>=CThr:
+            state   = SEATED
+    else: # state==SEATED:
+        if cadence[i]< CThr and cad_fwd_min_3_8[i]<CThr:
+            state   = STANDING
+    seated_state[i] = state
 
 
 ############################################################
@@ -71,13 +108,21 @@ import datetime as dt
 base = dt.datetime(2014, 1, 27, 0, 0, 0)
 x = [ base + dt.timedelta(seconds=t) for t in signals['time'] ]
 x = date2num(x) # Convert to matplotlib format
-fig, (ax0, ax1) = plt.subplots(nrows=2, sharex=True)
+fig, (ax0, ax1, ax2) = plt.subplots(nrows=3, sharex=True)
 ax0.plot_date( x, signals['power'], 'b-', linewidth=1 );
 ax0.grid(True)
 ax0.set_ylabel('power, W')
-ax1.plot_date( x, signals['cadence'], 'g-', linewidth=1 );
+ax1.plot_date( x, signals['cadence'],   'g-', linewidth=1 );
+ax1.plot_date( x, cad_fwd_min_3_8,      'm-', linewidth=1 );
+ax1.plot_date( x, cad_fwd_min_1_8,   'brown', linestyle='-', linewidth=1 );
 ax1.grid(True)
 ax1.set_ylabel('cadence, RPM')
+ax1.legend(['cadence', 'cad_fwd_min_3_8', 'cad_fwd_min_1_8'],
+            loc='upper left');
+ax2.plot_date( x, seated_state, 'r-', linewidth=3 );
+ax2.grid(True)
+ax2.set_ylabel('seated')
+fig.tight_layout()
 fig.subplots_adjust(hspace=0)   # Remove horizontal space between axes
 
 #fig1, ax1 = plt.subplots(nrows=1, sharex=True)
