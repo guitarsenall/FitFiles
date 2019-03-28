@@ -5649,6 +5649,12 @@ files from my Garmin Edge 810.
             the method.
 
 
+                                            Thursday, March 28, 2019 (11:10 AM)
++   Saddle endurance analysis.
+
+    *   Begin coding.
+        -   Use TortoiseGIT menu to rename plot_cadence.py as
+            saddle_endurance_anls.py.
 
 
 https://help.github.com/articles/basic-writing-and-formatting-syntax/
@@ -5665,21 +5671,24 @@ python demo.py
 
 TO DO:
 +   fitfileanalyses
+            BTW, to run the wxPython demo, use a command window, cd to
+                D:\Users\Owner\Documents\OneDrive\2018\notesparser
+                    \wxPython-demo-4.0.3\demo\
+            then enter,
+                >python demo.py
     *   Major features
+        -   Saddle endurance measurement.
+            >   See line 622 above for initial thoughts.
+        -   Plot interactions.
+            >   Adding a button:
+                    https://matplotlib.org/gallery/widgets/buttons.html
+            >   User interfaces examples:
+                    https://matplotlib.org/examples/user_interfaces/
         -   Wear energy for gears. Each gear would calculate the
             energy per tooth in a given date range.
         -   Analyses for Comparing two files.
             >   File control for second file should be disabled unless
                 the analysis uses it.
-        -   A list of channels in the file with a plot button.
-            >   Perhaps implement with a button on the main dialog
-                that launches a new dialog for querying the selected
-                file. Or it could be another analysis that is launched.
-                BTW, to run the wxPython demo, use a command window, cd to
-                    D:\Users\Owner\Documents\OneDrive\2018\notesparser
-                        \wxPython-demo-4.0.3\demo\
-                then enter,
-                    >python demo.py
         -   The ability to signal-process a channel into a new version
             (e.g., low-pass filtering), save to a .PKL file with the
             same prefix. This file can be searched for when the .FIT
