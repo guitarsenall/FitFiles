@@ -5,7 +5,7 @@
 #seated_state    = orig_seated_state             # "begins seated and ends standing"
 #seated_state    = orig_seated_state[:7483]      # "begins seated and ends seated"
 #seated_state    = orig_seated_state[145:]       # "begins standing and ends standing"
-seated_state    = orig_seated_state[145:7483]   # "begins standing and ends seated"
+#seated_state    = orig_seated_state[145:7483]   # "begins standing and ends seated"
 nPts            = len(seated_state)
 import numpy as np
 iiUp = np.nonzero( seated_state[1:] - seated_state[0:-1] ==  1 )[0]

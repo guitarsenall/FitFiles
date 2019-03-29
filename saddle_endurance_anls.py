@@ -95,6 +95,66 @@ for i in range(nPts):
             state   = STANDING
     seated_state[i] = state
 
+#
+#   Determine seated segment durations
+#
+iiUp = np.nonzero( seated_state[1:] - seated_state[0:-1] ==  1 )[0]
+iiDn = np.nonzero( seated_state[1:] - seated_state[0:-1] == -1 )[0]
+if iiUp[-1] < iiDn[-1]:
+    seg_times   = np.zeros(len(iiDn))
+else:
+    seg_times   = np.zeros(len(iiDn)+1)
+if iiDn[0] < iiUp[0]:                               # begins seated
+    seg_times[0]    = iiDn[0]
+    if iiUp[-1] > iiDn[-1]:                         #   Ends seated
+        print '        ends seated'
+        seg_times[1:-1] = iiDn[1:] - iiUp[0:-1]
+        seg_times[-1]   = nPts - iiUp[-1]
+    else:                                           #   ends standing
+        seg_times[1:]   = iiDn[1:] - iiUp
+elif iiUp[0] < iiDn[0]:                             # begins standing
+    if iiUp[-1] > iiDn[-1]:                         #   ends seated
+        seg_times[0:-1] = iiDn - iiUp[0:-1]
+        seg_times[-1]   = nPts - iiUp[-1]
+    else:                                           #   ends standing
+        seg_times = iiDn - iiUp
+else:
+    raise RuntimeError("shouldn't be able to reach this code.")
+
+#
+#   Formatted print of results
+#
+
+# overall results
+dur = nPts/SampleRate
+hh  = dur // 3600
+mm  = (dur % 3600) // 60
+ss  = (dur % 3600) % 60
+print >> OutStream, 'total time     : %2i:%02i:%02i' % (hh, mm, ss)
+iSeat   = np.nonzero( seated_state == 1 )[0]
+pct     = len(iSeat) / float(nPts) * 100.0
+dur = len(iSeat)/SampleRate
+hh  = dur // 3600
+mm  = (dur % 3600) // 60
+ss  = (dur % 3600) % 60
+print >> OutStream, 'seated time    : %2i:%02i:%02i (%2i%%))' % (hh, mm, ss, pct)
+iStnd   = np.nonzero( seated_state == 0 )[0]
+pct     = len(iStnd) / float(nPts) * 100.0
+dur = len(iStnd)/SampleRate
+hh  = dur // 3600
+mm  = (dur % 3600) // 60
+ss  = (dur % 3600) % 60
+print >> OutStream, 'standing time  : %2i:%02i:%02i (%2i%%))' % (hh, mm, ss, pct)
+
+# segment results
+print >> OutStream, 'standing segments:'
+for i in range(len(seg_times)):
+    dur = seg_times[i]/SampleRate
+    hh  = dur // 3600
+    mm  = (dur % 3600) // 60
+    ss  = (dur % 3600) % 60
+    print >> OutStream, '    segment %2i: %2i:%02i:%02i' \
+                        % (i+1, hh, mm, ss)
 
 ############################################################
 #                  plotting                                #
