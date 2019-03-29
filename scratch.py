@@ -1,8 +1,41 @@
 
 # scratch.py
 
+# get the algorithm right for set_times (saddle_endurance_anls.py)
+#seated_state    = orig_seated_state             # "begins seated and ends standing"
+#seated_state    = orig_seated_state[:7483]      # "begins seated and ends seated"
+#seated_state    = orig_seated_state[145:]       # "begins standing and ends standing"
+seated_state    = orig_seated_state[145:7483]   # "begins standing and ends seated"
+nPts            = len(seated_state)
 import numpy as np
-ii = np.nonzero( seated_state[1:] != seated_state[0:-1] )[0]
+iiUp = np.nonzero( seated_state[1:] - seated_state[0:-1] ==  1 )[0]
+iiDn = np.nonzero( seated_state[1:] - seated_state[0:-1] == -1 )[0]
+if iiUp[-1] < iiDn[-1]:
+    seg_times   = np.zeros(len(iiDn))
+else:
+    seg_times   = np.zeros(len(iiDn)+1)
+if iiDn[0] < iiUp[0]:                               # begins seated
+    print '    begins seated'
+    seg_times[0]    = iiDn[0]
+    if iiUp[-1] > iiDn[-1]:                         #   Ends seated
+        print '        ends seated'
+        seg_times[1:-1] = iiDn[1:] - iiUp[0:-1]
+        seg_times[-1]   = nPts - iiUp[-1]
+    else:                                           #   ends standing
+        print '        ends standing'
+        seg_times[1:]   = iiDn[1:] - iiUp
+elif iiUp[0] < iiDn[0]:                             # begins standing
+    print '    begins standing'
+    if iiUp[-1] > iiDn[-1]:                         #   ends seated
+        print '        ends seated'
+        seg_times[0:-1] = iiDn - iiUp[0:-1]
+        seg_times[-1]   = nPts - iiUp[-1]
+    else:                                           #   ends standing
+        print '        ends standing'
+        seg_times = iiDn - iiUp
+else:
+    raise RuntimeError("shouldn't be able to reach this code.")
+
 
 ##double-nested array indices
 #import numpy as np
