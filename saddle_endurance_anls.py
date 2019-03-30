@@ -140,7 +140,7 @@ else:
     raise RuntimeError("shouldn't be able to reach this code.")
 
 #
-#   Formatted print of results
+#   Formatted print of results for all segments
 #
 
 # overall results
@@ -189,6 +189,57 @@ for i in range(len(seg_durtns)):
             % (i, hhBeg, mmBeg, ssBeg,
                   hhEnd, mmEnd, ssEnd,
                   mmDur, ssDur, DurPlus)
+
+#
+# best hour saddle endurance
+#
+'''
+Find the longest segments that together total one hour,
+and compute the average duration to serve as a metric for
+the ride.
+'''
+
+# list of indices for longest durations
+def GetSegment(i):
+    return seg_durtns[i]
+indx    = range(len(seg_durtns))
+indx.sort(reverse=True, key=GetSegment)
+
+# compute average and print
+print >> OutStream, 'best-hour segments:'
+names   = [ 'segment', 'start', 'stop', 'duration' ]
+fmt     = "%12s"+"%10s"*3
+print >> OutStream, fmt % tuple(names)
+TotalTime   = 0.0
+i   = 0
+while TotalTime < 3600:
+    Beg = elapsed_time[ seg_starts[indx[i]] ]
+    hhBeg   =  Beg // 3600
+    mmBeg   = (Beg  % 3600) // 60
+    ssBeg   = (Beg  % 3600) % 60
+    End = elapsed_time[ seg_stops[indx[i]] ]
+    hhEnd   =  End // 3600
+    mmEnd   = (End  % 3600) // 60
+    ssEnd   = (End  % 3600) % 60
+    dur = seg_durtns[indx[i]]/SampleRate
+    hhDur   =  dur // 3600
+    mmDur   = (dur  % 3600) // 60
+    ssDur   = (dur  % 3600) % 60
+    DurPlus = '' if hhDur==0 else '+%ih' % (hhDur)
+    fmt = '%12d'+'%4i:%02i:%02i'+'%4i:%02i:%02i' + '%7i:%02i' + '%s'
+    print >> OutStream, fmt \
+            % (indx[i], hhBeg, mmBeg, ssBeg,
+                        hhEnd, mmEnd, ssEnd,
+                        mmDur, ssDur, DurPlus)
+    TotalTime   += dur
+    i           += 1
+BestAve = TotalTime / float(i)
+hh  =  BestAve // 3600
+mm  = (BestAve  % 3600) // 60
+ss  = (BestAve  % 3600) % 60
+DurPlus = '' if hh==0 else '+%ih' % (hh)
+print >> OutStream, '        BEST ONE-HOUR AVERAGE:  %7i:%02i%s' \
+        % (mm, ss, DurPlus)
 
 ############################################################
 #                  plotting                                #
