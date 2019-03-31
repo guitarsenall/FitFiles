@@ -6136,6 +6136,27 @@ files from my Garmin Edge 810.
                         BEST ONE-HOUR AVERAGE:        7:50
         -   Commit & push
 
+                                            Sunday, March 31, 2019 (7:51 AM)
+    *   Include it in the analysis suite GUI (fitfileanalyses.py)
+            see saddle_endurance_i.png
+
+    *   Am I taking the right average? Or should I consider a time-weighted
+        average?
+        -   Consider two segments, 15 and 5 minutes. Is the average 10?
+            Or is it higher? How can I know? Something intuitive tells me
+            it is higher. What would a time average be?
+                (15*15+5*5) / (15+5.0) = 12.5
+            But on what basis do I use this? The '15' is already in the
+            average, (15+5)/2 = 10, so it is already "time-weighted".
+        -   A short ride penalizes me unfairly:
+                saddle_endurance_j.png
+            The average should be about 10 minutes. The standing segments
+            at the end should not be included.
+            >   Perhaps exclude segments that start in the cooldown
+                period.
+            >   Perhaps limit the time to the ride duration minus 15 minutes.
+
+
 
 https://help.github.com/articles/basic-writing-and-formatting-syntax/
 
@@ -6182,6 +6203,7 @@ TO DO:
             >   Example:
                     https://www.dcrainmaker.com/analyzer
     *   General
+        -   Vertical grids at lap points in time plots.
         -   I need a table-printing utility that handles the title line(s)
             and makes columns optional.
         -   Balance is not in every file. Make it optional.
