@@ -199,6 +199,9 @@ def saddle_endurance_anls(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     the ride.
     '''
 
+    # time limit: 15 minutes less than end for short rides
+    TimeLimit   = min( 3600.0, (nPts/SampleRate-15*60) )
+
     # list of indices for longest durations
     def GetSegment(i):
         return seg_durtns[i]
@@ -212,7 +215,7 @@ def saddle_endurance_anls(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     print >> OutStream, fmt % tuple(names)
     TotalTime   = 0.0
     i   = 0
-    while TotalTime < 3600 and i < nSeg:
+    while TotalTime < TimeLimit and i < nSeg:
         Beg = elapsed_time[ seg_starts[indx[i]] ]
         hhBeg   =  Beg // 3600
         mmBeg   = (Beg  % 3600) // 60
