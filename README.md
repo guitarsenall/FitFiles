@@ -11,7 +11,7 @@ The main feature in this project is a GUI which gives access to a collection of 
             <img alt="zone_detect_no_hr_b.png" src="data/zone_detect_no_hr_b.png">
         </td>
         <td>
-            <img alt=fitfileanalyses_gui_f.png" src="data/fitfileanalyses_gui_g.png">
+            <img alt=fitfileanalyses_gui_f.png" src="data/fitfileanalyses_gui_h.png">
         </td>
     </tr>
     <tr>
@@ -36,9 +36,11 @@ The main feature in this project is a GUI which gives access to a collection of 
 -   **Endurance laps.** This analysis plots and prints lap metrics related to an endurance workout (e.g., time, average and normalized power, average heartrate, efficiency factor). It is useful to track the progression of the workout and assess the effects of fatigue.
 -   **Power-zone detection.** This analysis uses an innovative algorithm to detect the power zone at every time instance in a way that requires the power to stay in that zone for a length of time that varies by zone. For example, 5 seconds at 300W (zone 5 for me) is not enough time to say that I am actually in zone 5. This results in a much more realistic power-zone histogram. It is very useful for analyzing races and other hard unstructured workouts.
 -   **Interval Laps.** This analysis detects laps with average powers above the aerobic threshold for tabulation. It completes with a time-averaged power sum so that you can know, for example, how many total minutes you spent in zone 4.
--   **Heartrate zone analysis.** This analysis calculates calories from heartrate and provides a heartrate-zone histogram (both text and plot).
+-   **Heartrate zone analysis.** This analysis calculates calories from heartrate and provides a heartrate-zone histogram (both text and plot). It also simulates power from heartrate (using a first-order dynamic model) to estimate TSS.
 -   **Heartrate simulation from power.** This analysis uses a first-order dynamic model that computes heartrate from power. Its primary use is to determine heartrate offset ("is it high or low or normal?") and cardiac drift for an arbitrary workout--that is, the workout does not have to be structured; even races can be analyzed. Cardiac drift is modeled as proportional to fatigue in BPM/TSS.
--   **Force Analysis.** This analysis plots histograms contain work (in kilojoules) as a function of pedal force and cadence. One plot is a one-way histogram of pedal force only which is useful for checking the amount of high-force work done in a hill repeat (like counting weight and reps when lifting weights). The second plot is a two-way histogram of pedal force on the X-axis (identical to the first plot) and cadence on the Y axis with power contour lines drawn. This is useful for learning the force-cadence-power conditions in which the most work is done in an arbitrary ride (e.g., fast-RPM VO2max intervals).
+-   **Force Analysis.** This analysis plots histograms containing work (in kilojoules) as a function of pedal force and cadence. One plot is a one-way histogram of pedal force only which is useful for checking the amount of high-force work done in a hill repeat (like counting weight and reps when lifting weights). The second plot is a one-way histogram of cadence (plotted horizontally). The third plot is a two-way histogram of pedal force on the X-axis (identical to the first plot) and cadence on the Y axis with power contour lines drawn. This is useful for learning the force-cadence-power conditions in which the most work is done in an arbitrary ride (e.g., fast-RPM VO2max intervals).
+-   **Channel Inspector.** This is a basic utility which presents a selection dialog listing the channels available in the selected .FIT file and plots the ones selected by the user.
+-   **Saddle Endurance.** This analysis measures saddle endurance by detecting when the rider is seated Vs standing. It works well when standing is characterized by halts in pedaling every 3-8 seconds and sitting is characterized by continuous pedaling above 40 RPM. Useful outputs are total seated time and percent and a metric for the whole ride, the Best One-Hour Average.
 
 ##  How to launch using the batch file
 
@@ -57,6 +59,7 @@ Most analyses need to know some things about the athlete:
 - **EnduranceHR** Generally set to FTHR minus 30 BPM or to 0.82*FTHR. It is the heartrate corresponding to the EndurancePower.
 - **HRTimeConstant** This is used by the heartrate simulation analysis and represents how quickly the heartrate responds to changes in power.
 - **HRDriftRate** This is used by the heartrate simulation analysis and represents cardiac drift as proportional to fatigue in BPM/TSS. Typical values are 0.1-0.2 BPM/TSS once aerobic endurance is developed.
+- **CrankRadius** Radius of the crank in mm. Used in Force Analysis.
 
 See the files [cyclingconfig_will.txt](cyclingconfig_will.txt) and [cyclingconfig_kim.txt](cyclingconfig_kim.txt) for examples. Create your own and select it when running the application.
 
