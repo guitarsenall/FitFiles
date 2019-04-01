@@ -11,7 +11,7 @@ The main feature in this project is a GUI which gives access to a collection of 
             <img alt="zone_detect_no_hr_b.png" src="data/zone_detect_no_hr_b.png">
         </td>
         <td>
-            <img alt=fitfileanalyses_gui_f.png" src="data/fitfileanalyses_gui_h.png">
+            <img alt=fitfileanalyses_gui_h.png" src="data/fitfileanalyses_gui_h.png">
         </td>
     </tr>
     <tr>
