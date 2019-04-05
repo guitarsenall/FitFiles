@@ -235,6 +235,7 @@ def endurance_summary(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     lap_norm_power  = zeros(nLaps)
     lap_avg_hr      = zeros(nLaps)
     lap_if          = zeros(nLaps)      # intensity factor
+    lap_start_sec   = zeros(nLaps)
 
     #time    = array(elapsed_time)
     cadence = array(avg_cadence)
@@ -254,6 +255,7 @@ def endurance_summary(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
         ii = nonzero( logical_and( time_idx >= tBeg,  \
                                    time_idx <  tEnd)  )[0]
         nPts = ii.size
+        lap_start_sec[i]    = tBeg
         lap_avg_hr[i]       = average(heart_rate_vi[ii])
         lap_avg_power[i]    = average(power[time_idx[ii]])
         lap_norm_power[i]   = average( p30[time_idx[ii]]**4 )**(0.25)
@@ -376,21 +378,29 @@ def endurance_summary(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     ax0.plot_date( x, heart_rate_ci, 'r-', linewidth=1 );
     ax0.plot_date( x, lap_avg_hr_c,  'r-', linewidth=3 );
     ax0.set_yticks( h_zone_bounds, minor=False)
+    x_laps  = [ base + dt.timedelta(seconds=t)   \
+                for t in lap_start_sec.astype('float') ]
+    x_laps  = date2num(x_laps)
+    for i in range(nLaps):
+        ax0.axvline( x_laps[i], label=str(i+1) )
     ax0.grid(True)
-    ax0.set_title('heart rate, BPM')
+    ax0.set_ylabel('heart rate, BPM')
     ax1.plot_date( x, power,            'k-', linewidth=1 );
     ax1.plot_date( x, p30,              'm-', linewidth=1);
     ax1.plot_date( x, lap_avg_power_c,  'b-', linewidth=3);
     ax1.plot_date( x, lap_norm_power_c, 'g-', linewidth=3);
     ax1.xaxis.set_major_formatter(DateFormatter('%H:%M:%S'))
     ax1.set_yticks( p_zone_bounds, minor=False)
+    for i in range(nLaps):
+        ax1.axvline( x_laps[i], label=str(i+1) )
     ax1.grid(True)
-    ax1.set_title('power, watts')
+    ax1.set_ylabel('power, watts')
     fig1.autofmt_xdate()
     ax1.legend(['power', 'p30', 'lap_avg_power', 'lap_norm_power'],
                 loc='upper left');
     fig1.suptitle('Endurance Power Results', fontsize=20)
     fig1.tight_layout()
+    fig1.subplots_adjust(hspace=0)   # Remove horizontal space between axes
     fig1.canvas.set_window_title(FitFilePath)
     plt.show()
 
