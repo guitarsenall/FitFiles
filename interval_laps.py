@@ -126,7 +126,7 @@ def interval_laps(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     activity = Activity(FitFilePath)
     laps    = extract_activity_laps(activity)
     power   = laps['power']
-    time    = laps['timer_time']
+    time    = laps['total_timer_time']
     cadence = laps['cadence']
     avg_hr  = laps['avg_hr']
     max_hr  = laps['max_hr']

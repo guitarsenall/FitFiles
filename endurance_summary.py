@@ -195,15 +195,18 @@ def endurance_summary(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     from fitparse import Activity
     from activity_tools import extract_activity_laps
     import numpy as np
-    activity = Activity(FitFilePath)
-    laps    = extract_activity_laps(activity)
-    power   = laps['power']
-    time    = laps['time']
-    cadence = laps['cadence']
-    avg_hr  = laps['avg_hr']
-    max_hr  = laps['max_hr']
-    balance = laps['balance']
-
+    activity    = Activity(FitFilePath)
+    laps        = extract_activity_laps(activity)
+    avg_power       = laps['power']
+    time            = laps['time']
+    cadence         = laps['cadence']
+    avg_heart_rate  = laps['avg_hr']
+    max_heart_rate  = laps['max_hr']
+    balance         = laps['balance']
+    lap_start_time  = laps['start_time']
+    lap_timestamp   = laps['timestamp' ]
+    timer_time      = laps['total_timer_time']
+    elapsed_time    = laps['total_elapsed_time']
 
 
     IntervalThreshold = 0.0     # get all laps (0.72*FTP)
@@ -245,10 +248,10 @@ def endurance_summary(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     lap_start_sec   = zeros(nLaps)      # lap start times in seconds
 
     #time    = array(elapsed_time)
-    cadence = array(avg_cadence)
-    avg_hr  = array(avg_heart_rate)
-    max_hr  = array(max_heart_rate)
-    balance = array(balance)
+    #cadence = array(avg_cadence)
+    #avg_hr  = array(avg_heart_rate)
+    #max_hr  = array(max_heart_rate)
+    #balance = array(balance)
     names1  = [    '', '  lap', '  avg', ' norm', 'avg',  'max',    '' ]
     names2  = [ 'lap', ' time', 'power', 'power', ' HR',  ' HR', ' IF' ]
     fmt     = "%8s"+"%10s"+"%8s"*5

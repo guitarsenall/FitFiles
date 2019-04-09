@@ -6252,8 +6252,15 @@ files from my Garmin Edge 810.
         newer version of FitParse.
         -   I have to resolve some confusion between the way interval_laps.py
             and endurance_summary.py processed lap data.
-
-
+                                            Tuesday, April 9, 2019 (1:52 PM)
+            Variables in endurance_summary.py:
+                    variable            field               key
+                    lap_start_time      start_time          start_time
+                    lap_timestamp       timestamp           timestamp
+                    timer_time          total_timer_time    timer_time
+                    elapsed_time        total_elapsed_time  total_elapsed_time
+            Go simple: make the laps.keys match the names of the fields
+            they extract.
 
 
 https://help.github.com/articles/basic-writing-and-formatting-syntax/

@@ -82,7 +82,7 @@ def extract_activity_laps(activity):
 
     laps    = {}
     laps['total_elapsed_time']  = np.array(elapsed_time)
-    laps['timer_time']          = np.array(timer_time)
+    laps['total_timer_time']    = np.array(timer_time)
     laps['avg_hr']              = np.array(avg_heart_rate)
     laps['power']               = np.array(avg_power)
     laps['cadence']             = np.array(avg_cadence)
@@ -93,6 +93,7 @@ def extract_activity_laps(activity):
     else:
         laps['balance']         = np.array(balance)
     laps['start_time']          = np.array(lap_start_time)
+    laps['timestamp']           = np.array(lap_timestamp)
 
     return laps
 
