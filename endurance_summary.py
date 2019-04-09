@@ -119,19 +119,7 @@ def endurance_summary(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
         raise IOError(msg)
 
     '''
-    # get the FTP
-    # FTP = 270.0 #assume if not present
-    records = activity.get_records_by_type('zones_target')
-    for record in records:
-        valid_field_names = record.get_valid_field_names()
-        for field_name in valid_field_names:
-            if 'functional_threshold_power' in field_name:
-                field_data = record.get_data(field_name)
-                field_units = record.get_units(field_name)
-                print >> OutStream, 'FTP setting = %i %s' % (field_data, field_units)
-                FTP = field_data
-    '''
-
+    ####################
     # Get Records of type 'lap'
     # types: [ 'record', 'lap', 'event', 'session', 'activity', ... ]
     records = activity.get_records_by_type('lap')
@@ -198,6 +186,25 @@ def endurance_summary(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
                 balance.append(field_data)
 
         #print
+    ####################
+    '''
+
+    #
+    #   extract lap results
+    #
+    from fitparse import Activity
+    from activity_tools import extract_activity_laps
+    import numpy as np
+    activity = Activity(FitFilePath)
+    laps    = extract_activity_laps(activity)
+    power   = laps['power']
+    time    = laps['time']
+    cadence = laps['cadence']
+    avg_hr  = laps['avg_hr']
+    max_hr  = laps['max_hr']
+    balance = laps['balance']
+
+
 
     IntervalThreshold = 0.0     # get all laps (0.72*FTP)
     from numpy import nonzero, array, arange, zeros, average, logical_and
@@ -235,7 +242,7 @@ def endurance_summary(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     lap_norm_power  = zeros(nLaps)
     lap_avg_hr      = zeros(nLaps)
     lap_if          = zeros(nLaps)      # intensity factor
-    lap_start_sec   = zeros(nLaps)
+    lap_start_sec   = zeros(nLaps)      # lap start times in seconds
 
     #time    = array(elapsed_time)
     cadence = array(avg_cadence)

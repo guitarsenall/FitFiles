@@ -6243,6 +6243,18 @@ files from my Garmin Edge 810.
                     lap_vlines_a.png
             >   Commit & push
 
+                                                Monday, April 8, 2019 (7:42 PM)
+    *   Create a new function:
+            activity_tools.py->extract_activity_laps()
+        There are a couple reasons to do this: (1) simplify getting lap
+        start times for plots; (2) encapsulate all interactions with the
+        .FIT file within activity tools to make it easy to switch to a
+        newer version of FitParse.
+        -   I have to resolve some confusion between the way interval_laps.py
+            and endurance_summary.py processed lap data.
+
+
+
 
 https://help.github.com/articles/basic-writing-and-formatting-syntax/
 
@@ -6287,6 +6299,11 @@ TO DO:
             >   Example:
                     https://www.dcrainmaker.com/analyzer
     *   General
+        -   Encapsulate calls to fitparse within activity_tools.py so
+            future changes can be handled easily (e.g., upgrading to newer
+            version of fitparse).
+            >   Need a function to retrieve lap results:
+                    extract_activity_lapdata(activity)
         -   Vertical grids at lap points in time plots.
         -   I need a table-printing utility that handles the title line(s)
             and makes columns optional.
@@ -6305,6 +6322,8 @@ TO DO:
             .\path\user\*.fit
         -   Collect dependencies (e.g., MatPlotLib) and instructions on how
             to install them.
+        -   Get to know SciKit-learn:
+                https://scikit-learn.org/stable/index.html
     *   endurance_summery
         -   Crashes if no laps.
         -   Eventually included percent seated time.

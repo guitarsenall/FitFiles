@@ -1,6 +1,103 @@
 
 #   activity_tools.py
 
+def extract_activity_laps(activity):
+    '''
+    Function to extract lap results from activity object
+    '''
+    from fitparse import Activity
+
+    activity.parse()
+    records = activity.get_records_by_type('lap')
+    current_record_number = 0
+
+    elapsed_time    = []
+    timer_time      = []
+    avg_heart_rate  = []
+    avg_power       = []
+    avg_cadence     = []
+    max_heart_rate  = []
+    balance         = []
+    lap_timestamp   = []
+    lap_start_time  = []
+
+    FirstIter   = True
+
+    for record in records:
+
+        # Print record number
+        current_record_number += 1
+        #print >> OutStream, (" Record #%d " % current_record_number).center(40, '-')
+
+        # Get the list of valid fields on this record
+        valid_field_names = record.get_valid_field_names()
+
+        for field_name in valid_field_names:
+            # Get the data and units for the field
+            field_data = record.get_data(field_name)
+            field_units = record.get_units(field_name)
+
+            ## Print what we've got!
+            #if field_units:
+            #    print >> OutStream, " * %s: %s %s" % (field_name, field_data, field_units)
+            #else:
+            #    print >> OutStream, " * %s: %s" % (field_name, field_data)
+
+            if 'timestamp' in field_name:
+                lap_timestamp.append( field_data )
+                if FirstIter:
+                    t0  = field_data    # datetime
+                    t   = t0
+                    FirstIter   = False
+                else:
+                    t   = field_data    # datetime
+
+            if 'start_time' in field_name:
+                lap_start_time.append( field_data )
+
+            if 'total_elapsed_time' in field_name:
+                elapsed_time.append( field_data )
+
+            if 'total_timer_time' in field_name:
+                timer_time.append( field_data )
+
+            if 'avg_power' in field_name:
+                avg_power.append( field_data )
+
+            # avg_heart_rate is in a lap record
+            if 'avg_heart_rate' in field_name:
+                avg_heart_rate.append(field_data)
+
+            if 'max_heart_rate' in field_name:
+                max_heart_rate.append(field_data)
+
+            if 'avg_cadence' in field_name:
+                avg_cadence.append(field_data)
+
+            if 'left_right_balance' in field_name:
+                balance.append(field_data)
+
+    #from numpy import nonzero, array, arange, zeros, average, logical_and
+    import numpy as np
+
+    laps    = {}
+    laps['total_elapsed_time']  = np.array(elapsed_time)
+    laps['timer_time']          = np.array(timer_time)
+    laps['avg_hr']              = np.array(avg_heart_rate)
+    laps['power']               = np.array(avg_power)
+    laps['cadence']             = np.array(avg_cadence)
+    laps['time']                = np.array(elapsed_time)
+    laps['max_hr']              = np.array(max_heart_rate)
+    if len(balance) == 0:
+        laps['balance']         = np.zeros(len(power))
+    else:
+        laps['balance']         = np.array(balance)
+    laps['start_time']          = np.array(lap_start_time)
+
+    return laps
+
+# end extract_activity_laps()
+
 def extract_activity_signals(activity, resample='constant', verbose=False):
     '''
     function to extract constant-increment signals from

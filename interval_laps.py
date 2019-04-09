@@ -37,33 +37,10 @@ def interval_laps(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     ThresholdHR     = config.getfloat( 'power', 'ThresholdHR'    )
     print >> OutStream,  'ThresholdPower: ', ThresholdPower
     print >> OutStream,  'ThresholdHR   : ', ThresholdHR
-
-
-    from datetime import datetime
-    from fitparse import Activity
-
-    activity = Activity(FitFilePath)
-    activity.parse()
-
-    '''
-    # get the FTP
-    FTP = 250.0 #assume if not present
-    records = activity.get_records_by_type('zones_target')
-    for record in records:
-        valid_field_names = record.get_valid_field_names()
-        for field_name in valid_field_names:
-            if 'functional_threshold_power' in field_name:
-                field_data = record.get_data(field_name)
-                field_units = record.get_units(field_name)
-                print >> OutStream, 'FTP setting = %i %s' % (field_data, field_units)
-                FTP = field_data
-    '''
     FTP = ThresholdPower
 
-    # set the interval threshold. Intervals with average power below this
-    # value are ignored.
-    IntervalThreshold = 0.75*FTP
 
+    '''
     # Get Records of type 'lap'
     # types: [ 'record', 'lap', 'event', 'session', 'activity', ... ]
     records = activity.get_records_by_type('lap')
@@ -136,9 +113,28 @@ def interval_laps(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
         balance = zeros(len(power))
     else:
         balance = array(balance)
+    '''
+
+
+
+    #
+    #   extract lap results
+    #
+    from fitparse import Activity
+    from activity_tools import extract_activity_laps
+    import numpy as np
+    activity = Activity(FitFilePath)
+    laps    = extract_activity_laps(activity)
+    power   = laps['power']
+    time    = laps['timer_time']
+    cadence = laps['cadence']
+    avg_hr  = laps['avg_hr']
+    max_hr  = laps['max_hr']
+    balance = laps['balance']
+
 
     #   All high-intensity intervals:    >80 %FTP
-    ii = nonzero( power>=0.80*FTP )[0]   # index array
+    ii = np.nonzero( power>=0.80*FTP )[0]   # index array
     if len(ii) > 0:
         print >> OutStream, 'processing %d all laps above %d watts...' \
                             % (len(ii), 0.80*FTP)
@@ -168,7 +164,7 @@ def interval_laps(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
         print >> OutStream, 'No high-intensity laps found.' \
 
     #   Tempo intervals:    75-88  %FTP
-    ii = nonzero(logical_and( power>=0.75*FTP, power<0.88*FTP ))[0]   # index array
+    ii = np.nonzero(np.logical_and( power>=0.75*FTP, power<0.88*FTP ))[0]   # index array
     if len(ii) > 0:
         print >> OutStream, 'processing %d tempo laps between %d and %d watts...' \
                             % (len(ii), 0.75*FTP, 0.88*FTP)
@@ -198,7 +194,7 @@ def interval_laps(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
         print >> OutStream, 'No tempo laps found.' \
 
     #   Cruise intervals:   88-105 %FTP.
-    ii = nonzero(logical_and( power>=0.88*FTP, power<1.05*FTP ))[0]   # index array
+    ii = np.nonzero(np.logical_and( power>=0.88*FTP, power<1.05*FTP ))[0]   # index array
     if len(ii) > 0:
         print >> OutStream, 'processing %d threshold laps between %d and %d watts...' \
                             % (len(ii), 0.88*FTP, 1.05*FTP)
@@ -228,7 +224,7 @@ def interval_laps(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
         print >> OutStream, 'No threshold laps found.' \
 
     #   VO2max intervals:  105-200 %FTP.
-    ii = nonzero(logical_and( power>=1.05*FTP, power<2.00*FTP ))[0]   # index array
+    ii = np.nonzero(np.logical_and( power>=1.05*FTP, power<2.00*FTP ))[0]   # index array
     if len(ii) > 0:
         print >> OutStream, 'processing %d VO2max laps between %d and %d watts...' \
                             % (len(ii), 1.05*FTP, 2.00*FTP)
@@ -287,8 +283,22 @@ if __name__ == '__main__':
 #
 #    -------------------- Interval Laps --------------------
 #
-#    FTP setting = 260 None
-#    processing 7 laps above 195 watts...
+#    ThresholdPower:  254.0
+#    ThresholdHR   :  170.0
+#    processing 7 all laps above 203 watts...
+#                         avg     avg     avg     max     avg
+#         lap    time   power     cad      HR      HR     bal
+#           1    0:32     478      96     149     159    46.9
+#           3    1:00     322      93     153     163    48.3
+#           5    2:00     308      93     161     173    48.3
+#           7    3:00     292      91     166     178    48.2
+#           9    2:01     296      87     162     176    48.7
+#          11    0:28     404      96     165     171    48.0
+#          13    1:00     307      93     153     168    48.2
+#     AVERAGE   10:05     315      91     160     178    48.3
+#    No tempo laps found.
+#    No threshold laps found.
+#    processing 7 VO2max laps between 266 and 508 watts...
 #                         avg     avg     avg     max     avg
 #         lap    time   power     cad      HR      HR     bal
 #           1    0:32     478      96     149     159    46.9
