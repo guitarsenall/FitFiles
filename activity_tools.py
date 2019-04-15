@@ -89,7 +89,7 @@ def extract_activity_laps(activity):
     laps['time']                = np.array(elapsed_time)
     laps['max_hr']              = np.array(max_heart_rate)
     if len(balance) == 0:
-        laps['balance']         = np.zeros(len(power))
+        laps['balance']         = np.zeros(len(avg_power))
     else:
         laps['balance']         = np.array(balance)
     laps['start_time']          = np.array(lap_start_time)

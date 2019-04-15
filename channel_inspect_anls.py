@@ -11,6 +11,7 @@ selected channels.
 import os
 import sys
 import wx
+import numpy as np
 
 ############################################################
 #           channel_inspect_anls function def              #
@@ -59,6 +60,22 @@ def channel_inspect_anls(FitFilePath, ConfigFile=None, OutStream=sys.stdout,
     dlg.Destroy()
 
     #
+    #   extract lap results
+    #
+    from activity_tools import extract_activity_laps
+    activity    = Activity(FitFilePath)
+    laps        = extract_activity_laps(activity)
+    lap_start_time  = laps['start_time']    # datetime object
+    lap_timestamp   = laps['timestamp' ]
+    nLaps           = len(lap_start_time)
+    t0 = signals['metadata']['timestamp']
+    lap_start_sec   = np.zeros(nLaps)          # lap start times in seconds
+    for i in range(nLaps):
+        tBeg = (lap_start_time[i] - t0).total_seconds()
+        tEnd = (lap_timestamp[i]  - t0).total_seconds()
+        lap_start_sec[i]    = tBeg
+
+    #
     # time plot
     #
     nPlots  = len(ChannelNames)
@@ -78,6 +95,9 @@ def channel_inspect_anls(FitFilePath, ConfigFile=None, OutStream=sys.stdout,
     x = [base + dt.timedelta(seconds=t) for t in signals['time'].astype('float')]
     x = date2num(x) # Convert to matplotlib format
     #fig1, (ax0, ax1) = plt.subplots(nrows=2, sharex=True)
+    x_laps  = [ base + dt.timedelta(seconds=t)   \
+                for t in lap_start_sec.astype('float') ]
+    x_laps  = date2num(x_laps)
     axislist    = []
     fig = plt.figure()
     for i, channel in zip( range(nPlots), ChannelNames ):
@@ -90,6 +110,8 @@ def channel_inspect_anls(FitFilePath, ConfigFile=None, OutStream=sys.stdout,
         else:
             ax  = plt.subplot( nPlots, 1, i+1 )
         ax.plot_date( x, signals[channel], pcolor, linewidth=1, linestyle='-' );
+        for j in range(nLaps):
+            ax.axvline( x_laps[j], label=str(j+1) )
         ax.grid(True)
         ax.set_ylabel(channel)
         ax.xaxis.set_major_formatter(DateFormatter('%H:%M:%S'))

@@ -6262,6 +6262,28 @@ files from my Garmin Edge 810.
             Go simple: make the laps.keys match the names of the fields
             they extract.
 
+                                            Monday, April 15, 2019 (7:34 AM)
+    *   Add lap grids to the plot in channel_inspect_anls.py.
+        -   Pretty simple now:
+                from activity_tools import extract_activity_laps
+                laps        = extract_activity_laps(activity)
+                lap_start_time  = laps['start_time']    # datetime object
+                lap_timestamp   = laps['timestamp' ]
+                nLaps           = len(lap_start_time)
+                lap_start_sec   = zeros(nLaps)          # in seconds
+                for i in range(nLaps):
+                    tBeg = (lap_start_time[i] - t0).total_seconds()
+                    tEnd = (lap_timestamp[i]  - t0).total_seconds()
+                    lap_start_sec[i]    = tBeg
+        -   I get a FitParseComplete error. Apparently, the Activity
+            object does not want to parse itself twice. endurance_summary.py
+            appears to work because I just repeat the instantiation:
+                activity    = Activity(FitFilePath)
+        -   The time reference, t0, is stored in signals:
+                t0 = signals['metadata']['timestamp']
+        -   It works!
+        -   Commit & push.
+
 
 https://help.github.com/articles/basic-writing-and-formatting-syntax/
 
@@ -6351,6 +6373,10 @@ TO DO:
             drift.
     *   pwhr_tf_params.py
     *   interval_laps.py
+    *   channel_inspect_anls.py
+        -   Unit conversion.
+            >   Somehow I will have to support preferred
+                units in the config files.
 
 
 
