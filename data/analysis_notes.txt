@@ -6284,6 +6284,11 @@ files from my Garmin Edge 810.
         -   It works!
         -   Commit & push.
 
+                                            Thursday, April 18, 2019 (8:42 AM)
+    *   Added lap grids to time plots in other analyses. Quick and easy!
+        -   Commit & push.
+
+
 
 https://help.github.com/articles/basic-writing-and-formatting-syntax/
 

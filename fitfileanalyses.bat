@@ -12,7 +12,7 @@ IF "%ComputerName%" == "LAPTOP" (
     set base=S:\will\documents\OneDrive\2018\fitfiles
 )
 
-REM ::set base depending on which machine we are on
+REM ::set base depending on which machine we are on.
 REM echo.input file is %~1
 REM echo.drive letter is %~d1
 REM set base=S:\will\documents\OneDrive\2018\fitfiles

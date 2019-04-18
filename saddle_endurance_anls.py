@@ -248,6 +248,22 @@ def saddle_endurance_anls(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     #                  plotting                                #
     ############################################################
 
+    #
+    #   extract lap times
+    #
+    from activity_tools import extract_activity_laps
+    activity    = Activity(FitFilePath)
+    laps        = extract_activity_laps(activity)
+    lap_start_time  = laps['start_time']    # datetime object
+    lap_timestamp   = laps['timestamp' ]
+    nLaps           = len(lap_start_time)
+    t0 = signals['metadata']['timestamp']
+    lap_start_sec   = np.zeros(nLaps)          # lap start times in seconds
+    for i in range(nLaps):
+        tBeg = (lap_start_time[i] - t0).total_seconds()
+        tEnd = (lap_timestamp[i]  - t0).total_seconds()
+        lap_start_sec[i]    = tBeg
+
     # time plot
     import matplotlib.pyplot as plt
     import matplotlib.dates as md
@@ -256,6 +272,9 @@ def saddle_endurance_anls(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     base = dt.datetime(2014, 1, 27, 0, 0, 0)
     x = [ base + dt.timedelta(seconds=t) for t in elapsed_time ]
     x = date2num(x) # Convert to matplotlib format
+    x_laps  = [ base + dt.timedelta(seconds=t)   \
+                for t in lap_start_sec.astype('float') ]
+    x_laps  = date2num(x_laps)
     fig, (ax0, ax1, ax2) = plt.subplots(nrows=3, sharex=True)
     ax0.plot_date( x, signals['power'], 'b-', linewidth=1 );
     ax0.grid(True)
@@ -274,6 +293,10 @@ def saddle_endurance_anls(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     ax2.set_ylabel('seated')
     ax2.set_yticks([0,1])
     ax2.set_yticklabels(('standing', 'seated'))
+    for i in range(nLaps):
+        ax0.axvline( x_laps[i], label=str(i+1) )
+        ax1.axvline( x_laps[i], label=str(i+1) )
+        ax2.axvline( x_laps[i], label=str(i+1) )
     fig.canvas.set_window_title(FitFilePath)
     fig.tight_layout()
     fig.subplots_adjust(hspace=0)   # Remove horizontal space between axes

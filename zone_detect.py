@@ -270,7 +270,27 @@ def zone_detect(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
                         hZones[7][0],
                         hZones[7][1] ]
 
-    # time plot with heart rate
+    ############################################################
+    #                  plotting                                #
+    ############################################################
+
+    #
+    #   extract lap times
+    #
+    from activity_tools import extract_activity_laps
+    activity    = Activity(FitFilePath)
+    laps        = extract_activity_laps(activity)
+    lap_start_time  = laps['start_time']    # datetime object
+    lap_timestamp   = laps['timestamp' ]
+    nLaps           = len(lap_start_time)
+    t0 = signals['metadata']['timestamp']
+    lap_start_sec   = zeros(nLaps)          # lap start times in seconds
+    for i in range(nLaps):
+        tBeg = (lap_start_time[i] - t0).total_seconds()
+        tEnd = (lap_timestamp[i]  - t0).total_seconds()
+        lap_start_sec[i]    = tBeg
+
+    # time plot
     import matplotlib.pyplot as plt
     import matplotlib.dates as md
     from matplotlib.dates import date2num, DateFormatter
@@ -278,12 +298,17 @@ def zone_detect(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     base = dt.datetime(2014, 1, 27, 0, 0, 0)
     x = [base + dt.timedelta(seconds=t) for t in new_time]
     x = date2num(x) # Convert to matplotlib format
+    x_laps  = [ base + dt.timedelta(seconds=t)   \
+                for t in lap_start_sec.astype('float') ]
+    x_laps  = date2num(x_laps)
     if hasHR:
         fig1, (ax0, ax1) = plt.subplots(nrows=2, sharex=True)
         ax0.plot_date( x, heart_rate, 'r-', linewidth=3 );
         ax0.set_yticks( h_zone_bounds, minor=False)
         ax0.grid(True)
         ax0.set_title('heart rate, BPM')
+        for i in range(nLaps):
+            ax0.axvline( x_laps[i], label=str(i+1) )
     else:
         fig1, ax1 = plt.subplots(nrows=1, sharex=True)
     ax1.plot_date( x, power,        'k-', linewidth=1 );
@@ -295,9 +320,11 @@ def zone_detect(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     ax1.set_yticks( p_zone_bounds, minor=False)
     ax1.grid(True)
     ax1.set_title('power, watts')
-    fig1.autofmt_xdate()
     ax1.legend(['power', 'FBoxCar', 'cp2', 'CBoxCar', 'zone mid'],
                 loc='upper left');
+    for i in range(nLaps):
+        ax1.axvline( x_laps[i], label=str(i+1) )
+    fig1.autofmt_xdate()
     fig1.suptitle('Power Zone Detection', fontsize=20)
     fig1.tight_layout()
     fig1.canvas.set_window_title(FitFilePath)

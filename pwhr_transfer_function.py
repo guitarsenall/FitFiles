@@ -276,6 +276,22 @@ def pwhr_transfer_function(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
 
 
     #
+    #   extract lap results
+    #
+    from activity_tools import extract_activity_laps
+    activity    = Activity(FitFilePath)
+    laps        = extract_activity_laps(activity)
+    lap_start_time  = laps['start_time']    # datetime object
+    lap_timestamp   = laps['timestamp' ]
+    nLaps           = len(lap_start_time)
+    t0 = signals['metadata']['timestamp']
+    lap_start_sec   = np.zeros(nLaps)          # lap start times in seconds
+    for i in range(nLaps):
+        tBeg = (lap_start_time[i] - t0).total_seconds()
+        tEnd = (lap_timestamp[i]  - t0).total_seconds()
+        lap_start_sec[i]    = tBeg
+
+    #
     # time plot
     #
 
@@ -285,6 +301,9 @@ def pwhr_transfer_function(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     base = dt.datetime(2014, 1, 1, 0, 0, 0)
     x = [base + dt.timedelta(seconds=t) for t in time_ci.astype('float')]
     x = date2num(x) # Convert to matplotlib format
+    x_laps  = [ base + dt.timedelta(seconds=t)   \
+                for t in lap_start_sec.astype('float') ]
+    x_laps  = date2num(x_laps)
     fig1, (ax0, ax1) = plt.subplots(nrows=2, sharex=True)
     ax0.plot_date( x, heart_rate_ci,  'r-', linewidth=1 );
     ax0.plot_date( x, heart_rate_sim, 'm-', linewidth=3 );
@@ -298,11 +317,15 @@ def pwhr_transfer_function(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     ax1.set_yticks( p_zone_bounds, minor=False)
     ax1.grid(True)
     ax1.set_title('power, watts')
+    for i in range(nLaps):
+        ax0.axvline( x_laps[i], label=str(i+1) )
+        ax1.axvline( x_laps[i], label=str(i+1) )
     fig1.autofmt_xdate()
     ax1.legend( ['power', 'p30' ], loc='upper left');
     fig1.suptitle('Pw:HR Transfer Function', fontsize=20)
     fig1.tight_layout()
     fig1.canvas.set_window_title(FitFilePath)
+    fig1.subplots_adjust(hspace=0)   # Remove horizontal space between axes
     plt.show()
 
     def ClosePlots():
