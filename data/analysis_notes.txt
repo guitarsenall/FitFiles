@@ -6181,6 +6181,7 @@ files from my Garmin Edge 810.
                                3   0:22:37   0:32:24      9:47
                             BEST ONE-HOUR AVERAGE:       10:13
             >   Commit & push
+        -   Tag v1.5
 
 
                                                 Friday, April 5, 2019 (7:40 AM)
@@ -6287,6 +6288,68 @@ files from my Garmin Edge 810.
                                             Thursday, April 18, 2019 (8:42 AM)
     *   Added lap grids to time plots in other analyses. Quick and easy!
         -   Commit & push.
+
+
+                                            Sunday, April 21, 2019 (8:10 AM)
++   Units. Extract units and support converstion for plotting.
+
+    *   Extracting.
+        -   In activity_tools.py, store the units in the
+            data_signals['metadata']:
+                data_signals                        = {}
+                data_signals['metadata']            = {}
+                data_signals['metadata']['units']   = {}
+            Then when reading, ignore possible unit discrepancy between samples
+                data_signals['metadata']['units'][field_name] = field_units
+        -   Got it working in channel_inspect_anls.py
+                extract_units_a.png
+
+    *   Conversion. How do I go about this?
+        -   I think I need a section in the configuration file for units:
+                [units]
+                temperature     : F     ; C
+                speed           : mph   ; m/s
+                altitude        : feet  ; m
+            Only those channels specified will be converted.
+            But how do I convert? I suppose I will need a dictionary
+            of channel units:
+                UserUnits['temperature'] = 'F'
+            so I will have to test for the key:
+                if UserUnits.has_key(channel):
+                    AttemptConversion()
+            But how will I know I can even perform a converstion?
+            I suppose I have a FromUnit and a ToUnit which need to be
+            used to search for a converter. First define a converter:
+                def from_degF_to_degC(degF):
+                    return (degF-32.0)*5.0/9.0
+            then point to it:
+                UnitConverters['F']['C'] = from_degF_to_degC
+            Finally, I will have to search for it then apply it:
+                if UnitConverters.has_key('F'):
+                    if UnitConverters['F'].has_key('C'):
+                        converter   = UnitConverters['F']['C']
+                        unit     = 'F'
+                        signal   = converter(signal)
+            Actually, this will look more like,
+                if UnitConverters.has_key(ToUnit):
+                    if UnitConverters[ToUnit].has_key(FromUnit):
+                        converter   = UnitConverters[ToUnit][FromUnit]
+                        unit        = ToUnit
+                        signal      = converter(signal)
+            If no converter is found, unit and signal remain unchanged.
+            Also, if FromUnit and ToUnit are the same, no converter will
+            exist.
+        -   Where do I see this implemented? The UserUnits dictionary
+            is a property of the user and comes from the config file,
+            but the UnitConverters dictionary is not related to the user
+            or even to the .FIT file. However, it does need to know about
+            the signals dictionary. I think I see the UnitConverters dictionary
+            as a member of a class and the converter functions as
+            methods. Perhaps conversion could occur with,
+                signals = unithandler.AttemptConversion(signals)
+            but the UnitHandler class will need to already know about
+            the user's preferred units. So use it to instantiate the class:
+                unithandler = UnitHandler(UserUnits)
 
 
 

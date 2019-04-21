@@ -116,6 +116,9 @@ def extract_activity_signals(activity, resample='constant', verbose=False):
     records = activity.get_records_by_type('record')
     current_record_number = 0
 
+    data_signals                        = {}
+    data_signals['metadata']            = {}
+    data_signals['metadata']['units']   = {}
     data_lists          = {}        # empty dictionary for lists
     nonnumeric_lists    = {}
     time_values         = set()     # all existing time values
@@ -152,6 +155,9 @@ def extract_activity_signals(activity, resample='constant', verbose=False):
             # Get the data and units for the field
             field_data  = record.get_data(field_name)
             field_units = record.get_units(field_name)
+
+            # ignore possible unit discrepancy between samples
+            data_signals['metadata']['units'][field_name] = field_units
 
             # ignore non-numeric data fields
             if isinstance(field_data, (int, long, float)):
@@ -193,8 +199,6 @@ def extract_activity_signals(activity, resample='constant', verbose=False):
     if resample == 'constant':
         nPts            = long( dt.total_seconds() + 1 )
         const_time      = np.arange(nPts).astype(float)  # sample interval of 1 sec
-        data_signals    = {}
-        data_signals['metadata']    = {}
         data_signals['metadata']['timestamp']   = t0
         data_signals['time']    = const_time
         for field in data_lists.keys():
@@ -208,8 +212,6 @@ def extract_activity_signals(activity, resample='constant', verbose=False):
     elif resample == 'existing':
         # interpolate values at all existing time points
         time_vector     = np.array(list(time_values)).astype(float)
-        data_signals    = {}
-        data_signals['metadata']    = {}
         data_signals['metadata']['timestamp']   = t0
         data_signals['time']    = time_vector
         for field in data_lists.keys():

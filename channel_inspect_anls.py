@@ -113,7 +113,12 @@ def channel_inspect_anls(FitFilePath, ConfigFile=None, OutStream=sys.stdout,
         for j in range(nLaps):
             ax.axvline( x_laps[j], label=str(j+1) )
         ax.grid(True)
-        ax.set_ylabel(channel)
+        if signals['metadata']['units'].has_key(channel):
+            YLabel  = channel + '\n' \
+                    + signals['metadata']['units'][channel]
+        else:
+            YLabel  = channel + '\n' + 'none'
+        ax.set_ylabel(YLabel)
         ax.xaxis.set_major_formatter(DateFormatter('%H:%M:%S'))
         ax.grid(True)
         axislist.append(ax)
