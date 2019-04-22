@@ -6350,6 +6350,103 @@ files from my Garmin Edge 810.
             but the UnitHandler class will need to already know about
             the user's preferred units. So use it to instantiate the class:
                 unithandler = UnitHandler(UserUnits)
+                                            Monday, April 22, 2019 (8:13 AM)
+        -   Give it a shot; dive in with both feet.
+            >   I got it backwards. I am looping over the channels in
+                signals and testing for entries in UserUnits, not the
+                other way around. So the first key in UnitConverters
+                has to be FromUnit, and the second key is ToUnit.
+            >   Wait. Maybe I'm wrong about that. Hmmm. Actually, it
+                doesn't matter. By the time I search UnitConverters, I
+                know both FromUnit and ToUnit.
+            >   New challenge: I do not know which entries exist in
+                the config file. And they are strings, not floats.
+                Study
+                    https://docs.python.org/2/library/configparser.html
+                Experiment in scratch.py.
+                This looks promising:
+                    >>> config.items('units')
+                    [   ('temperature', 'F'),
+                        ('speed', 'mph'),
+                        ('altitude', 'feet')]
+                Can I convert a list of tuples into a dictionary?
+                    >>> items = config.items('units')
+                    >>> items
+                    [   ('temperature', 'F'),
+                        ('speed', 'mph'),
+                        ('altitude', 'feet')]
+                    >>> dict(items)
+                    {   'altitude': 'feet',
+                        'speed': 'mph',
+                        'temperature': 'F'}
+                IT WORKS!!  Simply write,
+                    UserUnits = dict( config.items('units') )
+                However, I had better test for the 'units' section first.
+                    >>> config.has_section('units')
+                    True
+                    >>> config.has_section('newsec')
+                    False
+            >   Finally, in channel_inspect_anls.py:
+                    if config.has_section('units'):
+                        UserUnits = dict( config.items('units') )
+                    else:
+                        UserUnits = None
+                    ...
+                    if UserUnits is not None:
+                        unithandler = UnitHandler(UserUnits)
+                        signals = unithandler.ConvertSignalUnits(signals)
+            >   First error:
+                    AttributeError: UnitHandler instance has no attribute
+                        'UnitConverters'
+                I can't just write,
+                    self.UnitConverters['C'  ]['F'   ] = self.from_degC_to_degF
+                    self.UnitConverters['m/s']['mph' ] = self.from_mps_to_mph
+                    self.UnitConverters['m'  ]['feet'] = self.from_m_to_feet
+                Try this:
+                    self.UnitConverters = {}
+                    self.UnitConverters['C'  ] = {}
+                    self.UnitConverters['C'  ]['F'   ] = self.from_degC_to_degF
+                    self.UnitConverters['m/s'] = {}
+                    self.UnitConverters['m/s']['mph' ] = self.from_mps_to_mph
+                    self.UnitConverters['m'  ] = {}
+                    self.UnitConverters['m'  ]['feet'] = self.from_m_to_feet
+                No luck. It still complains upon
+                    self.UnitConverters['C'  ] = {}
+                Interesting.
+                Restart PyScripter, and the error disappears!!!
+            >   Error:
+                    Traceback (most recent call last):
+                      File "...channel_inspect_anls.py", line 173, in <module>
+                        channel_inspect_anls(fitfilepath, ConfigFile=None)
+                      File "...channel_inspect_anls.py", line 53,
+                            in channel_inspect_anls
+                        signals = unithandler.ConvertSignalUnits(signals)
+                      File "...activity_tools.py", line 52,
+                            in ConvertSignalUnits
+                        signals[channel] = converter(signals[channel])
+                    TypeError: from_degC_to_degF() takes
+                        exactly 1 argument (2 given)
+                This will take some study.
+                I needed to define the converter functions with self as
+                the first parameter.
+            >   Got it working!!
+                    convert_units_a.png
+                Notice the unites on temperature, altitude, and speed.
+                Capture the UnitHandler class:
+                    convert_units_b.png
+
+    *   Try adding an entry:
+            distance        : miles
+        -   Converter:
+                def from_m_to_miles(self, distance):
+                    return 0.000621371*distance
+            Notice we now have 2 entries for ToUnit, m:
+                self.UnitConverters['m'  ] = {}
+                self.UnitConverters['m'  ]['feet']  = self.from_m_to_feet
+                self.UnitConverters['m'  ]['miles'] = self.from_m_to_miles
+            So the new class definition is,
+                convert_units_c.png
+        -   IT WORKS!!
 
 
 
@@ -6442,9 +6539,6 @@ TO DO:
     *   pwhr_tf_params.py
     *   interval_laps.py
     *   channel_inspect_anls.py
-        -   Unit conversion.
-            >   Somehow I will have to support preferred
-                units in the config files.
 
 
 

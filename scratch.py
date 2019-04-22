@@ -1,6 +1,12 @@
 
 # scratch.py
 
+# modify dictionary?
+def modify_dict(d):
+    d['key'] = 'modified'
+    return d
+d = {}
+print modify_dict(d)
 
 ## get the algorithm right for set_times (saddle_endurance_anls.py)
 ##seated_state    = orig_seated_state             # "begins seated and ends standing"

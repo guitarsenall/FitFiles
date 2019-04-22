@@ -1,6 +1,60 @@
 
 #   activity_tools.py
 
+class UnitHandler():
+    '''
+    class for converting units on signals (a dictionary defined below
+    in extract_activity_signals).
+    Define converter functions first so they can be stored in the
+    UnitConverters dictionary upon initialization.
+    '''
+
+    def from_degF_to_degC(self, degF):
+        return (degF-32.0)*5.0/9.0
+    def from_degC_to_degF(self, degC):
+        return 9.0/5.0*degC + 32.0
+    def from_mps_to_mph(self, speed):
+        return 2.23694*speed
+    def from_m_to_feet(self, distance):
+        return 3.28084*distance
+    def from_m_to_miles(self, distance):
+        return 0.000621371*distance
+
+    def __init__(self, UserUnits):
+        '''
+        Initialize with a set of UserUnits--a dictionary whose keys are the
+        names of channels to convert and whose values are the preferred units
+        to convert to.
+        '''
+        self.UserUnits = UserUnits
+        # assemble the UnitConverters dictionary.
+        self.UnitConverters = {}
+        # The first key is the From-Unit--a unit to convert from.
+        # and the second key is the To-Unit--the preferred unit.
+        #                   From    To
+        self.UnitConverters['C'  ] = {}
+        self.UnitConverters['C'  ]['F'   ]  = self.from_degC_to_degF
+        self.UnitConverters['m/s'] = {}
+        self.UnitConverters['m/s']['mph' ]  = self.from_mps_to_mph
+        self.UnitConverters['m'  ] = {}
+        self.UnitConverters['m'  ]['feet']  = self.from_m_to_feet
+        self.UnitConverters['m'  ]['miles'] = self.from_m_to_miles
+
+    def ConvertSignalUnits(self, signals):
+        ChannelList = signals.keys()
+        ChannelList.remove('time')
+        ChannelList.remove('metadata')
+        for channel in ChannelList:
+            FromUnit    = signals['metadata']['units'][channel]
+            if self.UserUnits.has_key(channel):
+                ToUnit  = self.UserUnits[channel]
+                if self.UnitConverters.has_key(FromUnit):
+                    if self.UnitConverters[FromUnit].has_key(ToUnit):
+                        converter   = self.UnitConverters[FromUnit][ToUnit]
+                        signals['metadata']['units'][channel] = ToUnit
+                        signals[channel] = converter(signals[channel])
+        return signals
+
 def extract_activity_laps(activity):
     '''
     Function to extract lap results from activity object

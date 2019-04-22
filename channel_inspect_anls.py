@@ -28,13 +28,30 @@ def channel_inspect_anls(FitFilePath, ConfigFile=None, OutStream=sys.stdout,
         ConfigFile = FindConfigFile('', FilePath)
     if (ConfigFile is None) or (not os.path.exists(ConfigFile)):
         raise IOError('Configuration file not specified or found')
+    #
+    #   Parse the configuration file
+    #
+    from ConfigParser import ConfigParser
+    config      = ConfigParser()
+    config.read(ConfigFile)
+    print >> OutStream, 'reading config file ' + ConfigFile
+    if config.has_section('units'):
+        # convert list of tuples to dictionary
+        UserUnits = dict( config.items('units') )
+    else:
+        UserUnits = None
 
     # get the signals
     from datetime import datetime
     from fitparse import Activity
-    from activity_tools import extract_activity_signals
-    activity = Activity(FitFilePath)
+    from activity_tools import extract_activity_signals, UnitHandler
+    activity    = Activity(FitFilePath)
     signals     = extract_activity_signals(activity, resample='existing')
+
+    # convert units
+    if UserUnits is not None:
+        unithandler = UnitHandler(UserUnits)
+        signals = unithandler.ConvertSignalUnits(signals)
 
     ChannelList = signals.keys()
     ChannelList.remove('time')
