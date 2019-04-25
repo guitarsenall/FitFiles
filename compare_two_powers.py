@@ -12,9 +12,15 @@ from datetime import datetime
 from fitparse import Activity
 from activity_tools import extract_activity_signals, find_delay
 
-FilePath        = r's:\will\Documents\OneDrive\bike\activities\kim\\'
-EdgeFilePath    = FilePath + r'2019-03-23-16-39-03.fit'
-ZwiftFilePath   = FilePath + r'2019-03-23-16-41-05_zwift.fit'
+FilePath        = r'D:\Users\Owner\Documents\OneDrive\bike\activities\leo\\'
+EdgeFilePath    = FilePath + r'P1 - 2019-04-22-11-40-45.fit'
+ZwiftFilePath   = FilePath + r'Infocrank (Zwift) 2019-04-22-10-30-09.fit'
+
+# Delay range in seconds.
+# for finding the delay in Edge relative to Zwift:
+# a positive delay means Edge looks like a delayed version of Zwift.
+MinDelay    = 40*60
+MaxDelay    = 50*60
 
 #EdgeFilePath    = r'2017-01-02-16-12-43_edge.fit'
 #ZwiftFilePath   = r'2017-01-02-16-07-51_zwift.fit'
@@ -46,25 +52,27 @@ zwift_hr        = ZwiftSignals['heart_rate']
 zwift_t         = arange(len(zwift_hr))
 zwift_power     = ZwiftSignals['power']
 
-zwift_hr_r   = interp(edge_t, zwift_t, zwift_hr)
-HRDelay = find_delay( edge_hr, zwift_hr_r, MinDelay=-40, MaxDelay=40 )
+zwift_hr_r      = interp(edge_t, zwift_t, zwift_hr)
+HRDelay         = find_delay( edge_hr, zwift_hr_r,
+                              MinDelay=MinDelay, MaxDelay=MaxDelay )
 print 'heart rate optimum delay: ', HRDelay
-edge_cad    = EdgeSignals['cadence']
-zwift_cad   = ZwiftSignals['cadence']
-zwift_cad_r   = interp(edge_t, zwift_t, zwift_cad)
-CadenceDelay = find_delay( edge_cad, zwift_cad_r, MinDelay=-40, MaxDelay=40 )
+edge_cad        = EdgeSignals['cadence']
+zwift_cad       = ZwiftSignals['cadence']
+zwift_cad_r     = interp(edge_t, zwift_t, zwift_cad)
+CadenceDelay    = find_delay( edge_cad, zwift_cad_r,
+                              MinDelay=MinDelay, MaxDelay=MaxDelay )
 print 'cadence optimum delay: ', CadenceDelay
 
 #
 #   remove delay and scaling error in heart rate
 #
-x1  = zwift_hr
-x2  = edge_hr
+x1  = zwift_hr    # zwift_hr  zwift_cad
+x2  = edge_hr     # edge_hr   edge_cad
 
 # x2 contains x1, but it is delayed and "stretched" in time.
 # determine the scale and delay using minimize()
 def ScaleDelayError(ScaleNDelay):
-# x1 and x2 must exist in calling namespace
+    # x1 and x2 must exist in calling namespace
     scale   = ScaleNDelay[0]
     delay   = ScaleNDelay[1]
     t1      = arange(len(x1))
@@ -77,17 +85,21 @@ def ScaleDelayError(ScaleNDelay):
     return RMSError
 
 from scipy.optimize import minimize
-x0  = [1.0, 0.0]
-bnds = ( (0.95, 1.05), (-60, 60) )
-res = minimize(ScaleDelayError, x0, method='SLSQP', bounds=bnds)
+x0      = [1.0, 0.0]
+bnds    = ( (0.95, 1.05), (MinDelay, MaxDelay) )
+res     = minimize(ScaleDelayError, x0, method='SLSQP', bounds=bnds)
 print res.message
-scale   = res.x[0]
-HRDelay   = res.x[1]
-print 'scale = %5.3f, HRDelay = %5.1f' % (scale, HRDelay)
+TimeScale   = res.x[0]
+ExactDelay  = res.x[1]
+print 'TimeScale = %10.8f, ExactDelay = %5.3f' % (TimeScale, ExactDelay)
+
+## determine indices into edge_t for overlapping region
+#iBeg    = int(ExactDelay)
+#iEnd    = iBeg + len()
 
 # resample zwift signals onto edge timeline
 # using inferred delay and scaling error
-zwift_t_s       = scale*zwift_t + HRDelay
+zwift_t_s       = TimeScale*zwift_t + ExactDelay
 zwift_power_r   = interp(edge_t, zwift_t_s, zwift_power)
 zwift_hr_r      = interp(edge_t, zwift_t_s, zwift_hr )
 
@@ -128,8 +140,8 @@ print 'power optimum delay: ', PowerDelay
 AxTop = plt.subplot(211)    #2, 1, 1
 plt.plot(edge_t/60.0, edge_hr, 'r')
 plt.plot(edge_t/60.0, zwift_hr_r, 'b')
-plt.legend(['Garmin Edge', 'Zwift'], loc='best')
-plt.title('Edge and Zwift Heart Rate and Power')
+plt.legend(['PowerTap P1', 'Zwift'], loc='best')
+plt.title('P1 and Zwift Heart Rate and Power')
 plt.ylabel('BPM')
 
 # sharex causes the X-limits to be the same in both plots
@@ -137,7 +149,7 @@ AxBot = plt.subplot(212, sharex=AxTop)
 #plt.axes(sharex=AxTop)
 plt.plot(edge_t/60.0, edge_power, 'r')
 plt.plot(edge_t/60.0, zwift_power_r, 'b')
-plt.legend(['Wahoo Kickr', 'PowerTap C1'])
+plt.legend(['PowerTap P1', 'Zwift'])
 plt.xlabel('time (min)')
 plt.ylabel('power (w)')
 plt.show()
@@ -148,9 +160,9 @@ CrossPlotFig    = plt.figure()
 sc = plt.scatter(edge_power, zwift_power_r_r, s=5, c=edge_t, \
             cmap=plt.get_cmap('brg'), edgecolors='face' )
 plt.colorbar(orientation='horizontal')
-plt.title('PowerTap C1 Vs Wahoo Kickr Over Time (sec)\n(delay removed)')
-plt.xlabel('Kickr (w)')
-plt.ylabel('PowerTap (w)')
+plt.title('Infocrank Vs PowerTap P1 Over Time (sec)\n(delay removed)')
+plt.xlabel('PowerTap P1 (w)')
+plt.ylabel('Infocrank via Zwift (w)')
 plt.grid(b=True, which='major', axis='both')
 a = plt.axis()
 plt.axis([ 0, a[1], 0, a[3] ])

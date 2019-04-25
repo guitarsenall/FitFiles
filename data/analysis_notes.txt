@@ -6431,7 +6431,7 @@ files from my Garmin Edge 810.
                 the first parameter.
             >   Got it working!!
                     convert_units_a.png
-                Notice the unites on temperature, altitude, and speed.
+                Notice the units on temperature, altitude, and speed.
                 Capture the UnitHandler class:
                     convert_units_b.png
 
@@ -6447,6 +6447,67 @@ files from my Garmin Edge 810.
             So the new class definition is,
                 convert_units_c.png
         -   IT WORKS!!
+
+
+                                            Thursday, April 25, 2019 (7:58 AM)
++   Analyze Leo's files with compare_two_powers.py
+
+    *   First thing: Leo's files have a HUGE delay between them, so I need
+        to estimate it right with correct sign. address the ambiguity in the
+        meaning of "delay" in the code:
+            FilePath        = r'D:\...\bike\activities\leo\\'
+            EdgeFilePath    = FilePath + r'P1 - 2019-04-22-11-40-45.fit'
+            ZwiftFilePath   = FilePath \
+                            + r'Infocrank (Zwift) 2019-04-22-10-30-09.fit'
+            # Delay range in seconds.
+            # for finding the delay in Edge relative to Zwift:
+            # a positive delay means Edge looks like a delayed
+            # version of Zwift.
+            MinDelay    = 40*60
+            MaxDelay    = 50*60
+
+    *   Try running.
+        -   Problem:
+                heart rate optimum delay:  2686
+                cadence optimum delay:  2685
+                Optimization terminated successfully.
+                scale = 1.000, HRDelay = 2685.6
+                Optimization terminated successfully.
+                scale = 1.000, Kickr Delay =  -0.1
+                slope = -1.666, offset = 837
+            Precise values for time scale:
+                >>> scale
+                0.9999701000576079
+                >>> 1.0-scale
+                2.989994239210869e-05
+            and Zwift power meter delay:
+                >>> res.x[1]
+                -0.1496481028472999
+            The delay is correct, but regression is ruined.
+                leo_power_compare_a.png
+            The problem has to do with which signal is resampled "onto"
+            which. The samples outside the overlapping region need to
+            be discarded.
+        -   Fortunately, I can get good enough results to show that Leo's
+            power meters have EXCELLENT agreement (within 0.002%) and
+            very small delay (0.15 sec).
+                leo_power_compare_b.png
+        -   How do I determine indices into edge_t for overlapping region?
+            This is proving nontrivial. In the past, I could ignore this
+            because the signals differed in length by just a few samples.
+            But now even the resampling method could be frought with
+            errors because NumPy.interp() fills in non-overlapping regions
+            with a constant. Thus, even measuring the scale and delay
+            needs attention (this is dramatically evident when trying to
+            use cadence to measure it). I appear to have gotten lucky with the
+            results above since the delay was measured as 44:45 (when
+            using heart_rate).
+            >   I have to deal with four cases:
+                    Zwift starts "early" and ends "early"
+                    Zwift starts "early" and ends "late"
+                    Zwift starts "late"  and ends "early"
+                    Zwift starts "late"  and ends "late"
+
 
 
 
