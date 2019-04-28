@@ -1382,7 +1382,7 @@ files from my Garmin Edge 810.
                 https://docs.scipy.org/doc/scipy/reference/optimize.html
         -   For this, I need a better pair of test signals because the
             interpolated 0.5's in x1r will produce large errors that will
-            through minimize() off. I think I need wide pulses rather
+            throw minimize() off. I think I need wide pulses rather
             than single-scan impulses.
             Time to think! Consider the lines above,
                 x2[2]  = 1.0   # x1[0] delayed 2
@@ -6492,6 +6492,13 @@ files from my Garmin Edge 810.
             power meters have EXCELLENT agreement (within 0.002%) and
             very small delay (0.15 sec).
                 leo_power_compare_b.png
+            Oops. I can't say the agreement is within 0.002% because the
+            regression is not working. That number comes from measuring
+            the Time Scaling Error between the two power meters and is
+            EXPECTED to be near zero.
+            >   Leo commented: "The p1 tends to read a tad higher in sharp
+                accelerations". Sample:
+                    leo_power_compare_c.png
         -   How do I determine indices into edge_t for overlapping region?
             This is proving nontrivial. In the past, I could ignore this
             because the signals differed in length by just a few samples.
@@ -6507,8 +6514,425 @@ files from my Garmin Edge 810.
                     Zwift starts "early" and ends "late"
                     Zwift starts "late"  and ends "early"
                     Zwift starts "late"  and ends "late"
-
-
+            >   Consider the following code (line 100)
+                    # resample zwift signals onto edge timeline
+                    # using inferred delay and scaling error
+                    zwift_t_s       = TimeScale*zwift_t + ExactDelay
+                    zwift_power_r   = interp(edge_t, zwift_t_s, zwift_power)
+                    zwift_hr_r      = interp(edge_t, zwift_t_s, zwift_hr )
+                edge_t requests values in zwift_power outside the range
+                of zwift_t_s. This is a case of "Zwift starts late".
+                Then see
+                    leo_power_compare_d.png
+                which shows it is also "Zwift ends early". It should be a
+                simple matter to make a new time vector containing only
+                the times within range:
+                    ii = np.nonzero( logical_and(edge_t>=zwift_t_s[0],  \
+                                                 edge_t<=zwift_t_s[-1]) )
+                    edge_t_in   = edge_t[ii]
+            >   However, this line comes AFTER ScaleDelayError() has been
+                applied. I need the solution when intially finding the delay
+                with activity_tools.find_delay(). It has to happen here,
+                both before find_delay() is called then during as different
+                delay times are tested:
+                    edge_hr         = EdgeSignals['heart_rate']
+                    edge_t          = arange(len(edge_hr))
+                    edge_power      = EdgeSignals['power']
+                    zwift_hr        = ZwiftSignals['heart_rate']
+                    zwift_t         = arange(len(zwift_hr))
+                    zwift_power     = ZwiftSignals['power']
+                    zwift_hr_r      = interp(edge_t, zwift_t, zwift_hr)
+                    HRDelay         = find_delay( edge_hr, zwift_hr_r,
+                                                  MinDelay=MinDelay,
+                                                  MaxDelay=MaxDelay )
+                                            Friday, April 26, 2019 (7:53 AM)
+            >   This code never asks whether one signal is longer than
+                the other. I guess I'm tempted to assume the shorter signal
+                is contained fully within the longer, but that is not
+                necessarily true.
+                Why do I resample zwift_hr?
+                Have a look at part of find_delay():
+                    for i in range(MinDelay, MaxDelay+1):
+                        if i==0:
+                            c = b - a
+                        elif i>0:
+                            c = b[0:-i] - a[i:]
+                        else:
+                            c = b[-i:] - a[0:i]
+                        rms = sqrt(average( c**2 ))
+                What happens when I take c=b-a when b and a are different
+                lengths? Error. That is why I resample. The other line
+                truncate both vectors equally but from opposite sides.
+                Review my thoughts from last year (line 1337, or search
+                for time_scaling.py).
+                Notice my statement:
+                    "The interpolated points in x1r will create errors, but I
+                    think they will be small relative to those created by
+                    incorrect values of m and B."
+                The BIG errors come from the EXTRAPOLATION which occurs with
+                different-length vectors.
+            >   Numpy.interp() extrapolates using the end values. But I
+                can make them zero using the left=0 and right=0 keywords.
+                Would it help?
+                :   Not much, I think. One of these at i:
+                        c[i] = b[i] - 0
+                    I still have b[i] to contribute to the RMS.
+            >   I think the key is in find_delay(). Once it finds an
+                approximate delay (within one sample), that can be used
+                to truncate the vectors before using ScaleDelayError().
+                And I think I should NOT be resampling; I should let the
+                vectors be different lengths and truncate accordingly.
+                I simply cannot test any vector longer than the shortest
+                of the two:
+                        nA      = len(A)
+                        nB      = len(B)
+                        nPts    = min(nA,nB)
+                Consider i==0 again:
+                        C = B[:nPts] - A[:nPts]
+                So what happens when I get to i>0? I currently have,
+                            C = B[0:-i] - A[i:]
+                which truncates B from the right and A from the left.
+                Instead of truncating B using B[0:-i], perhaps I can take
+                B[0:nPts] and compare it with A[i:i+nPts] if A is long
+                enough:
+                        elif i>0:
+                            if nA >= i+nPts:
+                                C = B[0:nPts] - A[i:i+nPts]
+                            else:
+                                C = B[0:-i] - A[i:]
+                But B[0:-i] may not be valid. I think I mean B[0:nPts-i].
+                But is that even valid? Of course, since nPts <= nB.
+                Consider the following at i==0 with nA>nB:
+                    A:  .......|...
+                    B:  ...|.....
+                Then at i==1:
+                    A:  ......|...
+                    B:  ...|.....
+                Then at i==2:
+                    A:  .....|...
+                    B:  ...|.....
+                Until now, we can take C = B[0:nB] - A[i:i+nB]. But next
+                it will fail because i+nB>nA.
+                Finally, at i==3, B must be truncated from the right:
+                    A:  ....|...
+                    B:  ...|....
+                which is done with C = B[0:nB-i] - A[i:]. Continue:
+                i==4:
+                    A:  ...|...
+                    B:  ...|...
+                i==5:
+                    A:  ..|...
+                    B:  ...|..
+                i==6:
+                    A:  .|...
+                    B:  ...|.
+                i==7:
+                    A:  |...
+                    B:  ...|
+                In fact, I'm not sure I see a reason to stop until we run out
+                of points at i==nB. However, at a very small number of
+                points, we run the risk of obtaining a low RMS out of
+                coincidence. So this sequence is accomplished with,
+                        elif i>0:
+                            if nA >= i+nB:
+                                C = B[0:nB] - A[i:i+nB]
+                            else:
+                                C = B[0:nB-i] - A[i:]
+            >   So what does this look like with nA < nB?
+                    A:  .......|...
+                    B:  ...|.........
+                At i==0 We can take C = B[:nPts] - A[:nPts], which is equivalent
+                to C = B[:nA] - A[:], so we have already truncated B from
+                the right.
+                    A:  .......|...
+                    B:  ...|.......
+                At i==1:
+                    A:  ......|...
+                    B:  ...|......
+                we truncate A from left and B from right
+                using C = B[:nA-i] - A[i:]. This pattern continues until
+                we run out of points at i==nA. So it looks like,
+                        elif i>0:
+                            C = B[:nA-i] - A[i:]
+                Combining the two cases:
+                    nA      = len(A)
+                    nB      = len(B)
+                    nPts    = min(nA,nB)
+                    if nA > nB:
+                        for i ... :
+                            if i==0:
+                                C = B[:nPts] - A[:nPts]
+                            elif i>0:
+                                if nA >= i+nB:
+                                    C = B[0:nB] - A[i:i+nB]
+                                else:
+                                    C = B[0:nB-i] - A[i:]
+                    else:
+                        for i ... :
+                            elif i>0:
+                                C = B[:nA-i] - A[i:]
+            >   Is there a better way to do this? What if I just started
+                by connecting the last sample in B to the first sample in A at
+                i==0:
+                    A:          .......|...
+                    B:  ...|.....
+                    ii:         ^
+                Wouldn't this be equivalent to a delay of d == -(nB-1)?
+                I think so; consider a small pair:
+                    A:    .|.
+                    B:  .|.
+                    ii:   ^
+                Yes: d = -2 = -(nB-1).
+                The row ii represents the samples constructing the RMS
+                vector, which would be,
+                    C = B[-1] - A[0]
+                So how to I get -1 and 0 from d == -(nB-1)? Later.
+                Continue the pattern:
+                i==1:
+                    A:         .......|...
+                    B:  ...|.....
+                    ii:        ^^
+                i==2:
+                    A:        .......|...
+                    B:  ...|.....
+                    ii:       ^^^
+                i==9:
+                    A:  .......|...
+                    B:  ...|.....
+                    ii: ^^^^^^^^^
+                i==10:
+                    A:  .......|...
+                    B:   ...|.....
+                    ii:  ^^^^^^^^^
+                i==11:
+                    A:  .......|...
+                    B:    ...|.....
+                    ii:   ^^^^^^^^^
+                i==12:
+                    A:  .......|...
+                    B:     ...|.....
+                    ii:    ^^^^^^^^
+                i==13:
+                    A:  .......|...
+                    B:      ...|.....
+                    ii:     ^^^^^^^
+                Notice, this is a delay of +4 at which we should minimize RMS.
+                i==17:
+                    A:  .......|...
+                    B:          ...|.....
+                    ii:         ^^^
+                i==19:
+                    A:  .......|...
+                    B:            ...|.....
+                    ii:           ^
+                At the end, it would represent a delay of +(nA-1).
+                Question: Did I just illustrate convolution? No.
+                                            Saturday, April 27, 2019 (8:20 AM)
+            >   Continue this thought process. How do the RMS
+                vector, which, at the beginning would be,
+                    C = B[-1] - A[0]
+                So how to I get -1 and 0 from d == -(nB-1)?
+                :   Consider a short sequence:
+                        A:      ...|.
+                        B:  ..|..
+                        ii:     ^
+                    We have nA=5, nB=5, i=0, so d = -(nB-1) = -4.
+                    From B we need element 4 (nB-1) or -1. Upon the next
+                    iteration, it will become 3 (nB-1-i) or -2 (-i-1)
+                    So this should work:
+                        C = B[-1-i] - A[i]
+                :   i==1 iteration:
+                        A:     ...|.
+                        B:  ..|..
+                        ii:    ^^
+                    Our formula for B has the beginning of the index
+                    range, but now we need to go deeper:
+                    negative indexing gives B[-1-i:-1], or
+                    positive indexing gives B[nB-1-i:nB],
+                    note: in python, a slice does NOT include the last
+                    expression. Because of this, I can't use the negative
+                    indexing because B[-1-i:-1] will not include the last
+                    element.
+                    From A I want the first 2 elements. So we have
+                        C = B[nB-1-i:nB] - A[0:i+1]
+                    where I had to add 1 to include the ith element.
+                    So create some helper code in scratch.py:
+                        import numpy as np
+                        A   = np.array([0, 0, 0, 1, 0])
+                        B   = np.array([0, 0, 1, 0, 0])
+                        nA  = len(A)
+                        nB  = len(B)
+                        i   = 1
+                        print 'B:', B[nB-1-i:nB]
+                        print 'A:', A[0:i+1]
+                        C = B[nB-1-i:nB] - A[0:i+1]
+                        print 'C:', C
+                :   i==2 iteration:
+                        A:    ...|.
+                        B:  ..|..
+                        ii:   ^^^
+                    And this formula should work for i==3 and i==4. The helper
+                    code verifies. At i==4:
+                        A:  ...|.
+                        B:  ..|..
+                        ii: ^^^^^
+                    We are out of room on the end of A.
+                :   i==5:
+                        A:  ...|.
+                        B:   ..|..
+                        ii:  ^^^^
+                    At this point, I need to truncate the end of B.
+                    That is, C = B[nB-1-i:nB] - A[0:i+1] no longer works
+                    when i >= nB. Or is it i >= nA?  Add a couple elements
+                    to A to avoid hitting both ends:
+                        A:  ...|...
+                        B:   ..|..
+                        ii:  ^^^^^
+                    I now get all of B, but A is truncated from the left
+                    when i >= nB.
+                                                Sunday, April 28, 2019 (7:47 AM)
+                    So begin A's slice:
+                        Abeg = 0 if i < nB else i-nB+1
+                    so the RMS vector becomes
+                        C = B[nB-1-i:nB] - A[Abeg:i+1]
+                    But not I have a problem with B: it's slice begins at
+                    nB-1-i, which is now -1. But we're in a region where
+                    it should be zero, so,
+                        if i < nB:
+                            Abeg = 0
+                            Bbeg = nB-1-i
+                        else:
+                            Abeg = i-nB+1
+                            Bbeg = 0
+                        C = B[Bbeg:nB] - A[Abeg:i+1]
+                    And it works at i==6 also.
+                :   i==7:
+                        A:  ...|...
+                        B:     ..|..
+                        ii:    ^^^^
+                    At this point, i==nA, we need to take A to the end but
+                    truncate B. It is triggered by reaching the end
+                    of A:
+                        if i < nA-1:
+                            Aend = i+1
+                            Bend = nB
+                        else:
+                            Aend = nA
+                            Bend = nB-(i-nA)-1
+                        C = B[Bbeg:Bend] - A[Abeg:Aend]
+                    and this works until we run hit the last point at
+                    i==10:
+                        A:  ...|...
+                        B:        ..|..
+                        ii:       ^
+                    What is this condition? I think it is
+                        i == (nA-1)+(nB-1)
+                    or, i == nA+nB-2.
+                :   Test the entire sequence.
+                    IT WORKS!!
+                :   So the range on i is
+                        for i in range( 1, nA+nB-1 ):
+                            if i < nB:
+                                Abeg = 0
+                                Bbeg = nB-1-i
+                            else:
+                                Abeg = i-nB+1
+                                Bbeg = 0
+                            if i < nA-1:
+                                Aend = i+1
+                                Bend = nB
+                            else:
+                                Aend = nA
+                                Bend = nB-(i-nA)-1
+                            C = B[Bbeg:Bend] - A[Abeg:Aend]
+                    I would never have come up with this intuitively; I had
+                    no choice but to slow down and study the problem in
+                    detail.
+            >   Create a new function, new_find_delay(), within
+                activity_tools.py, and use this technique.
+                :   Odd. I can't edit the function and see the changes.
+                    #   I found a handy tool at,
+                            https://stackoverflow.com/questions/19019720
+                                /importerror-dll-load-failed-1-is-not-a-valid
+                                -win32-application-but-the-dlls
+                        it is imp.find_module(), and it works like the
+                        PV-WAVE "which" command:
+                            >>> import imp
+                            >>> imp.find_module("new_find_delay")
+                    #   But I can't get it to work.
+                    #   Reinitialize the Python interpreter.
+                :   Try with
+                        from activity_tools import new_find_delay
+                        import numpy as np
+                        A   = np.array([0, 0, 0, 1, 0, 0, 0])
+                        B   = np.array([0, 0, 1, 0, 0])
+                        BestDelay = new_find_delay( A, B )
+                    Not the answer I want:
+                        minimum RMS is  0.0
+                        delay with minimum RMS is -3 at i == 10
+                    But this is a REAL risk if I test the very ends where
+                    only one sample is compared.
+                :   Come back to that issue later. For now try,
+                        A   = np.array([  0, 0.5, 1.0, 1.0, 0.5, 0, 0  ])
+                        B   = np.array([     0.5, 1.0, 1.0, 0.5, 0     ])
+                        BestDelay = new_find_delay( A, B )
+                    Produces:
+                        minimum RMS is  0.0
+                        delay with minimum RMS is 1 at i == 10
+                    Huh? Take this back to the helper code. It gives,
+                        B: [0.5]
+                        A: [0.]
+                        C: [0.5]
+                    The RMS of C is NOT zero!
+                        >>> np.sqrt(np.average( C**2 ))
+                        0.5
+                    Fool! delay=1 is correct. i is reported after the loop!
+                        minimum RMS is  0.0
+                        delay with minimum RMS is 1 at i == 5
+                        B: [0.5 1.  1.  0.5 0. ]
+                        A: [0.5 1.  1.  0.5 0. ]
+                        C: [0. 0. 0. 0. 0.]
+            >   Time to experiment with different vector lengths.
+                :   nA==nB:
+                        A   = np.array([  0, 0.5, 1.0, 1.0, 0.5        ])
+                        B   = np.array([     0.5, 1.0, 1.0, 0.5, 0     ])
+                    Correct.
+                          minimum RMS is  0.0
+                          delay with minimum RMS is 1 at i == 5
+                        B: [0.5 1.  1.  0.5]
+                        A: [0.5 1.  1.  0.5]
+                        C: [0. 0. 0. 0.]
+                    Notice we end up with 4 points.
+                :   nA<nB:
+                        A   = np.array([  0, 0.5, 1.0, 1.0             ])
+                        B   = np.array([     0.5, 1.0, 1.0, 0.5, 0     ])
+                    correct
+                        minimum RMS is  0.0
+                        delay with minimum RMS is 1 at i == 5
+                        B: [0.5 1.  1. ]
+                        A: [0.5 1.  1. ]
+                        C: [0. 0. 0.]
+                    Notice we end up with 3 points.
+                :   Negative delay, nA>nB:
+                        A   = np.array([       0.5, 1.0, 1.0, 0.5, 0, 0, 0  ])
+                        B   = np.array([  0.0, 0.5, 1.0, 1.0, 0.5           ])
+                    correct.
+                          minimum RMS is  0.0
+                          delay with minimum RMS is -1 at i == 3
+                        B: [0.5 1.  1.  0.5]
+                        A: [0.5 1.  1.  0.5]
+                        C: [0. 0. 0. 0.]
+                :   Negative delay, nA<nB:
+                        A   = np.array([       0.5, 1.0, 1.0, 0.5, 0        ])
+                        B   = np.array([  0.0, 0.5, 1.0, 1.0, 0.5, 0, 0     ])
+                    correct.
+                          minimum RMS is  0.0
+                          delay with minimum RMS is -1 at i == 5
+                        B: [0.5 1.  1.  0.5 0. ]
+                        A: [0.5 1.  1.  0.5 0. ]
+                        C: [0. 0. 0. 0. 0.]
+                :   Looking good.
+                    commit & push.
 
 
 https://help.github.com/articles/basic-writing-and-formatting-syntax/

@@ -359,6 +359,50 @@ def find_delay(a, b, MinDelay=0, MaxDelay=20):
     return iMin
 # end find_delay()
 
+
+def new_find_delay( A, B ):
+    '''
+    find the delay in A relative to B
+    (a positive delay means A looks like a delayed version of B)
+    For derivation, see analysis_notes.txt.
+    '''
+    from numpy import zeros, sqrt, average
+    nA  = len(A)
+    nB  = len(B)
+    FirstIter   = True
+    for i in range( 1, nA+nB-1 ):
+        d   = i - nB + 1    # delay associated with i
+        if i < nB:
+            Abeg = 0
+            Bbeg = nB-1-i
+        else:
+            Abeg = i-nB+1
+            Bbeg = 0
+        if i < nA-1:
+            Aend = i+1
+            Bend = nB
+        else:
+            Aend = nA
+            Bend = nB-(i-nA)-1
+        C = B[Bbeg:Bend] - A[Abeg:Aend]
+        rms = sqrt(average( C**2 ))
+        #print '    delay: %i, rms = %6.3f' % (i,rms)
+        if FirstIter:
+            MinRMS      = rms
+            BestIndex   = i
+            BestDelay   = d
+            FirstIter   = False
+        else:
+            if rms < MinRMS:
+                MinRMS  = rms
+                BestIndex   = i
+                BestDelay   = d
+    print '  minimum RMS is ', MinRMS
+    print '  delay with minimum RMS is %i at i == %i' % (BestDelay,BestIndex)
+    return (BestDelay,BestIndex)
+# end find_delay()
+
+
 import os
 
 def FindConfigFile(CodePath, FilePath):

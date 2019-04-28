@@ -4,6 +4,12 @@
 One signal may be sampled with a delay relative to another.
 Furthermore, the sampling may be at a different rate. So it is
 both shifted and scaled in time. I need to master the basics.
+
+Suppose Time2 is running faster than Time1
+and started earlier. It's signal will appear delayed and
+"stretched out" relative to Time1 so that its time axis would be,
+    Time2 = m*Time1 + B
+where m and B are the slope and offset, respectively.
 '''
 
 from numpy import array, zeros, arange, interp, sqrt, average

@@ -1,12 +1,53 @@
 
 # scratch.py
 
-# modify dictionary?
-def modify_dict(d):
-    d['key'] = 'modified'
-    return d
-d = {}
-print modify_dict(d)
+# experiment with new_find_delay()
+from activity_tools import new_find_delay
+import numpy as np
+A   = np.array([       0.5, 1.0, 1.0, 0.5, 0        ])
+B   = np.array([  0.0, 0.5, 1.0, 1.0, 0.5, 0, 0     ])
+BestDelay, i = new_find_delay( A, B )
+
+
+## experiment with delay detection.
+#import numpy as np
+#A   = np.array([0, 0, 0, 1, 0, 0, 0])
+#B   = np.array([0, 0, 1, 0, 0])
+nA  = len(A)
+nB  = len(B)
+#i   = 5
+if i < nB:
+    Abeg = 0
+    Bbeg = nB-1-i
+else:
+    Abeg = i-nB+1
+    Bbeg = 0
+if i < nA-1:
+    Aend = i+1
+    Bend = nB
+else:
+    Aend = nA
+    Bend = nB-(i-nA)-1
+Bslice  = B[Bbeg:Bend]
+Aslice  = A[Abeg:Aend]
+print 'B:', Bslice
+print 'A:', Aslice
+C = Bslice - Aslice
+print 'C:', C
+
+
+## find a module
+#import imp
+#imp.find_module("activity_tools")
+
+
+## modify dictionary?
+#def modify_dict(d):
+#    d['key'] = 'modified'
+#    return d
+#d = {}
+#print modify_dict(d)
+
 
 ## get the algorithm right for set_times (saddle_endurance_anls.py)
 ##seated_state    = orig_seated_state             # "begins seated and ends standing"
