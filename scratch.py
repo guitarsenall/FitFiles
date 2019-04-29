@@ -4,7 +4,11 @@
 # experiment with new_find_delay()
 from activity_tools import new_find_delay
 import numpy as np
-B       = np.random.random(5000)
+from math import pi, cos
+t   = np.arange(5000)/500.0     # 10 sec at 500 Hz
+B   = 2.00*np.cos(2*pi*2*t) \
+    + 1.00*np.cos(2*pi*5*t) \
+    + 0.50*np.cos(2*pi*9*t)
 tB      = np.arange(len(B))
 tBs     = 1.001*tB
 Bstr    = np.interp(tB, tBs, B)
@@ -12,8 +16,12 @@ A   = np.concatenate(( \
             np.random.random(1500), \
             Bstr,
             np.random.random(500) ))
-d, i    = new_find_delay( A, B,
+RetDict = new_find_delay( A, B,
                 MinRMSLength=100 )
+d   = RetDict['BestDelay']
+i   = RetDict['BestIndex']
+x2  = RetDict['A']
+x1  = RetDict['B']
 
 nA  = len(A)
 nB  = len(B)
@@ -37,8 +45,6 @@ else:
         Bbeg    = 0
         Aend    = nA+d
         Bend    = nB
-x2  = A[Abeg:Aend]
-x1  = B[Bbeg:Bend]
 
 #
 # x2 contains x1, but it is delayed and "stretched" in time.

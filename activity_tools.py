@@ -402,9 +402,36 @@ def new_find_delay( A, B, MinRMSLength=10 ):
                 MinRMS  = rms
                 BestIndex   = i
                 BestDelay   = d
-    print 'minimum RMS is ', MinRMS
-    print 'delay with minimum RMS is %i at i == %i' % (BestDelay,BestIndex)
-    return (BestDelay,BestIndex)
+    print 'new_find_delay results:'
+    print '  minimum RMS is ', MinRMS
+    print '  delay with minimum RMS is %i at i == %i' % (BestDelay,BestIndex)
+    # create the aligned slices
+    d   = BestDelay     # convenient
+    if d >= 0:
+        Abeg    = d
+        Bbeg    = 0
+        if nA-d >= nB:
+            Aend    = d+nB
+            Bend    = nB
+        else:
+            Aend    = nA
+            Bend    = nA-d
+    else:
+        if nB+d >= nA:
+            Abeg    = 0
+            Bbeg    = -d
+            Aend    = nA
+            Bend    = nB+d
+        else:
+            Abeg    = -d
+            Bbeg    = 0
+            Aend    = nA+d
+            Bend    = nB
+    RetDict = { 'BestIndex' : BestIndex,
+                'BestDelay' : BestDelay,
+                'A'         : A[Abeg:Aend],
+                'B'         : B[Bbeg:Bend]  }
+    return RetDict
 # end find_delay()
 
 

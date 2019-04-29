@@ -10,7 +10,7 @@ To do:
 
 from datetime import datetime
 from fitparse import Activity
-from activity_tools import extract_activity_signals, find_delay
+from activity_tools import extract_activity_signals, new_find_delay
 
 FilePath        = r'D:\Users\Owner\Documents\OneDrive\bike\activities\leo\\'
 EdgeFilePath    = FilePath + r'P1 - 2019-04-22-11-40-45.fit'
@@ -52,22 +52,28 @@ zwift_hr        = ZwiftSignals['heart_rate']
 zwift_t         = arange(len(zwift_hr))
 zwift_power     = ZwiftSignals['power']
 
-zwift_hr_r      = interp(edge_t, zwift_t, zwift_hr)
-HRDelay         = find_delay( edge_hr, zwift_hr_r,
-                              MinDelay=MinDelay, MaxDelay=MaxDelay )
+#zwift_hr_r      = interp(edge_t, zwift_t, zwift_hr)
+#HRDelay         = find_delay( edge_hr, zwift_hr_r,
+#                              MinDelay=MinDelay, MaxDelay=MaxDelay )
+RetDict = new_find_delay( edge_hr, zwift_hr, MinRMSLength=100 )
+HRDelay = RetDict['BestDelay']
 print 'heart rate optimum delay: ', HRDelay
 edge_cad        = EdgeSignals['cadence']
 zwift_cad       = ZwiftSignals['cadence']
-zwift_cad_r     = interp(edge_t, zwift_t, zwift_cad)
-CadenceDelay    = find_delay( edge_cad, zwift_cad_r,
-                              MinDelay=MinDelay, MaxDelay=MaxDelay )
+#zwift_cad_r     = interp(edge_t, zwift_t, zwift_cad)
+#CadenceDelay    = find_delay( edge_cad, zwift_cad_r,
+#                              MinDelay=MinDelay, MaxDelay=MaxDelay )
+RetDict = new_find_delay( edge_cad, zwift_cad, MinRMSLength=100 )
+CadenceDelay    = RetDict['BestDelay']
 print 'cadence optimum delay: ', CadenceDelay
 
 #
 #   remove delay and scaling error in heart rate
 #
-x1  = zwift_hr    # zwift_hr  zwift_cad
-x2  = edge_hr     # edge_hr   edge_cad
+x2  = RetDict['A']
+x1  = RetDict['B']
+#x1  = zwift_hr    # zwift_hr  zwift_cad
+#x2  = edge_hr     # edge_hr   edge_cad
 
 # x2 contains x1, but it is delayed and "stretched" in time.
 # determine the scale and delay using minimize()
@@ -86,7 +92,7 @@ def ScaleDelayError(ScaleNDelay):
 
 from scipy.optimize import minimize
 x0      = [1.0, 0.0]
-bnds    = ( (0.95, 1.05), (MinDelay, MaxDelay) )
+bnds    = ( (0.95, 1.05), (-10, 10) )
 res     = minimize(ScaleDelayError, x0, method='SLSQP', bounds=bnds)
 print res.message
 TimeScale   = res.x[0]

@@ -7021,10 +7021,20 @@ files from my Garmin Edge 810.
                         ii:    ^^^^
                     Here d=3, nA=7, nB=5. We take A to its end but B to
                     what? nA-nB+d = 5, which is 1 too many. But the idea
-                    is right.
-                            else:
+                    is right. Or is it? Suppose d==0 and A doesn't have enough
+                    points:
+                        A:  ..|..
+                        B:  ...|...
+                        ii: ^^^^^
+                    We would start at beginning of B, count nA
+                    forward for Bend=nA. If d==1,
+                        A:  ..|..
+                        B:   ...|...
+                        ii:  ^^^^
+                    we have to subtract 1 and end B at Bend=nA-d.
+                            if nA-delay < nB::
                                 x1  = A[d:nA]
-                                x2  = B[:nA-nB-1+d]
+                                x2  = B[:nA-d]
                 :   Then, if delay < 0. This looks like,
                         A:    .|...
                         B:  ...|.....
@@ -7111,6 +7121,86 @@ files from my Garmin Edge 810.
                 I am thinking it should say something like
                 scale = 1.001 or 0.999 and
                 delay = ±4 or maybe ±2.
+            >   I suspect the problem is that I am using a random signal
+                in which high (aliased?) frequencies are always present.
+                Suppose I used sinusoids:
+                    t   = np.arange(5000)/50.0     # Fs = 100 Hz
+                    B   = 2.0*cos(2*pi*2*t) \
+                        + 1.0*cos(2*pi*5*t) \
+                        + 0.5*cos(2*pi*9*t)
+                NOW WE'RE TALKING!
+                    minimum RMS is  0.3218240895032209
+                    delay with minimum RMS is 1501 at i == 6500
+                    Optimization terminated successfully.
+                    scale =   1.001000, delay = -1.000
+                    >>> scale
+                    1.0010000581434746
+                    >>> delay
+                    -1.0001381244067813
+                new_find_delay() is off by 1 sec because of the scaling error,
+                and this is correctly removed by ScaleDelayError(),
+                which also measures the scaling error very precisely.
+            >   I prefer the slicing and truncating code inside
+                new_find_delay(). Have it return a dictionary:
+                    RetDict = { 'BestIndex' : BestIndex,
+                                'BestDelay' : BestDelay,
+                                'A'         : A[Abeg:Aend],
+                                'B'         : B[Bbeg:Bend]
+                    return RetDict
+            >   For some reason, I am getting an odd result with scale=1.001:
+                    new_find_delay results:
+                      minimum RMS is  0.8302359353791678
+                      delay with minimum RMS is 4204 at i == 9203
+                    Optimization terminated successfully.
+                    scale =   1.001091, delay = -1.372
+                    >>> x1.size, x2.size
+                    (2796, 2796)
+                But it is correct with scale=1.0001
+                    new_find_delay results:
+                      minimum RMS is  0.19580531265055104
+                      delay with minimum RMS is 1500 at i == 6499
+                    Optimization terminated successfully.
+                    scale =   1.000100, delay = -0.000
+                    >>> x1.size, x2.size
+                    (5000, 5000)
+                Is it because the sinusoids are periodic?
+                    t   = np.arange(5000)/50.0     # 100 sec at 50 Hz
+                    B   = 2.00*np.cos(2*pi*2*t) \
+                        + 1.00*np.cos(2*pi*5*t) \
+                        + 0.50*np.cos(2*pi*9*t)
+                My slowest sinusoid is 2 Hz over 100 sec--50 periods.
+                So that could indeed be the case. Try 10 sec at 500 Hz
+                    t   = np.arange(5000)/500.0
+                which gives,
+                    new_find_delay results:
+                      minimum RMS is  0.12021196213547566
+                      delay with minimum RMS is 1502 at i == 6501
+                    Optimization terminated successfully.
+                    scale =   1.001015, delay = -2.025
+                    >>> x1.size, x2.size
+                    (5000, 5000)
+                Yes, that appeared to be the case.
+
+    *   Try the new technique on Leo's files in compare_two_powers.py.
+        -   Needs work.
+                new_find_delay results:
+                  minimum RMS is  4.649143732445139
+                  delay with minimum RMS is 2686 at i == 4955
+                heart rate optimum delay:  2686
+                new_find_delay results:
+                  minimum RMS is  4.817643784045885
+                  delay with minimum RMS is 2685 at i == 4954
+                cadence optimum delay:  2685
+                Optimization terminated successfully.
+                TimeScale = 0.99871339, ExactDelay = 1.168
+            delay is measured correctly (see line 6470).
+            Notice the TimeScale. Over 85 minutes, this can produce
+            a scaling error of
+                >>> 85*60*(1-TimeScale)
+                6.561710940822563
+            seconds!  That's a lot!
+
+
 
 
 
