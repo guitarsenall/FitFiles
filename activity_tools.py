@@ -360,17 +360,22 @@ def find_delay(a, b, MinDelay=0, MaxDelay=20):
 # end find_delay()
 
 
-def new_find_delay( A, B ):
+def new_find_delay( A, B, MinRMSLength=10 ):
     '''
     find the delay in A relative to B
     (a positive delay means A looks like a delayed version of B)
     For derivation, see analysis_notes.txt.
+    MinRMSLength is the minimum number of samples in the
+    RMS vector, C. This should be enough samples to avoid the
+    possibility of getting unlucky with a low RMS with few samples.
     '''
     from numpy import zeros, sqrt, average
     nA  = len(A)
     nB  = len(B)
     FirstIter   = True
-    for i in range( 1, nA+nB-1 ):
+    iBeg    = MinRMSLength
+    iEnd    = nA+nB-1 - MinRMSLength
+    for i in range( iBeg, iEnd ):
         d   = i - nB + 1    # delay associated with i
         if i < nB:
             Abeg = 0
@@ -397,8 +402,8 @@ def new_find_delay( A, B ):
                 MinRMS  = rms
                 BestIndex   = i
                 BestDelay   = d
-    print '  minimum RMS is ', MinRMS
-    print '  delay with minimum RMS is %i at i == %i' % (BestDelay,BestIndex)
+    print 'minimum RMS is ', MinRMS
+    print 'delay with minimum RMS is %i at i == %i' % (BestDelay,BestIndex)
     return (BestDelay,BestIndex)
 # end find_delay()
 

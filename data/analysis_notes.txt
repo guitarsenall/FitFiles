@@ -6933,6 +6933,185 @@ files from my Garmin Edge 810.
                         C: [0. 0. 0. 0. 0.]
                 :   Looking good.
                     commit & push.
+                                            Monday, April 29, 2019 (7:48 AM)
+            >   Time to test longer signals and impose a minimum number of
+                samples in the RMS vector.
+                :   Use a random number generator, np.random.random(n).
+                    Build signals A and B so they each contain the same
+                    signal:
+                        B   = np.random.random(10)
+                        A   = np.concatenate(( \
+                                    np.random.random(15), \
+                                    B,
+                                    np.random.random(5) ))
+                    In this scenario, the signal B is delayed in A
+                    by 15 samples. And the code gets it right:
+                        minimum RMS is  0.0
+                        delay with minimum RMS is 15 at i == 24
+                :   How do I expose the flaw I'm looking for? My current
+                    problem is the signals are too perfectly matched.
+                    At i==0, I could get RMS=0 but not when the delay is
+                    accurate. Suppose I just impose a minimum of 10 samples
+                    in the RMS vector. I could use,
+                        MinRMSLength    = 10
+                        iBeg    = MinRMSLength
+                        iEnd    = nA+nB-1 - MinRMSLength
+                        for i in range( iBeg, iEnd ):
+                            ...
+                    Rather, make it a keyword:
+                        def new_find_delay( A, B, MinRMSLength=10 ):
+                            iBeg    = MinRMSLength
+                            iEnd    = nA+nB-1 - MinRMSLength
+                            ...
+                    This works, and I see no reason to change it.
+        -   Now that I have my Ultimate Delay Detector, how do I make use
+            of it? The idea was to use the delay to truncate the longer
+            signal so that A and B have the same length before precise
+            detection of delay and scaling.
+            >   I need to stretch one of my signals. How? The same way
+                I detect it, of course:
+                    def ScaleDelayError(ScaleNDelay):
+                    # x1 and x2 must exist in calling namespace
+                        scale   = ScaleNDelay[0]
+                        delay   = ScaleNDelay[1]
+                        t1      = arange(len(x1))
+                        t2      = arange(len(x2))
+                        t1s     = scale*t1 + delay
+                        # resample the scaled x1 onto t2
+                        x1r     = interp(t2, t1s, x1)
+                        err     = x1r - x2
+                        RMSError    = sqrt(average( err**2 ))
+                        return RMSError
+                I can apply it to my test signals:
+                    B       = np.random.random(5000)
+                    tB      = np.arange(len(B))
+                    tBs     = 1.001*tB
+                    Bstr    = np.interp(tB, tBs, B)
+                    A   = np.concatenate(( \
+                                np.random.random(1500), \
+                                Bstr,
+                                np.random.random(500) ))
+                    BestDelay, i = new_find_delay( A, B )
+                Notice a scale of 1.001 will be worth 5 samples over
+                a length of 5000. So the signals are hardly similar after
+                1000 samples (a scaling error of 1 sample).
+                This gives,
+                    minimum RMS is  0.2897793966235787
+                    delay with minimum RMS is -4979 at i == 20
+                So 10 samples for MinRMSLength is not enough now that a
+                scaling error exists. Try,
+                    BestDelay, i = new_find_delay( A, B, MinRMSLength=100 )
+                this gives,
+                    minimum RMS is  0.3207116581582775
+                    delay with minimum RMS is 1503 at i == 6502
+                which is rougly correct consider the scaling error of 5 samples.
+                It seems to have split the difference.
+            >   How do I truncate?
+                :   If delay>=0, then A gets truncated from the left:
+                        x1  = A[delay:]
+                    But there is the right side to deal with.
+                        if delay >= 0:
+                            if nA-delay >= nB:
+                                x1  = A[d:d+nB]
+                                x2  = B[0:nB]
+                    But what if A doesn't have enough points? Consider
+                    example:
+                        A:  ...|...
+                        B:     ..|..
+                        ii:    ^^^^
+                    Here d=3, nA=7, nB=5. We take A to its end but B to
+                    what? nA-nB+d = 5, which is 1 too many. But the idea
+                    is right.
+                            else:
+                                x1  = A[d:nA]
+                                x2  = B[:nA-nB-1+d]
+                :   Then, if delay < 0. This looks like,
+                        A:    .|...
+                        B:  ...|.....
+                        ii:   ^^^^^
+                    Here d=-2, nA=5, nB=9. In this case, B plays the role
+                    of A when d>=0. So take A to its end if nB+d>=nA,
+                    and take B to nB+d.
+                        if d < 0:
+                            if nB+d >= nA:
+                                x1  = A[0:nA]
+                                x2  = B[-d:nB+d]
+                    But if nB+d < nA:
+                        A:    .|.....
+                        B:  ...|...
+                        ii:   ^^^^^
+                            else:
+                                x1  = A[-d:nA+d]
+                                x2  = B[0:nB]
+                :   So the entire truncation looks like this:
+                        if delay >= 0:
+                            if nA-delay >= nB:
+                                x1  = A[d:d+nB]
+                                x2  = B[0:nB]
+                            else:
+                                x1  = A[d:nA]
+                                x2  = B[:nA-nB-1+d]
+                        if d < 0:
+                            if nB+d >= nA:
+                                x1  = A[0:nA]
+                                x2  = B[-d:nB+d]
+                            else:
+                                x1  = A[-d:nA+d]
+                                x2  = B[0:nB]
+                    Or, collect and rephrase:
+                        if delay >= 0:
+                            Abeg    = d
+                            Bbeg    = 0
+                            if nA-delay >= nB:
+                                Aend    = d+nB
+                                Bend    = nB
+                            else:
+                                Aend    = nA
+                                Bend    = nA-nB-1+d
+                        else:
+                            if nB+d >= nA:
+                                Abeg    = 0
+                                Bbeg    = -d
+                                Aend    = nA
+                                Bend    = nB+d
+                            else:
+                                Abeg    = -d
+                                Bbeg    = 0
+                                Aend    = nA+d
+                                Bend    = nB
+                        x1  = A[Abeg:Aend]
+                        x2  = B[Bbeg:Bend]
+            >   Add in the ScaleDelayError (copy from time_scaling.py).
+                Test with
+                    B       = np.random.random(5000)
+                    tB      = np.arange(len(B))
+                    tBs     = 1.001*tB
+                    Bstr    = np.interp(tB, tBs, B)
+                    A   = np.concatenate(( \
+                                np.random.random(1500), \
+                                Bstr,
+                                np.random.random(500) ))
+                    d, i    = new_find_delay( A, B,
+                                    MinRMSLength=100 )
+                Results are suspect:
+                    minimum RMS is  0.32364771299043504
+                    delay with minimum RMS is 1504 at i == 6503
+                    Optimization terminated successfully.
+                    scale =   0.999977, delay =  0.506
+                    >>> res
+                         fun: 0.26590448478251355
+                         jac: array([1.03874070e+00, 3.28190625e-04])
+                     message: 'Optimization terminated successfully.'
+                        nfev: 50
+                         nit: 9
+                        njev: 9
+                      status: 0
+                     success: True
+                           x: array([0.99997693, 0.50640552])
+                I am thinking it should say something like
+                scale = 1.001 or 0.999 and
+                delay = ±4 or maybe ±2.
+
 
 
 https://help.github.com/articles/basic-writing-and-formatting-syntax/

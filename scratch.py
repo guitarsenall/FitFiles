@@ -4,36 +4,94 @@
 # experiment with new_find_delay()
 from activity_tools import new_find_delay
 import numpy as np
-A   = np.array([       0.5, 1.0, 1.0, 0.5, 0        ])
-B   = np.array([  0.0, 0.5, 1.0, 1.0, 0.5, 0, 0     ])
-BestDelay, i = new_find_delay( A, B )
+B       = np.random.random(5000)
+tB      = np.arange(len(B))
+tBs     = 1.001*tB
+Bstr    = np.interp(tB, tBs, B)
+A   = np.concatenate(( \
+            np.random.random(1500), \
+            Bstr,
+            np.random.random(500) ))
+d, i    = new_find_delay( A, B,
+                MinRMSLength=100 )
 
-
-## experiment with delay detection.
-#import numpy as np
-#A   = np.array([0, 0, 0, 1, 0, 0, 0])
-#B   = np.array([0, 0, 1, 0, 0])
 nA  = len(A)
 nB  = len(B)
-#i   = 5
-if i < nB:
-    Abeg = 0
-    Bbeg = nB-1-i
+if d >= 0:
+    Abeg    = d
+    Bbeg    = 0
+    if nA-d >= nB:
+        Aend    = d+nB
+        Bend    = nB
+    else:
+        Aend    = nA
+        Bend    = nA-nB-1+d
 else:
-    Abeg = i-nB+1
-    Bbeg = 0
-if i < nA-1:
-    Aend = i+1
-    Bend = nB
-else:
-    Aend = nA
-    Bend = nB-(i-nA)-1
-Bslice  = B[Bbeg:Bend]
-Aslice  = A[Abeg:Aend]
-print 'B:', Bslice
-print 'A:', Aslice
-C = Bslice - Aslice
-print 'C:', C
+    if nB+d >= nA:
+        Abeg    = 0
+        Bbeg    = -d
+        Aend    = nA
+        Bend    = nB+d
+    else:
+        Abeg    = -d
+        Bbeg    = 0
+        Aend    = nA+d
+        Bend    = nB
+x2  = A[Abeg:Aend]
+x1  = B[Bbeg:Bend]
+
+#
+# x2 contains x1, but it is delayed and "stretched" in time.
+# determine the scale and delay using minimize()
+#
+def ScaleDelayError(ScaleNDelay):
+# x1 and x2 must exist in calling namespace
+    scale   = ScaleNDelay[0]
+    delay   = ScaleNDelay[1]
+    t1      = np.arange(len(x1))
+    t2      = np.arange(len(x2))
+    t1s     = scale*t1 + delay
+    # resample the scaled x1 onto t2
+    x1r     = np.interp(t2, t1s, x1)
+    err     = x1r - x2
+    RMSError    = np.sqrt(np.average( err**2 ))
+    return RMSError
+
+from scipy.optimize import minimize
+x0  = [1.0, 0]
+bnds = ( (0.8, 1.4), (-10, 10) )
+res = minimize(ScaleDelayError, x0, method='SLSQP', bounds=bnds)
+print res.message
+scale   = res.x[0]
+delay   = res.x[1]
+print 'scale = %10.6f, delay = %6.3f' % (scale, delay)
+
+
+### experiment with delay detection.
+##import numpy as np
+##A   = np.array([0, 0, 0, 1, 0, 0, 0])
+##B   = np.array([0, 0, 1, 0, 0])
+#nA  = len(A)
+#nB  = len(B)
+##i   = 5
+#if i < nB:
+#    Abeg = 0
+#    Bbeg = nB-1-i
+#else:
+#    Abeg = i-nB+1
+#    Bbeg = 0
+#if i < nA-1:
+#    Aend = i+1
+#    Bend = nB
+#else:
+#    Aend = nA
+#    Bend = nB-(i-nA)-1
+#Bslice  = B[Bbeg:Bend]
+#Aslice  = A[Abeg:Aend]
+#C = Bslice - Aslice
+##print 'B:', Bslice
+##print 'A:', Aslice
+##print 'C:', C
 
 
 ## find a module
