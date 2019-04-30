@@ -429,10 +429,14 @@ def new_find_delay( A, B, MinRMSLength=10 ):
             Bend    = nB
     RetDict = { 'BestIndex' : BestIndex,
                 'BestDelay' : BestDelay,
+                'Abeg'      : Abeg,
+                'Bbeg'      : Bbeg,
+                'Aend'      : Aend,
+                'Bend'      : Bend,
                 'A'         : A[Abeg:Aend],
                 'B'         : B[Bbeg:Bend]  }
     return RetDict
-# end find_delay()
+# end new_find_delay()
 
 
 import os

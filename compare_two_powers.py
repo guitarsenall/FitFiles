@@ -8,11 +8,13 @@ To do:
 
 '''
 
+import numpy as np
 from datetime import datetime
 from fitparse import Activity
 from activity_tools import extract_activity_signals, new_find_delay
 
 FilePath        = r'D:\Users\Owner\Documents\OneDrive\bike\activities\leo\\'
+#FilePath        = r'S:\will\documents\OneDrive\bike\activities\leo\\'
 EdgeFilePath    = FilePath + r'P1 - 2019-04-22-11-40-45.fit'
 ZwiftFilePath   = FilePath + r'Infocrank (Zwift) 2019-04-22-10-30-09.fit'
 
@@ -42,7 +44,7 @@ SignalsFile = open( 'signals.pkl', 'wb')
 pickle.dump(SignalMap, SignalsFile)
 SignalsFile.close()
 
-from pylab import plt, arange, interp, array, zeros, sqrt, average
+from pylab import arange, interp, array, zeros, sqrt, average
 #from numpy import array, zeros, arange, interp, sqrt, average
 # plot heart rate and calories
 edge_hr         = EdgeSignals['heart_rate']
@@ -67,11 +69,22 @@ RetDict = new_find_delay( edge_cad, zwift_cad, MinRMSLength=100 )
 CadenceDelay    = RetDict['BestDelay']
 print 'cadence optimum delay: ', CadenceDelay
 
+Ebeg = RetDict['Abeg']
+Zbeg = RetDict['Bbeg']
+Eend = RetDict['Aend']
+Zend = RetDict['Bend']
+
 #
 #   remove delay and scaling error in heart rate
 #
-x2  = RetDict['A']
-x1  = RetDict['B']
+x2  = np.concatenate((
+        RetDict['A'][0:745],
+        RetDict['A'][805:2235]  ))  # remove dropouts
+x1  = np.concatenate((
+        RetDict['B'][0:745],
+        RetDict['B'][805:2235]  ))  # remove dropouts
+#x2  = RetDict['A'][745:805]      # edge_cad
+#x1  = RetDict['B'][745:805]      # zwift_cad
 #x1  = zwift_hr    # zwift_hr  zwift_cad
 #x2  = edge_hr     # edge_hr   edge_cad
 
@@ -99,6 +112,16 @@ TimeScale   = res.x[0]
 ExactDelay  = res.x[1]
 print 'TimeScale = %10.8f, ExactDelay = %5.3f' % (TimeScale, ExactDelay)
 
+# Resample the zwift data
+base_t          = arange(len(RetDict['A']))
+zwift_t_s       = TimeScale*base_t + ExactDelay
+zwift_cad_r     = interp(base_t, zwift_t_s, zwift_cad)
+zwift_power_r   = interp(base_t, zwift_t_s, zwift_power)
+zwift_hr_r      = interp(base_t, zwift_t_s, zwift_hr )
+# shift the resampled zwift data:
+# zwift_t_r       = base_t + Abeg
+
+'''
 ## determine indices into edge_t for overlapping region
 #iBeg    = int(ExactDelay)
 #iEnd    = iBeg + len()
@@ -125,24 +148,77 @@ print 'scale = %5.3f, Kickr Delay = %5.1f' % (res.x[0], res.x[1])
 # so zwift_power_r_r can be cross-plotted against edge_power.
 zwift_t_s_s     = res.x[0]*edge_t + res.x[1]
 zwift_power_r_r = interp(edge_t, zwift_t_s_s, zwift_power_r)
-
 '''
-from scipy.optimize import minimize
-zwift_power_r   = interp(edge_t, zwift_t, zwift_power)
-def ScaleOffsetError(m, B):
-    x2_r    = interp( x1_t, x2_t, x2 )
-    c   = x1 - x2_r     # ( m*x2 + B )
-    RMSError    = sqrt(average( c**2 ))
-    return RMSError
-PowerDelay = find_delay( edge_power, zwift_power_r, MinDelay=-20, MaxDelay=20 )
-print 'power optimum delay: ', PowerDelay
-'''
-
 
 #
 #   plots
 #
+import matplotlib.pyplot as plt
 
+# overplot the data shifted by the delay (no resampling).
+import matplotlib.dates as md
+from matplotlib.dates import date2num, DateFormatter
+import datetime as dt
+base = dt.datetime(2014, 1, 1, 0, 0, 0)
+if CadenceDelay > 0:
+    time_signal = edge_t
+    x_edge  = [ base + dt.timedelta(seconds=t)          \
+                for t in time_signal.astype('float')    ]
+    x_zwift = x_edge[Ebeg:Eend]
+else:
+    time_signal = zwift_t
+    x_zwift = [ base + dt.timedelta(seconds=t)          \
+                for t in time_signal.astype('float')    ]
+    x_edge  = x_zwift[Zbeg:Zend]
+x_edge  = date2num(x_edge ) # Convert to matplotlib format
+x_zwift = date2num(x_zwift) # Convert to matplotlib format
+fig1, (ax0, ax1, ax2) = plt.subplots(nrows=3, sharex=True)
+ax0.plot_date( x_edge,   edge_cad, 'r-', linewidth=1 );
+ax0.plot_date( x_zwift, zwift_cad, 'b-', linewidth=1 );
+ax0.grid(True)
+ax0.legend( ['Edge', 'Zwift' ], loc='upper left');
+ax0.set_ylabel('cadence, RPM')
+ax1.plot_date( x_edge,    edge_hr, 'r-', linewidth=1 );
+ax1.plot_date( x_zwift,  zwift_hr, 'b-', linewidth=1 );
+ax1.grid(True)
+ax1.legend( ['Edge', 'Zwift' ], loc='upper left');
+ax1.set_ylabel('heart rate, BPM')
+ax2.plot_date( x_edge,    edge_power, 'r-', linewidth=1 );
+ax2.plot_date( x_zwift,  zwift_power, 'b-', linewidth=1 );
+ax2.grid(True)
+ax2.legend( ['Edge', 'Zwift' ], loc='upper left');
+ax2.set_ylabel('power, watts')
+ax2.xaxis.set_major_formatter(DateFormatter('%H:%M:%S'))
+fig1.tight_layout()
+fig1.subplots_adjust(hspace=0)   # Remove horizontal space between axes
+fig1.suptitle('Raw data with delay applied', fontsize=20)
+plt.show()
+
+# plot resampled zwift data
+fig2, (ax0, ax1, ax2) = plt.subplots(nrows=3, sharex=True)
+ax0.plot_date( x_edge,   edge_cad,   'r-', linewidth=1 );
+ax0.plot_date( x_zwift, zwift_cad_r, 'b-', linewidth=1 );
+ax0.grid(True)
+ax0.legend( ['Edge', 'Zwift' ], loc='upper left');
+ax0.set_ylabel('cadence, RPM')
+ax1.plot_date( x_edge,    edge_hr,   'r-', linewidth=1 );
+ax1.plot_date( x_zwift,  zwift_hr_r, 'b-', linewidth=1 );
+ax1.grid(True)
+ax1.legend( ['Edge', 'Zwift' ], loc='upper left');
+ax1.set_ylabel('heart rate, BPM')
+ax2.plot_date( x_edge,    edge_power,   'r-', linewidth=1 );
+ax2.plot_date( x_zwift,  zwift_power_r, 'b-', linewidth=1 );
+ax2.grid(True)
+ax2.legend( ['Edge', 'Zwift' ], loc='upper left');
+ax2.set_ylabel('power, watts')
+ax2.xaxis.set_major_formatter(DateFormatter('%H:%M:%S'))
+fig2.tight_layout()
+fig2.subplots_adjust(hspace=0)   # Remove horizontal space between axes
+fig2.suptitle('Resampled data with TimeScale and ExactDelay applied', fontsize=20)
+plt.show()
+
+'''
+plt.figure()
 AxTop = plt.subplot(211)    #2, 1, 1
 plt.plot(edge_t/60.0, edge_hr, 'r')
 plt.plot(edge_t/60.0, zwift_hr_r, 'b')
@@ -191,3 +267,4 @@ y_fit   = slope*x + offset
 color   = average(edge_t[ii]) * ones(len(edge_t[ii]))
 plt.plot( x, y_fit, 'k-' )
 plt.show()
+'''

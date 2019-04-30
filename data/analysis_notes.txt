@@ -7199,8 +7199,151 @@ files from my Garmin Edge 810.
                 >>> 85*60*(1-TimeScale)
                 6.561710940822563
             seconds!  That's a lot!
-
-
+                                            Tuesday, April 30, 2019 (5:22 AM)
+        -   I managed to get a time plot of cadence, HR, and power with
+            the time axes aligned accounting for the delay. Over the
+            shorter time period, the scaling error should be
+                >>> (Zend-Zbeg)*(1-TimeScale)
+                2.9206046736602387
+            That is, I should see the delay shift by 3 seconds. Which way?
+            ScaleDelayError() is set up with
+                x2  = RetDict['A']  = edge_cad
+                x1  = RetDict['B']  = zwift_cad
+            then applies
+                t1s     = scale*t1 + delay
+            That is,
+                x2 (edge) contains x1 (Zwift), but it is delayed and
+                "stretched" in time.
+            When TimeScale > 1, the signal in x1 (Zwift) appears stretched
+            in x2 (edge).
+                see time_scaling_c.png
+            Since TimeScale < 1, the signal in zwift should appear
+            in edge but "shrunk." Thus, the Zwift signal should appear
+            stretched relative to edge, so it should lag the edge signal
+            more and more as it progresses in time.
+            At the beginning of the data, the Edge data appears to lag
+            the Zwift data by ~1 sample:
+                leo_power_compare_e.png
+            However, this appears to still be the case at the end:
+                leo_power_compare_f.png
+            So is TimeScale = 0.99871 wrong?
+                executing Wills version of profile.def
+                new_find_delay results:
+                  minimum RMS is  4.649143732445139
+                  delay with minimum RMS is 2686 at i == 4955
+                heart rate optimum delay:  2686
+                new_find_delay results:
+                  minimum RMS is  4.817643784045885
+                  delay with minimum RMS is 2685 at i == 4954
+                cadence optimum delay:  2685
+                Optimization terminated successfully.
+                TimeScale = 0.99871339, ExactDelay = 1.168
+                >>> res
+                     fun: 4.541799199214143
+                     jac: array([1.07221365e-01, 5.76376915e-05])
+                 message: 'Optimization terminated successfully.'
+                    nfev: 48
+                     nit: 10
+                    njev: 10
+                  status: 0
+                 success: True
+                       x: array([0.99871339, 1.16789528])
+            I think res.jac is the Jacobian of the system which measures
+            the slope of the output relative to the input. Try this:
+                >>> ScaleDelayError([0.99871339, 1.16789528])
+                4.541799199213741
+                >>> ScaleDelayError([1.0, 1.16789528])
+                5.795954192960819
+                >>> ScaleDelayError([1.0, 1.0])
+                5.787918451395113
+                >>> ScaleDelayError([1.0, 0.0])
+                4.817643784045885
+            Well, 4.82 is not much more than 4.54, but [0.9987, 1.168] is
+            still a better solution than [1, 0].
+        -   I need to recreate the same plot after time scaling and delay
+            is applied through resampling. How do I get there?
+            >   The Zwift data gets resampled onto the Edge timeline,
+                which starts at Abeg. However, before shifting to Abeg,
+                it is resampled via something like this:
+                    zwift_t_s       = TimeScale*zwift_t + ExactDelay
+                    zwift_cad_r     = interp(edge_t, zwift_t_s, zwift_power)
+                    zwift_power_r   = interp(edge_t, zwift_t_s, zwift_power)
+                    zwift_hr_r      = interp(edge_t, zwift_t_s, zwift_hr )
+                But edge_t is the entire edge time signal. Use a
+                "base timeline":
+                    base_t          = arange(len(x1))
+                    zwift_t_s       = TimeScale*base_t + ExactDelay
+                    zwift_cad_r     = interp(base_t, zwift_t_s, zwift_cad)
+                    zwift_power_r   = interp(base_t, zwift_t_s, zwift_power)
+                    zwift_hr_r      = interp(base_t, zwift_t_s, zwift_hr )
+                Then I need to shift the resampled zwift data:
+                    zwift_t_r       = base_t + Abeg
+            >   At the beginning, the alignment looks accurate:
+                    leo_power_compare_g.png
+                But at the end,
+                    leo_power_compare_h.png
+                The edge data lags--perhaps even more. I think I need to
+                review the basics some more.
+                If the Edge (x2) clock runs 10% fast, it counts 11 samples
+                within 10 seconds, so a 10-second pulse will appear to be
+                11 seconds wide: It appears "stretched." The Zwift (x1),
+                sampling it "correctly" will show the same pulse as being only
+                10 seconds wide. So the Zwift (x1) signal appears in the
+                Edge (x2) signal as "stretched." So my discussion above (line
+                7219) is correct.
+                But what does the code do?
+                    base_t          = arange(len(x1))
+                    zwift_t_s       = TimeScale*base_t + ExactDelay
+                Suppose TimeScale = 1.1 with no delay:
+                    base_t      = [ 0,   1,   2...8,     9, 10]
+                    zwift_t_s   = [ 0, 1.1, 2.2...8.8, 9.9, 11]
+                Then resampling:
+                    zwift_cad_r     = interp(base_t, zwift_t_s, zwift_cad)
+                The cadence at base_t==10 is taken to occur at 11 and
+                assigned that way; that is, a 10-sec pulse in zwift_cad
+                becomes 11-sec wide when resampled to the edge; it
+                gets stretched. Likewise, if TimeScale<1, the zwift pulse
+                will get shrunk when resampled to the edge. And, if it gets
+                shrunk, the zwift waveform should progressively lead the
+                edge waveform as time progresses (left to right). That
+                means the edge will lag, as we see here.
+                Are we clear on that now, William?
+            >   I begin to suspect some data in the middle of the segment:
+                    leo_power_compare_i.png
+                The dropouts in the cadence behave differently in the two
+                systems. Errors in this region will be very large numbers
+                and could dominate the RMS calculation.
+                :   Perhaps I can remove this region. Plot Vs time.
+                    Remove 3430:3490. But subtract the delay of 2685:
+                        >>> [ x-2685 for x in [3430, 3490]]
+                        [745, 805]
+                    So remove these samples:
+                        x2  = RetDict['A'][745:805]  # edge_cad
+                        x1  = RetDict['B'][745:805]  # zwift_cad
+                    No, that is how I USE them. Also, limit to
+                    4920-2685=2235 at the end for same reasons.
+                        x2  = np.concatenate((
+                                RetDict['A'][0:745],
+                                RetDict['A'][805:2235]  ))
+                        x1  = np.concatenate((
+                                RetDict['B'][0:745],
+                                RetDict['B'][805:2235]  ))
+                :   New results:
+                        new_find_delay results:
+                          minimum RMS is  4.649143732445139
+                          delay with minimum RMS is 2686 at i == 4955
+                        heart rate optimum delay:  2686
+                        new_find_delay results:
+                          minimum RMS is  4.817643784045885
+                          delay with minimum RMS is 2685 at i == 4954
+                        cadence optimum delay:  2685
+                        Optimization terminated successfully.
+                        TimeScale = 1.00005166, ExactDelay = 0.421
+                    TimeScale is MUCH closer to 1! Inspect the plot of
+                    resampled data. Leading and lagging is now balanced
+                    and small.
+            >   I can now proceed to cross-plotting the powers and
+                linear regression.
 
 
 

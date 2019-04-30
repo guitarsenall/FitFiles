@@ -1,76 +1,91 @@
 
 # scratch.py
 
-# experiment with new_find_delay()
-from activity_tools import new_find_delay
-import numpy as np
-from math import pi, cos
-t   = np.arange(5000)/500.0     # 10 sec at 500 Hz
-B   = 2.00*np.cos(2*pi*2*t) \
-    + 1.00*np.cos(2*pi*5*t) \
-    + 0.50*np.cos(2*pi*9*t)
-tB      = np.arange(len(B))
-tBs     = 1.001*tB
-Bstr    = np.interp(tB, tBs, B)
-A   = np.concatenate(( \
-            np.random.random(1500), \
-            Bstr,
-            np.random.random(500) ))
-RetDict = new_find_delay( A, B,
-                MinRMSLength=100 )
-d   = RetDict['BestDelay']
-i   = RetDict['BestIndex']
-x2  = RetDict['A']
-x1  = RetDict['B']
 
-nA  = len(A)
-nB  = len(B)
-if d >= 0:
-    Abeg    = d
-    Bbeg    = 0
-    if nA-d >= nB:
-        Aend    = d+nB
-        Bend    = nB
-    else:
-        Aend    = nA
-        Bend    = nA-nB-1+d
+# overplot the cadences that established the delay and TimeScaling.
+import matplotlib.pyplot as plt
+import matplotlib.dates as md
+from matplotlib.dates import date2num, DateFormatter
+import datetime as dt
+base = dt.datetime(2014, 1, 1, 0, 0, 0)
+if CadenceDelay > 0:
+    time_signal = edge_t
+    x_edge  = [ base + dt.timedelta(seconds=t)          \
+                for t in time_signal.astype('float')    ]
+    x_zwift = x_edge[Ebeg:Eend]
 else:
-    if nB+d >= nA:
-        Abeg    = 0
-        Bbeg    = -d
-        Aend    = nA
-        Bend    = nB+d
-    else:
-        Abeg    = -d
-        Bbeg    = 0
-        Aend    = nA+d
-        Bend    = nB
+    time_signal = zwift_t
+    x_zwift = [ base + dt.timedelta(seconds=t)          \
+                for t in time_signal.astype('float')    ]
+    x_edge  = x_zwift[Zbeg:Zend]
+x_edge  = date2num(x_edge ) # Convert to matplotlib format
+x_zwift = date2num(x_zwift) # Convert to matplotlib format
+fig1, (ax0, ax1, ax2) = plt.subplots(nrows=3, sharex=True)
+ax0.plot( time_signal,              edge_cad, 'r-', linewidth=1 );
+ax0.plot( time_signal[Ebeg:Eend],  zwift_cad, 'b-', linewidth=1 );
+ax0.grid(True)
+ax0.legend( ['Edge', 'Zwift' ], loc='upper left');
+ax0.set_ylabel('cadence, RPM')
+ax1.plot( time_signal,              edge_hr, 'r-', linewidth=1 );
+ax1.plot( time_signal[Ebeg:Eend],  zwift_hr, 'b-', linewidth=1 );
+ax1.grid(True)
+ax1.legend( ['Edge', 'Zwift' ], loc='upper left');
+ax1.set_ylabel('heart rate, BPM')
+ax2.plot( time_signal,              edge_power, 'r-', linewidth=1 );
+ax2.plot( time_signal[Ebeg:Eend],  zwift_power, 'b-', linewidth=1 );
+ax2.grid(True)
+ax2.legend( ['Edge', 'Zwift' ], loc='upper left');
+ax2.set_ylabel('power, watts')
+fig1.tight_layout()
+fig1.subplots_adjust(hspace=0)   # Remove horizontal space between axes
+fig1.suptitle('Raw data with delay applied', fontsize=20)
+plt.show()
 
-#
-# x2 contains x1, but it is delayed and "stretched" in time.
-# determine the scale and delay using minimize()
-#
-def ScaleDelayError(ScaleNDelay):
-# x1 and x2 must exist in calling namespace
-    scale   = ScaleNDelay[0]
-    delay   = ScaleNDelay[1]
-    t1      = np.arange(len(x1))
-    t2      = np.arange(len(x2))
-    t1s     = scale*t1 + delay
-    # resample the scaled x1 onto t2
-    x1r     = np.interp(t2, t1s, x1)
-    err     = x1r - x2
-    RMSError    = np.sqrt(np.average( err**2 ))
-    return RMSError
 
-from scipy.optimize import minimize
-x0  = [1.0, 0]
-bnds = ( (0.8, 1.4), (-10, 10) )
-res = minimize(ScaleDelayError, x0, method='SLSQP', bounds=bnds)
-print res.message
-scale   = res.x[0]
-delay   = res.x[1]
-print 'scale = %10.6f, delay = %6.3f' % (scale, delay)
+## experiment with new_find_delay()
+#from activity_tools import new_find_delay
+#import numpy as np
+#from math import pi, cos
+#t   = np.arange(5000)/500.0     # 10 sec at 500 Hz
+#B   = 2.00*np.cos(2*pi*2*t) \
+#    + 1.00*np.cos(2*pi*5*t) \
+#    + 0.50*np.cos(2*pi*9*t)
+#tB      = np.arange(len(B))
+#tBs     = 1.001*tB
+#Bstr    = np.interp(tB, tBs, B)
+#A   = np.concatenate(( \
+#            np.random.random(1500), \
+#            Bstr,
+#            np.random.random(500) ))
+#RetDict = new_find_delay( A, B,
+#                MinRMSLength=100 )
+#d   = RetDict['BestDelay']
+#i   = RetDict['BestIndex']
+#x2  = RetDict['A']
+#x1  = RetDict['B']
+#
+#nA  = len(A)
+#nB  = len(B)
+#if d >= 0:
+#    Abeg    = d
+#    Bbeg    = 0
+#    if nA-d >= nB:
+#        Aend    = d+nB
+#        Bend    = nB
+#    else:
+#        Aend    = nA
+#        Bend    = nA-nB-1+d
+#else:
+#    if nB+d >= nA:
+#        Abeg    = 0
+#        Bbeg    = -d
+#        Aend    = nA
+#        Bend    = nB+d
+#    else:
+#        Abeg    = -d
+#        Bbeg    = 0
+#        Aend    = nA+d
+#        Bend    = nB
 
 
 ### experiment with delay detection.
