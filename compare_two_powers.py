@@ -83,8 +83,8 @@ x2  = np.concatenate((
 x1  = np.concatenate((
         RetDict['B'][0:745],
         RetDict['B'][805:2235]  ))  # remove dropouts
-#x2  = RetDict['A'][745:805]      # edge_cad
-#x1  = RetDict['B'][745:805]      # zwift_cad
+#x2  = RetDict['A']                 # edge_cad
+#x1  = RetDict['B']                 # zwift_cad
 #x1  = zwift_hr    # zwift_hr  zwift_cad
 #x2  = edge_hr     # edge_hr   edge_cad
 
@@ -116,39 +116,30 @@ print 'TimeScale = %10.8f, ExactDelay = %5.3f' % (TimeScale, ExactDelay)
 base_t          = arange(len(RetDict['A']))
 zwift_t_s       = TimeScale*base_t + ExactDelay
 zwift_cad_r     = interp(base_t, zwift_t_s, zwift_cad)
-zwift_power_r   = interp(base_t, zwift_t_s, zwift_power)
 zwift_hr_r      = interp(base_t, zwift_t_s, zwift_hr )
-# shift the resampled zwift data:
-# zwift_t_r       = base_t + Abeg
+zwift_power_r   = interp(base_t, zwift_t_s, zwift_power)
 
-'''
-## determine indices into edge_t for overlapping region
-#iBeg    = int(ExactDelay)
-#iEnd    = iBeg + len()
-
-# resample zwift signals onto edge timeline
-# using inferred delay and scaling error
-zwift_t_s       = TimeScale*zwift_t + ExactDelay
-zwift_power_r   = interp(edge_t, zwift_t_s, zwift_power)
-zwift_hr_r      = interp(edge_t, zwift_t_s, zwift_hr )
 
 #Measure the delay (and theoretically zero scaling error)
-#between the edge (Kickr) and resampled Zwift (PowerTap)
-#power meter signals. I think the PowerTap is delayed
+#between the edge and resampled Zwift
+#power meter signals.
 #in the Kickr, so
 x1  = zwift_power_r
-x2  = edge_power
-x0  = [1.0, 1.0]
+x2  = edge_power_x  = edge_power[Ebeg:Eend]
+x0  = [1.0, 0.0]
 bnds = ( (0.95, 1.05), (-3, 3) )
 res = minimize(ScaleDelayError, x0, method='SLSQP', bounds=bnds)
+PMTimeScale   = res.x[0]
+PMExactDelay  = res.x[1]
 print res.message
-print 'scale = %5.3f, Kickr Delay = %5.1f' % (res.x[0], res.x[1])
+print 'scale = %10.6f, Zwift PM Delay = %6.3f' % (res.x[0], res.x[1])
 
 # resample the resampled zwift_power to eliminate its delay
-# so zwift_power_r_r can be cross-plotted against edge_power.
-zwift_t_s_s     = res.x[0]*edge_t + res.x[1]
-zwift_power_r_r = interp(edge_t, zwift_t_s_s, zwift_power_r)
-'''
+# so zwift_power_r_r can be cross-plotted against
+# edge_power_x.
+zwift_t_s_s     = PMTimeScale*base_t + PMExactDelay
+zwift_power_r_r = interp(base_t, zwift_t_s_s, zwift_power_r)
+
 
 #
 #   plots
@@ -217,29 +208,11 @@ fig2.subplots_adjust(hspace=0)   # Remove horizontal space between axes
 fig2.suptitle('Resampled data with TimeScale and ExactDelay applied', fontsize=20)
 plt.show()
 
-'''
-plt.figure()
-AxTop = plt.subplot(211)    #2, 1, 1
-plt.plot(edge_t/60.0, edge_hr, 'r')
-plt.plot(edge_t/60.0, zwift_hr_r, 'b')
-plt.legend(['PowerTap P1', 'Zwift'], loc='best')
-plt.title('P1 and Zwift Heart Rate and Power')
-plt.ylabel('BPM')
-
-# sharex causes the X-limits to be the same in both plots
-AxBot = plt.subplot(212, sharex=AxTop)
-#plt.axes(sharex=AxTop)
-plt.plot(edge_t/60.0, edge_power, 'r')
-plt.plot(edge_t/60.0, zwift_power_r, 'b')
-plt.legend(['PowerTap P1', 'Zwift'])
-plt.xlabel('time (min)')
-plt.ylabel('power (w)')
-plt.show()
 
 # cross-plot powers
 # resample zwift power onto edge
 CrossPlotFig    = plt.figure()
-sc = plt.scatter(edge_power, zwift_power_r_r, s=5, c=edge_t, \
+sc = plt.scatter(edge_power_x, zwift_power_r_r, s=5, c=base_t, \
             cmap=plt.get_cmap('brg'), edgecolors='face' )
 plt.colorbar(orientation='horizontal')
 plt.title('Infocrank Vs PowerTap P1 Over Time (sec)\n(delay removed)')
@@ -254,10 +227,10 @@ plt.show()
 #   linear regression
 #
 from pylab import polyfit, average, ones, where, logical_and, nonzero
-ii      = nonzero( logical_and( edge_t>2,      \
-                   logical_and(edge_power>1,   \
-                               edge_power<400) ))
-x       = edge_power[ii]
+ii      = nonzero( logical_and( base_t>=0,      \
+                   logical_and(edge_power_x>50,   \
+                               edge_power_x<1000) ))
+x       = edge_power_x[ii]
 y       = zwift_power_r_r[ii]
 coef    = polyfit( x, y, deg=1 )
 slope   = coef[0]
@@ -267,4 +240,3 @@ y_fit   = slope*x + offset
 color   = average(edge_t[ii]) * ones(len(edge_t[ii]))
 plt.plot( x, y_fit, 'k-' )
 plt.show()
-'''

@@ -7344,7 +7344,77 @@ files from my Garmin Edge 810.
                     and small.
             >   I can now proceed to cross-plotting the powers and
                 linear regression.
-
+                :   Inspect the power signals (post-resampling).
+                    The edge appears to occasionally lag throughout.
+                    Amplitude agreement is excellent. I don't see any
+                    regions that need to be removed before using
+                    ScaleDelayError().\
+                :   How do I use ScaleDelayError() now? zwift_power_r
+                    has been sampled to
+                        base_t = arange(len(RetDict['A']))
+                    which correlates to Ebeg:Eend for the edge:
+                        x1  = zwift_power_r
+                        x2  = edge_power[Ebeg:Eend]
+                :   When this is done, I will have a new TimeScale
+                    and ExactDelay:
+                        PMTimeScale   = res.x[0]
+                        PMExactDelay  = res.x[1]
+                    How do I use them to resample? I think this should work:
+                        zwift_t_s_s     = PMTimeScale*base_t + PMExactDelay
+                        zwift_power_r_r = interp(base_t,
+                                                 zwift_t_s_s,
+                                                 zwift_power_r)
+                    The extra "_s" and "_r" indicate that resampling has
+                    occurred twice in succession.
+                :   What do I cross-plot?
+                    zwift_power_r_r Vs. edge_power[Ebeg:Eend]
+                :   And, with that, we have results:
+                        leo_power_compare_j.png
+                    The printed results:
+                        new_find_delay results:
+                          minimum RMS is  4.649143732445139
+                          delay with minimum RMS is 2686 at i == 4955
+                        heart rate optimum delay:  2686
+                        new_find_delay results:
+                          minimum RMS is  4.817643784045885
+                          delay with minimum RMS is 2685 at i == 4954
+                        cadence optimum delay:  2685
+                        Optimization terminated successfully.
+                        TimeScale = 1.00005166, ExactDelay = 0.421
+                        Optimization terminated successfully.
+                        scale =   0.999885, Zwift PM Delay =  0.191
+                        slope = 0.959, offset = 11
+                    The time scaling error would be
+                        >>> (Zend-Zbeg)*(1-PMTimeScale)
+                        0.2621304811755998
+                    which is about a quarter sample--very small. And the
+                    delay of 0.19 sec is very small too.
+                :   Linear regression suggests a slope of 0.959, but I'm
+                    not sure the fitted line agrees with the plotted points
+                    at high powers. Perhaps it agrees around 600W. But
+                    there are plenty of samples above unity also. I am hesitant
+                    to conclude that the Infocrank is actually 4% lower than the
+                    PowerTap P1.
+                :   Consider a region with lots of data around 600W:
+                        leo_power_compare_k.png
+                    Leo pointed out earlier (line 6499):
+                        "The p1 tends to read a tad higher in sharp
+                        accelerations". Sample:
+                            leo_power_compare_c.png
+                    The P1 are pedals which are closer to the power
+                    source--the feet. Their faster transient response is
+                    going to be important in capturing very high power
+                    transients which won't last long enough to accummulate
+                    steady-state data in that region. These points will
+                    pull the regression toward the P1.
+                :   Rerun regression limiting power to 50-400W.
+                    Similar results:
+                        slope = 0.947, offset = 14
+                        leo_power_compare_l.png
+                    And yet, looking at the time data after resampling,
+                    I don't believe the P1 is 4% higher in the region of
+                    400W when the power is stable.
+                :   Commit & push.
 
 
 https://help.github.com/articles/basic-writing-and-formatting-syntax/
