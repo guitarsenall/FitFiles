@@ -6795,7 +6795,7 @@ files from my Garmin Edge 810.
                         Abeg = 0 if i < nB else i-nB+1
                     so the RMS vector becomes
                         C = B[nB-1-i:nB] - A[Abeg:i+1]
-                    But not I have a problem with B: it's slice begins at
+                    But now I have a problem with B: it's slice begins at
                     nB-1-i, which is now -1. But we're in a region where
                     it should be zero, so,
                         if i < nB:
@@ -7415,6 +7415,101 @@ files from my Garmin Edge 810.
                     I don't believe the P1 is 4% higher in the region of
                     400W when the power is stable.
                 :   Commit & push.
+                                                Thursday, May 2, 2019 (8:04 AM)
+        -   Capture some images for a post on Leo's files.
+                leos_data_a.png
+                new_find_delay_dev_a.png
+
+
+                                                Sunday, May 5, 2019 (9:15 AM)
++   NEW PROJECT: Mapping.
+    I want to overlay the GPS route data on an image on which I can choose
+    the origin (first GPS point) and scale graphically.
+
+    *   GPS data in semicircles.
+            https://community.alteryx.com/t5/Alteryx-Designer-Discussions
+                /convert-geocoordinates-in-semicircles/td-p/78452
+        says, "I found a formula how Garmin converts this to degrees:"
+            d = s * (180.0D / 2^31)
+        But I think I can leave the units in semicircles. Latitude measures
+        north (positive) Vs south; longitude measures east (positive) vs west.
+
+    *   I will need to plot a map image of The Shire using techniques in
+            https://matplotlib.org/gallery/images_contours_and_fields
+                /image_demo.html
+
+    *   Research MatPlotLib Event-handling tools--especially in
+            https://matplotlib.org/gallery/index.html
+        Scroll down to "Event handling"
+        -   This looks useful:
+                https://matplotlib.org/gallery/event_handling/data_browser.html
+            This code allows me to pick a plotted data point and responds
+            by plotting data related to that point in the other axis.
+        -   This contains mouse-move events, which I will need to establish
+            the scale and/or axes.
+                https://matplotlib.org/gallery/event_handling/coords_demo.html
+        -   This technique could be used to establish axis scale:
+                https://matplotlib.org/gallery/event_handling
+                    /ginput_manual_clabel_sgskip.html
+            though it is clunky. I prefer click-drag-release.
+        -   This one might be useful as it tracks mouse button down, drag,
+            and release:
+                https://matplotlib.org/gallery/event_handling/lasso_demo.htm
+            So does this one:
+                https://matplotlib.org/gallery/event_handling/looking_glass.html
+        -   With this one,
+                https://matplotlib.org/gallery/event_handling/path_editor.html
+            I can leave the map as an object on the image that I can move
+            and resize.
+            I need to keep studying the other event-handling demos after
+            this one.
+                                                Monday, May 6, 2019 (7:24 AM)
+        -   Studying the Lasso Demo.
+            >   The Lasso is a MatPlotLib widget.
+                    https://matplotlib.org/api/widgets_api.html
+            >   The matplotlib.widgets.RectangleSelector might be more
+                appropriate. I stumbled on its code:
+                    https://matplotlib.org/_modules/matplotlib/widgets.html
+                I think I would have to subclass this one and override
+                draw methods. Notice that EllipseSelector subclasses
+                RectangleSelector and overrides the draw_shape method.
+                It has example usage. Try in rectangle_selector_example.py.
+                It bombs:
+                    "Traceback (most recent call last):
+                      File "D:\...\fitfiles\rectangle_selector_example.py",
+                            line 33, in <module>
+                        fig.canvas.connect('key_press_event', toggle_selector)
+                    AttributeError: 'FigureCanvasTkAgg' object has
+                        no attribute 'connect'
+                However, there is a demo, rectangle_selector.py, in the gallery:
+                    https://matplotlib.org/gallery/widgets
+                        /rectangle_selector.html
+                This one works nicely, drawing a pink box with corner
+                and center handles. Unfortunately, pressing 'q' closes
+                the figure window; it is supposed to simply deactivate
+                the rectangle selector. But 'Q' works.
+                In the intitializer, I can use drawtype = 'box' or 'line'.
+                If I subclass and override, I can draw the GPS coordinates.
+                There will be more to it. RectangleSelector.draw_shape()
+                does not do the actual drawing but passes data to
+                RectangleSelector.to_draw. When EllipseSelector overrides
+                draw_shape(), it simply creates the ellipse and passes the
+                data to to_draw:
+                    if self.drawtype == 'box':
+                        self.to_draw.center = center
+                        self.to_draw.width = 2 * a
+                        self.to_draw.height = 2 * b
+                    else:
+                        rad = np.deg2rad(np.arange(31) * 12)
+                        x = a * np.cos(rad) + center[0]
+                        y = b * np.sin(rad) + center[1]
+                        self.to_draw.set_data(x, y)
+                So it really looks like I can get there from here!
+        -   Try this approach.
+            >   Copy the code for the EllipseSelector. Combine it with
+                the code from rectangle_selector.py in
+                my_ellipse_selector.py.
+                IT WORKS!
 
 
 https://help.github.com/articles/basic-writing-and-formatting-syntax/
