@@ -7510,6 +7510,49 @@ files from my Garmin Edge 810.
                 the code from rectangle_selector.py in
                 my_ellipse_selector.py.
                 IT WORKS!
+            >   Try showing the map:
+                    import matplotlib.pyplot as plt
+                    image = plt.imread('shire_map.jpg')
+                    fig, ax = plt.subplots()
+                    ax.imshow(image)
+                    plt.show()
+                It works. The figure window shows the coordinates start at
+                (0,0) in the top-left corner and extend to roughly (1400,900)
+                in the bottom-right corner. The image is 1393x874 pixels.
+            >   More info in
+                    https://matplotlib.org/api/_as_gen
+                        /matplotlib.pyplot.imshow.html
+                especially keywords 'origin' and 'extent'. Studying and
+                fiddling, I can now show the map with axes in miles.
+                The scale on the map stretches from pixel 41 to 325.
+                So this code plots accurate axes and scale in miles:
+                    import matplotlib.pyplot as plt
+                    # The image is 1393x874 pixels
+                    # The scale stretches from pixel 41 to 325
+                    scale = 50.0 / (325-41) # miles per pixel
+                    left    = -41*scale
+                    right   = (1393-41)*scale
+                    bottom  = -30*scale
+                    top     = (874-30)*scale
+                    image = plt.imread('shire_map.jpg')
+                    fig, ax = plt.subplots()
+                    ax.imshow(  image, origin='upper',
+                                extent=(left,right,bottom,top) )
+                    plt.show()
+                Which produces,
+                    shire_map_dev_a.png
+                Notice the agreement of the scale with the X axis.
+                This places Bag End at (158,67) miles.
+            >   Sooner later, I may tackle the question,
+                google("convert latitude and longitude to miles in python")
+                    https://stackoverflow.com/questions/19412462
+                        /getting-distance-between-two-points-based
+                        -on-latitude-longitude
+                Apparently there are some libraries, perhaps the best being
+                geopy:
+                    https://pypi.org/project/geopy/
+
+
 
 
 https://help.github.com/articles/basic-writing-and-formatting-syntax/

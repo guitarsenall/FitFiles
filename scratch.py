@@ -1,45 +1,59 @@
 
 # scratch.py
 
-
-# overplot the cadences that established the delay and TimeScaling.
 import matplotlib.pyplot as plt
-import matplotlib.dates as md
-from matplotlib.dates import date2num, DateFormatter
-import datetime as dt
-base = dt.datetime(2014, 1, 1, 0, 0, 0)
-if CadenceDelay > 0:
-    time_signal = edge_t
-    x_edge  = [ base + dt.timedelta(seconds=t)          \
-                for t in time_signal.astype('float')    ]
-    x_zwift = x_edge[Ebeg:Eend]
-else:
-    time_signal = zwift_t
-    x_zwift = [ base + dt.timedelta(seconds=t)          \
-                for t in time_signal.astype('float')    ]
-    x_edge  = x_zwift[Zbeg:Zend]
-x_edge  = date2num(x_edge ) # Convert to matplotlib format
-x_zwift = date2num(x_zwift) # Convert to matplotlib format
-fig1, (ax0, ax1, ax2) = plt.subplots(nrows=3, sharex=True)
-ax0.plot( time_signal,              edge_cad, 'r-', linewidth=1 );
-ax0.plot( time_signal[Ebeg:Eend],  zwift_cad, 'b-', linewidth=1 );
-ax0.grid(True)
-ax0.legend( ['Edge', 'Zwift' ], loc='upper left');
-ax0.set_ylabel('cadence, RPM')
-ax1.plot( time_signal,              edge_hr, 'r-', linewidth=1 );
-ax1.plot( time_signal[Ebeg:Eend],  zwift_hr, 'b-', linewidth=1 );
-ax1.grid(True)
-ax1.legend( ['Edge', 'Zwift' ], loc='upper left');
-ax1.set_ylabel('heart rate, BPM')
-ax2.plot( time_signal,              edge_power, 'r-', linewidth=1 );
-ax2.plot( time_signal[Ebeg:Eend],  zwift_power, 'b-', linewidth=1 );
-ax2.grid(True)
-ax2.legend( ['Edge', 'Zwift' ], loc='upper left');
-ax2.set_ylabel('power, watts')
-fig1.tight_layout()
-fig1.subplots_adjust(hspace=0)   # Remove horizontal space between axes
-fig1.suptitle('Raw data with delay applied', fontsize=20)
+# The image is 1393x874 pixels
+# The scale stretches from pixel 41 to 325
+scale = 50.0 / (325-41) # miles per pixel
+left    = -41*scale
+right   = (1393-41)*scale
+bottom  = -30*scale
+top     = (874-30)*scale
+image = plt.imread('shire_map.jpg')
+fig, ax = plt.subplots()
+ax.imshow(  image, origin='upper',
+            extent=(left,right,bottom,top) )
 plt.show()
+
+
+## overplot the cadences that established the delay and TimeScaling.
+#import matplotlib.pyplot as plt
+#import matplotlib.dates as md
+#from matplotlib.dates import date2num, DateFormatter
+#import datetime as dt
+#base = dt.datetime(2014, 1, 1, 0, 0, 0)
+#if CadenceDelay > 0:
+#    time_signal = edge_t
+#    x_edge  = [ base + dt.timedelta(seconds=t)          \
+#                for t in time_signal.astype('float')    ]
+#    x_zwift = x_edge[Ebeg:Eend]
+#else:
+#    time_signal = zwift_t
+#    x_zwift = [ base + dt.timedelta(seconds=t)          \
+#                for t in time_signal.astype('float')    ]
+#    x_edge  = x_zwift[Zbeg:Zend]
+#x_edge  = date2num(x_edge ) # Convert to matplotlib format
+#x_zwift = date2num(x_zwift) # Convert to matplotlib format
+#fig1, (ax0, ax1, ax2) = plt.subplots(nrows=3, sharex=True)
+#ax0.plot( time_signal,              edge_cad, 'r-', linewidth=1 );
+#ax0.plot( time_signal[Ebeg:Eend],  zwift_cad, 'b-', linewidth=1 );
+#ax0.grid(True)
+#ax0.legend( ['Edge', 'Zwift' ], loc='upper left');
+#ax0.set_ylabel('cadence, RPM')
+#ax1.plot( time_signal,              edge_hr, 'r-', linewidth=1 );
+#ax1.plot( time_signal[Ebeg:Eend],  zwift_hr, 'b-', linewidth=1 );
+#ax1.grid(True)
+#ax1.legend( ['Edge', 'Zwift' ], loc='upper left');
+#ax1.set_ylabel('heart rate, BPM')
+#ax2.plot( time_signal,              edge_power, 'r-', linewidth=1 );
+#ax2.plot( time_signal[Ebeg:Eend],  zwift_power, 'b-', linewidth=1 );
+#ax2.grid(True)
+#ax2.legend( ['Edge', 'Zwift' ], loc='upper left');
+#ax2.set_ylabel('power, watts')
+#fig1.tight_layout()
+#fig1.subplots_adjust(hspace=0)   # Remove horizontal space between axes
+#fig1.suptitle('Raw data with delay applied', fontsize=20)
+#plt.show()
 
 
 ## experiment with new_find_delay()
