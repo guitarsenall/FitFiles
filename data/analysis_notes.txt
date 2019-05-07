@@ -7551,7 +7551,33 @@ files from my Garmin Edge 810.
                 Apparently there are some libraries, perhaps the best being
                 geopy:
                     https://pypi.org/project/geopy/
-
+                                                Tuesday, May 7, 2019 (7:21 AM)
+                However, I don't need to deal with the earth not being a
+                perfect sphere, and I would rather not install a library yet.
+                Here is a formula:
+                    https://stackoverflow.com/questions/27928
+                        /calculate-distance-between-two-latitude-longitude
+                        -points-haversine-formula
+                which is,
+                    from math import cos, asin, sqrt
+                    def distance(lat1, lon1, lat2, lon2):
+                        p = 0.017453292519943295     #Pi/180
+                        a = 0.5 - cos((lat2 - lat1) * p)/2 \
+                                + cos(lat1 * p) * cos(lat2 * p) \
+                                * (1 - cos((lon2 - lon1) * p)) / 2
+                        return 12742 * asin(sqrt(a))
+                I think, since this gives distance between two points,
+                I can use it to acquire a scale in the X and Y directions
+                (i.e., north-south and east-west) converting semicircles
+                to miles.
+        -   New intermediate step: Create a new script, shire_map_ride.py,
+            to overlay the ride data on the shire map with the origin of
+            the ride at Bag End.
+            >   I now need to convert semicircles to degrees:
+                    def sc_to_deg(s)
+                        return sc * (180.0 / 2**31)
+            >   Got it working!
+                    shire_map_dev_b.png
 
 
 

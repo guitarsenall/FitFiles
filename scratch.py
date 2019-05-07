@@ -1,20 +1,6 @@
 
 # scratch.py
 
-import matplotlib.pyplot as plt
-# The image is 1393x874 pixels
-# The scale stretches from pixel 41 to 325
-scale = 50.0 / (325-41) # miles per pixel
-left    = -41*scale
-right   = (1393-41)*scale
-bottom  = -30*scale
-top     = (874-30)*scale
-image = plt.imread('shire_map.jpg')
-fig, ax = plt.subplots()
-ax.imshow(  image, origin='upper',
-            extent=(left,right,bottom,top) )
-plt.show()
-
 
 ## overplot the cadences that established the delay and TimeScaling.
 #import matplotlib.pyplot as plt
