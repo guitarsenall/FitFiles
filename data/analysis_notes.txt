@@ -7578,6 +7578,89 @@ files from my Garmin Edge 810.
                         return sc * (180.0 / 2**31)
             >   Got it working!
                     shire_map_dev_b.png
+            >   I took a high-resolution picture of the Shire map. Now,
+                how do I line up the scale again?
+                :   Plot with origin='upper' but no extent.
+                    #   Picture properties show the image is 4032x3024 pixels
+                    #   The scale stretches from pixel 296 to 1031 horizontally
+                        at a vertical value of 2441 to 2436 (average of 2438).
+                        When I use extent to flip the scale, this will put it
+                        at a vertical value of 3024-2438 = 586.
+                :   Use scratch.py to plot via
+                        import matplotlib.pyplot as plt
+                        scale = 50.0 / (1031-296) # miles per pixel
+                        left    = -296*scale
+                        right   = (4032-296)*scale
+                        bottom  = -586*scale
+                        top     = (3024-586)*scale
+                        extent=(left,right,bottom,top)
+                        image = plt.imread('shire_map_b.jpg')
+                        fig, ax = plt.subplots()
+                        ax.imshow( image, origin='upper', extent=extent )
+                        plt.show()
+                    Looks good:
+                        shire_map_dev_c.png
+                :   Formalize this method in shire_map_ride.py.
+                        ImSize  = (4032, 3024)
+                        ScaleL  = ( 296, 2438)
+                        ScaleR  = (1031, 2438)
+                        ScaleMi = 50.0
+                        BagEndPx= (2635, 1338)
+                        scale   = ScaleMi / (ScaleR[0]-ScaleL[0])
+                        left    = -ScaleL[0]*scale
+                        right   =  (ImSize[0]-ScaleL[0])*scale
+                        bottom  = -(ImSize[1]-ScaleL[1])*scale
+                        top     = ( ImSize[1] - (ImSize[1]-ScaleL[1]) )*scale
+                        image = plt.imread('shire_map_b.jpg')
+                :   If I know the location of Bag End in pixels, how do I
+                    transform it to miles? Actually, a more useful approach
+                    would be to put the origin at Bag End.
+                    #   Wouldn't this just shift left and right by
+                        BagEndPx[0]?
+                            left    = (-ScaleL[0]-BagEndPx[0])*scale
+                            right   =  (ImSize[0]-ScaleL[0]-BagEndPx[0])*scale
+                        And likewise,
+                            bottom  = -(ImSize[1]-ScaleL[1]-BagEndPx[1])*scale
+                            top     = (  ImSize[1] - (ImSize[1]-ScaleL[1]) \
+                                        - BagEndPx[1] )*scale
+                        Try it. Definitely not right!
+                    #   So how does the transform work? Before the scale is
+                        applied, the Y axis is flipped, and the X axis is
+                        unaffected, other than shifting to put the scale
+                        at (0,0). So, given a point (x,y), x moves:
+                            x --> x - ScaleL[0]
+                        Then, when scale is applied, it becomes,
+                            x --> (x - ScaleL[0])*scale
+                        So how is BagEndPx[0] introduced? The left edge
+                        should end up at -BagEndPx[0]*scale because it is
+                        BagEndPx[0] pixels away, and pixels are simply scaled
+                        to miles. So we get
+                            left    = -BagEndPx[0]*scale
+                        And where is the right edge? It is
+                        ImSize[0]-BagEndPx[0] pixels away, so it must be,
+                            right   = (ImSize[0]-BagEndPx[0])*scale
+                        OK, what about the top and bottom? Before the Y axis
+                        is flipped, the top edge is BagEndPx[1] pixels above
+                        Bag End.
+                        Hmmm...have to think hard here.
+                                            Wednesday, May 8, 2019 (4:42 PM)
+                        And the bottom edge is ImSize[1]-BagEndPx[1] pixels
+                        below it. Now the top edge is at Y=ImSize[1], which
+                        is still located BagEndPx[1] pixels above
+                        Bag End. So we must have
+                            top     = BagEndPx[1]*scale
+                            bottom  = -(ImSize[1]-BagEndPx[1])*scale
+                        Try it.
+                        The scale looks good:
+                            shire_map_dev_d.png
+                        And Bag End is at the origin:
+                            shire_map_dev_e.png
+            >   Have a look at my ride south, over the Mackinaw, from
+                the other day:
+                    shire_map_dev_f.png
+                I made it to Tuckburrow.
+            >   Commit & push
+
 
 
 

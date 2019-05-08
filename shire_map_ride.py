@@ -5,21 +5,31 @@ Overlay the ride data on the shire map with the origin of
 the ride at Bag End, which is located at (158,67) miles.
 '''
 
-BagEnd  = (158,67)
+# scale the ride distance
+RideScale   = 1.0
 
 #
 # Display the shire map
 #
 
 import matplotlib.pyplot as plt
-# The image is 1393x874 pixels
-# The scale stretches from pixel 41 to 325
-scale = 50.0 / (325-41) # miles per pixel
-left    = -41*scale
-right   = (1393-41)*scale
-bottom  = -30*scale
-top     = (874-30)*scale
-image = plt.imread('shire_map.jpg')
+# Image and scale properties
+ImSize  = (3661, 2373)      # image size in pixels
+ScaleL  = (  72, 2320)      #  left corner of scale in image coords
+ScaleR  = ( 806, 2313)      # right corner of scale in image coords
+ScaleMi = 50.0              # scale in miles
+BagEndPx= (2410, 1217)      # Bag End location in pixels
+#BagEndPx= (0,0)      # Bag End location in pixels
+scale   = ScaleMi / (ScaleR[0]-ScaleL[0])   # miles per pixel
+#left    = -ScaleL[0]*scale
+#right   =  (ImSize[0]-ScaleL[0])*scale
+#bottom  = -(ImSize[1]-ScaleL[1])*scale
+#top     = ( ImSize[1] - (ImSize[1]-ScaleL[1]) )*scale
+left    = -BagEndPx[0]*scale
+right   = (ImSize[0]-BagEndPx[0])*scale
+bottom  = -(ImSize[1]-BagEndPx[1])*scale
+top     = BagEndPx[1]*scale
+image = plt.imread('shire_map_b.jpg')
 
 
 '''
@@ -48,8 +58,10 @@ def sc_to_deg(s):
 #
 # Get the ride data
 #
-FilePath        = r'D:\Users\Owner\Documents\OneDrive\bike\activities\will\\'
-FitFilePath     = FilePath + r'2019-05-03-14-32-49.fit'
+FilePath        = r'S:\will\documents\OneDrive\bike\activities\will\\'
+#FilePath        = r'D:\Users\Owner\Documents\OneDrive\bike\activities\will\\'
+#FitFilePath     = FilePath + r'2019-05-03-14-32-49.fit'
+FitFilePath     = FilePath + r'2019-05-01-14-08-23.fit'
 
 from datetime import datetime
 from fitparse import Activity
@@ -67,9 +79,9 @@ LonSpan = distance( sc_to_deg(ride_lat[0]), sc_to_deg(ride_lon.min()),
 LatScale    = LatSpan / ( ride_lat.max() - ride_lat.min() )
 LonScale    = LonSpan / ( ride_lon.max() - ride_lon.min() )
 
-# compute travel vectors normalized to first point and starting at Bag End.
-ride_east   = LonScale * ( ride_lon - ride_lon[0] ) + BagEnd[0]
-ride_north  = LatScale * ( ride_lat - ride_lat[0] ) + BagEnd[1]
+# compute travel vectors normalized to first point and scaled by RideScale.
+ride_east   = LonScale * ( ride_lon - ride_lon[0] ) * RideScale
+ride_north  = LatScale * ( ride_lat - ride_lat[0] ) * RideScale
 
 #
 # create the plot
@@ -77,6 +89,6 @@ ride_north  = LatScale * ( ride_lat - ride_lat[0] ) + BagEnd[1]
 fig, ax = plt.subplots()
 ax.imshow(  image, origin='upper',
             extent=(left,right,bottom,top) )
-ax.plot( ride_east, ride_north, 'g-', linewidth=2 )
+ax.plot( ride_east, ride_north, 'r-', linewidth=3 )
 plt.show()
 
