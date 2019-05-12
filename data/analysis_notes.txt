@@ -7660,7 +7660,115 @@ files from my Garmin Edge 810.
                     shire_map_dev_f.png
                 I made it to Tuckburrow.
             >   Commit & push
+                                            Saturday, May 11, 2019 (8:23 PM)
+        -   Come back to this later.
 
+
++   Custom colormapping.
+    I am not satisfied with any of the existing colormaps for the
+    pedal exposure histogram in force_analysis.py.
+    I will need to create my own.
+
+    *   Research
+        -   I think I want to create my own colormap. See
+                https://matplotlib.org/tutorials/colors
+                    /colormap-manipulation.html
+                    #creating-linear-segmented-colormaps
+            and existing colormap reference:
+                https://matplotlib.org/gallery/color/colormap_reference.html
+            I like the starting color for 'rainbow', but I want a quick
+            transition to another color to highlight low-work
+            regions--perhaps the dark green from 'gist_ncar'. I also want
+            more value separation in the middle--perhaps a yellow section
+            as occurs in 'jet'.
+        -   Another resource:
+                https://matplotlib.org/examples/color/named_colors.html
+        -   Clone the code in
+                https://matplotlib.org/tutorials/colors
+                    /colormap-manipulation.html
+            into scratch.py
+        -   How to get a named color into an RGBA tuple:
+                >>> from matplotlib import colors as mcolors
+                >>> colors = dict(mcolors.BASE_COLORS, **mcolors.CSS4_COLORS)
+                >>> green = mcolors.to_rgba( colors['green'] )
+                >>> green
+                (0.0, 0.5019607843137255, 0.0, 1.0)
+
+    *   So what do I want? Something like this:
+             X        color
+            0       darkviolet
+            0.1     darkgreen
+            0.3     blue
+            0.5     cyan
+            0.7     yellow
+            1.0     red
+        How do I do that?
+        -   In,
+                https://matplotlib.org/api/_as_gen
+                    /matplotlib.colors.LinearSegmentedColormap.html
+            I see I need to form something like,
+                cdict = {'red':   [(0.0,  0.0, 0.0),
+                                   (0.5,  1.0, 1.0),
+                                   (1.0,  1.0, 1.0)],
+
+                         'green': [(0.0,  0.0, 0.0),
+                                   (0.25, 0.0, 0.0),
+                                   (0.75, 1.0, 1.0),
+                                   (1.0,  1.0, 1.0)],
+
+                         'blue':  [(0.0,  0.0, 0.0),
+                                   (0.5,  0.0, 0.0),
+                                   (1.0,  1.0, 1.0)]}
+            For example, the red entry will have a list of tuples where
+            the first index is X, the second is the red content at X-,
+            and the third is the red content at X+ (so, in my case, with
+            no discontinuities, the 2nd and 3rd will be the same). So, for
+            the very first tuple, I have to extract the red content in
+            darkviolet:
+                >>> darkviolet = mcolors.to_rgba( colors['darkviolet'] )
+                >>> darkviolet[0]
+                0.5803921568627451
+                >>> r = []
+                >>> r.append(darkviolet[0])
+            Then the next tuplet will have
+                >>> darkgreen = mcolors.to_rgba( colors['darkgreen'] )
+                >>> r.append(darkgreen[0])
+                >>> r
+                [0.5803921568627451, 0.0]
+            And I can begin,
+                cdict['red'] =  [ (0.0, r[0], r[0]),
+                                [ (0.1, r[1], r[1]) ]
+            and continue in this fashion until the red interpolation
+            table is complete. Then repeat for green and blue to
+            form cdict.
+                                                Sunday, May 12, 2019 (5:56 AM)
+            Once cdict is formed, assemble the colormap with
+                newcmp = LinearSegmentedColormap('testCmap',
+                                        segmentdata=cdict, N=256)
+        -   This works:
+                colors = dict(mcolors.BASE_COLORS, **mcolors.CSS4_COLORS)
+                segment_data = [
+                                # X        color
+                                ( 0  ,   'darkviolet' ),
+                                ( 0.1,   'darkgreen'  ),
+                                ( 0.3,   'blue'       ),
+                                ( 0.5,   'cyan'       ),
+                                ( 0.7,   'yellow'     ),
+                                ( 1.0,   'red'        ) ]
+                cdict = {'red'  : [],
+                         'green': [],
+                         'blue' : []}
+                for x, cName in segment_data:
+                    rgba = mcolors.to_rgba( colors[cName] )
+                    cdict[  'red'].append( (x, rgba[0], rgba[0]) )
+                    cdict['green'].append( (x, rgba[1], rgba[1]) )
+                    cdict[ 'blue'].append( (x, rgba[2], rgba[2]) )
+                newcmp = LinearSegmentedColormap('testCmap',
+                                        segmentdata=cdict, N=256)
+        -   Move the code to force_analysis.py.
+                custom_colormap_a.png
+            IT WORKS!!!
+        -   Commit & push
 
 
 
@@ -7753,7 +7861,7 @@ TO DO:
     *   pwhr_tf_params.py
     *   interval_laps.py
     *   channel_inspect_anls.py
-
+    *   force_analysis.py
 
 
 D:\Users\Owner\Documents\OneDrive\2018\fitfiles\cyclingconfig_will.txt

@@ -98,8 +98,8 @@ def force_analysis(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     # Histogram bin edges. The first bin is underflow (includes data
     # down to the minimum regardless of the first edge), and the last
     # is overflow (includes data up to maximum regardless of the last edge).
-    force_bins      = np.arange(0, 85, 5)
-    cadence_bins    = np.arange(25, 125, 5)
+    force_bins      = np.arange(0, 82, 2)       # (0, 85, 5)
+    cadence_bins    = np.arange(26, 126, 2)     # (25, 125, 5)
 
     # compute the force-work histogram
     # Instead of counts, we have revs and work as a function of force.
@@ -236,12 +236,37 @@ def force_analysis(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     fig4.canvas.set_window_title(FitFilePath)
     plt.show()
 
+    # create a custom segmented colormap. I want zero to be a cool color
+    # on which I can see the power contours; I want a quick transition that
+    # exposes low work values with a subtle cool color; then I want the
+    # map to gradually transition through "hotter" colors to red.
+    from matplotlib import colors as mcolors
+    colors = dict(mcolors.BASE_COLORS, **mcolors.CSS4_COLORS)
+    segment_data = [
+                    # X        color
+                    ( 0  ,   'darkviolet' ),
+                    ( 0.1,   'darkgreen'  ),
+                    ( 0.3,   'blue'       ),
+                    ( 0.5,   'cyan'       ),
+                    ( 0.7,   'yellow'     ),
+                    ( 1.0,   'red'        ) ]
+    cdict = {'red'  : [],
+             'green': [],
+             'blue' : []}
+    for x, cName in segment_data:
+        rgba = mcolors.to_rgba( colors[cName] )
+        cdict[  'red'].append( (x, rgba[0], rgba[0]) )
+        cdict['green'].append( (x, rgba[1], rgba[1]) )
+        cdict[ 'blue'].append( (x, rgba[2], rgba[2]) )
+    newcmp = mcolors.LinearSegmentedColormap('WillsCmap',
+                                    segmentdata=cdict, N=256)
+
     # exposure histogram plot
     # clone from
     #   https://matplotlib.org/gallery/images_contours_and_fields/pcolor_demo.html
     fig3, ax3 = plt.subplots()
     c   = ax3.pcolor( force_grid, cadence_grid, work2d,
-                      cmap='rainbow', vmin=work2d.min(), vmax=work2d.max() )
+                      cmap=newcmp, vmin=work2d.min(), vmax=work2d.max() )
     ax3.axis([   force_bins.min(), force_bins.max(),
                 cadence_bins.min(), cadence_bins.max()])
     cbar    = fig3.colorbar(c, ax=ax3)

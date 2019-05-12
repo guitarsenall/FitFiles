@@ -1,20 +1,61 @@
 
 # scratch.py
 
-# show map without scaling
+# colormap experimentation
+import numpy as np
+import matplotlib as mpl
 import matplotlib.pyplot as plt
-# The image is 4032x3024 pixels
-# The scale stretches from pixel 296 to 1031
-scale = 50.0 / (1031-296) # miles per pixel
-left    = -296*scale            # -41
-right   = (4032-296)*scale      # 1393-41
-bottom  = -586*scale            # -30
-top     = (3024-586)*scale      # 874-30
-extent=(left,right,bottom,top)
-image = plt.imread('shire_map_b.jpg')
-fig, ax = plt.subplots()
-ax.imshow( image, origin='upper', extent=None )
-plt.show()
+from matplotlib import cm
+from matplotlib.colors import ListedColormap, LinearSegmentedColormap
+from collections import OrderedDict
+from matplotlib import colors as mcolors
+viridis = cm.get_cmap('viridis', 256)
+# create the new colormap
+colors = dict(mcolors.BASE_COLORS, **mcolors.CSS4_COLORS)
+segment_data = [
+                # X        color
+                ( 0  ,   'darkviolet' ),
+                ( 0.1,   'darkgreen'  ),
+                ( 0.3,   'blue'       ),
+                ( 0.5,   'cyan'       ),
+                ( 0.7,   'yellow'     ),
+                ( 1.0,   'red'        ) ]
+cdict = {'red'  : [],
+         'green': [],
+         'blue' : []}
+for x, cName in segment_data:
+    rgba = mcolors.to_rgba( colors[cName] )
+    cdict[  'red'].append( (x, rgba[0], rgba[0]) )
+    cdict['green'].append( (x, rgba[1], rgba[1]) )
+    cdict[ 'blue'].append( (x, rgba[2], rgba[2]) )
+newcmp = LinearSegmentedColormap('testCmap', segmentdata=cdict, N=256)
+def plot_examples(cms):
+    # helper function to plot two colormaps
+    np.random.seed(19680801)
+    data = np.random.randn(30, 30)
+    fig, axs = plt.subplots(1, 2, figsize=(6, 3) ) #, constrained_layout=True)
+    for [ax, cmap] in zip(axs, cms):
+        psm = ax.pcolormesh(data, cmap=cmap, rasterized=True, vmin=-4, vmax=4)
+        fig.colorbar(psm, ax=ax)
+    plt.show()
+plot_examples([viridis, newcmp])
+
+
+
+## show map without scaling
+#import matplotlib.pyplot as plt
+## The image is 4032x3024 pixels
+## The scale stretches from pixel 296 to 1031
+#scale = 50.0 / (1031-296) # miles per pixel
+#left    = -296*scale            # -41
+#right   = (4032-296)*scale      # 1393-41
+#bottom  = -586*scale            # -30
+#top     = (3024-586)*scale      # 874-30
+#extent=(left,right,bottom,top)
+#image = plt.imread('shire_map_b.jpg')
+#fig, ax = plt.subplots()
+#ax.imshow( image, origin='upper', extent=None )
+#plt.show()
 
 
 ## overplot the cadences that established the delay and TimeScaling.
