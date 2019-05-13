@@ -245,6 +245,7 @@ def force_analysis(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     segment_data = [
                     # X        color
                     ( 0  ,   'darkviolet' ),
+                    ( 0.005, 'purple'     ),
                     ( 0.1,   'darkgreen'  ),
                     ( 0.3,   'blue'       ),
                     ( 0.5,   'cyan'       ),

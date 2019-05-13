@@ -7770,6 +7770,24 @@ files from my Garmin Edge 810.
             IT WORKS!!!
         -   Commit & push
 
+                                                Monday, May 13, 2019 (8:03 AM)
+    *   I want a small discontinuity at the beginning to distinguish
+        between zero and nonzero bins. Since the number of colors is 256,
+        I can transition to a slightly darker color, purple, at approximately
+        1/256; 0.005 is close enough:
+            segment_data = [
+                            # X        color
+                            ( 0  ,   'darkviolet' ),
+                            ( 0.005, 'purple'     ),
+                            ( 0.1,   'darkgreen'  ),
+                            ( 0.3,   'blue'       ),
+                            ( 0.5,   'cyan'       ),
+                            ( 0.7,   'yellow'     ),
+                            ( 1.0,   'red'        ) ]
+        much better:
+                custom_colormap_b.png
+        -   Commit & push
+
 
 
 https://help.github.com/articles/basic-writing-and-formatting-syntax/
