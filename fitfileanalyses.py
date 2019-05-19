@@ -118,26 +118,27 @@ def LoadConfigFile(event):
     dlg.Destroy()
 
 
-analyses_labels = [ 'Channel Inspector',
-                    'Endurance Laps',
-                    'Zone Detection',
-                    'Interval Laps',
-                    'Heart Rate',
-                    'Pw-HR Simulation',
-                    'Force Analysis',
-                    'Saddle Endurance',
-                    'Compare Two Powers']
+analyses_labels = [ 'Channel Inspector' ,
+                    'Endurance Laps'    ,
+                    'Zone Detection'    ,
+                    'Interval Laps'     ,
+                    'Heart Rate'        ,
+                    'Pw-HR Simulation'  ,
+                    'Force Analysis'    ,
+                    'Saddle Endurance'  ,
+                    'Shire Map'         ]
 
 # make sure matplotlib is imported INSIDE the analysis functions
 # or bad things happen (e.g., code freezes until plot is closed, etc...).
-from channel_inspect_anls import channel_inspect_anls
-from endurance_summary import endurance_summary
-from zone_detect import zone_detect
-from plot_heartrate import plot_heartrate
+from channel_inspect_anls   import channel_inspect_anls
+from endurance_summary      import endurance_summary
+from zone_detect            import zone_detect
+from plot_heartrate         import plot_heartrate
 from pwhr_transfer_function import pwhr_transfer_function
-from interval_laps import interval_laps
-from force_analysis import force_analysis
-from saddle_endurance_anls import saddle_endurance_anls
+from interval_laps          import interval_laps
+from force_analysis         import force_analysis
+from saddle_endurance_anls  import saddle_endurance_anls
+from shire_map_ride_anls    import shire_map_ride_anls
 
 class MyLaunchButton(wx.Button):
     ''' class to hold plot-closer functions to be called when application is closed'''
@@ -260,6 +261,19 @@ class MyLaunchButton(wx.Button):
             print >> OutputTextCtl, ''
             try:
                 PlotCloserFcn = saddle_endurance_anls( FITFileName, ConfigFile,
+                                                OutStream=OutputTextCtl )
+                self.plot_closer_fcns.append(PlotCloserFcn)
+            except IOError, ErrorObj:
+                dlg = wx.MessageDialog(win, ErrorObj.message, AnalysesChoice,
+                            wx.OK | wx.ICON_INFORMATION )
+                dlg.ShowModal()
+                dlg.Destroy()
+
+        elif AnalysesChoice == 'Shire Map':
+            print 'Running Shire Map on ' + FITFileName
+            print >> OutputTextCtl, ''
+            try:
+                PlotCloserFcn = shire_map_ride_anls( FITFileName, ConfigFile,
                                                 OutStream=OutputTextCtl )
                 self.plot_closer_fcns.append(PlotCloserFcn)
             except IOError, ErrorObj:

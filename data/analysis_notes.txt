@@ -7791,8 +7791,11 @@ files from my Garmin Edge 810.
 
                                                 Sunday, May 19, 2019 (2:11 PM)
 +   Make shire_map_ride.py into an analysis.
-
     *   Rename it shire_map_ride_anls.py (using TortoiseGIT dialog).
+    *   Modify it similarly to other analyses.
+    *   It works!
+            shire_map_dev_g.png
+
 
 
 https://help.github.com/articles/basic-writing-and-formatting-syntax/

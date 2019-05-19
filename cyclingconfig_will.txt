@@ -22,3 +22,7 @@ temperature     : F
 speed           : mph
 altitude        : feet
 distance        : miles
+
+[mapping]
+RideScale       : 3.0       ; scale the ride distance
+
