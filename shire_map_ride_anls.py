@@ -1,12 +1,12 @@
 
 '''
-shire_map_ride.py
+shire_map_ride_anls.py
 Overlay the ride data on the shire map with the origin of
 the ride at Bag End, which is located at (158,67) miles.
 '''
 
 # scale the ride distance
-RideScale   = 1.0
+RideScale   = 3.0
 
 #
 # Display the shire map
@@ -58,10 +58,11 @@ def sc_to_deg(s):
 #
 # Get the ride data
 #
-FilePath        = r'S:\will\documents\OneDrive\bike\activities\will\\'
-#FilePath        = r'D:\Users\Owner\Documents\OneDrive\bike\activities\will\\'
+#FilePath        = r'S:\will\documents\OneDrive\bike\activities\will\\'
+FilePath        = r'D:\Users\Owner\Documents\OneDrive\bike\activities\will\\'
 #FitFilePath     = FilePath + r'2019-05-03-14-32-49.fit'
-FitFilePath     = FilePath + r'2019-05-01-14-08-23.fit'
+#FitFilePath     = FilePath + r'2019-05-01-14-08-23.fit'
+FitFilePath     = FilePath + r'2019-05-17-16-02-36.fit'
 
 from datetime import datetime
 from fitparse import Activity

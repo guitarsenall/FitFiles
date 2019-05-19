@@ -7454,7 +7454,7 @@ files from my Garmin Edge 810.
             though it is clunky. I prefer click-drag-release.
         -   This one might be useful as it tracks mouse button down, drag,
             and release:
-                https://matplotlib.org/gallery/event_handling/lasso_demo.htm
+                https://matplotlib.org/gallery/event_handling/lasso_demo.html
             So does this one:
                 https://matplotlib.org/gallery/event_handling/looking_glass.html
         -   With this one,
@@ -7789,6 +7789,11 @@ files from my Garmin Edge 810.
         -   Commit & push
 
 
+                                                Sunday, May 19, 2019 (2:11 PM)
++   Make shire_map_ride.py into an analysis.
+
+    *   Rename it shire_map_ride_anls.py (using TortoiseGIT dialog).
+
 
 https://help.github.com/articles/basic-writing-and-formatting-syntax/
 
@@ -7880,6 +7885,9 @@ TO DO:
     *   interval_laps.py
     *   channel_inspect_anls.py
     *   force_analysis.py
+        -   Interactive analysis to draw a rectangle box selector to sum
+            work in that force-cadence region.
+            >   Perhaps some average power Also?
 
 
 D:\Users\Owner\Documents\OneDrive\2018\fitfiles\cyclingconfig_will.txt
