@@ -1,6 +1,8 @@
 # FitFiles
 The main feature in this project is a GUI which gives access to a collection of custom analysis routines for .FIT files from Garmin devices for cycling activities.
 
+## FaceBook: [Cycling Number Crunchers Group](https://www.facebook.com/groups/285938688986550/)
+
 ## [See Presentation](data/FitFiles.pdf)
 
 ## Screenshots
@@ -19,7 +21,7 @@ The main feature in this project is a GUI which gives access to a collection of 
             <img alt="kim_pwhr_a2_c.png" src="data/kim_pwhr_a2_c.png">
         </td>
         <td>
-            <img alt="force_analysis_dev_i.png" src="data/force_analysis_dev_i.png">
+            <img alt="force_analysis_dev_k.png" src="data/force_analysis_dev_k.png">
         </td>
     </tr>
 </table>
@@ -41,6 +43,7 @@ The main feature in this project is a GUI which gives access to a collection of 
 -   **Force Analysis.** This analysis plots histograms containing work (in kilojoules) as a function of pedal force and cadence. One plot is a one-way histogram of pedal force only which is useful for checking the amount of high-force work done in a hill repeat (like counting weight and reps when lifting weights). The second plot is a one-way histogram of cadence (plotted horizontally). The third plot is a two-way histogram of pedal force on the X-axis (identical to the first plot) and cadence on the Y axis with power contour lines drawn. This is useful for learning the force-cadence-power conditions in which the most work is done in an arbitrary ride (e.g., fast-RPM VO2max intervals).
 -   **Channel Inspector.** This is a basic utility which presents a selection dialog listing the channels available in the selected .FIT file and plots the ones selected by the user.
 -   **Saddle Endurance.** This analysis measures saddle endurance by detecting when the rider is seated Vs standing. It works well when standing is characterized by halts in pedaling every 3-8 seconds and sitting is characterized by continuous pedaling above 40 RPM. Useful outputs are total seated time and percent and a metric for the whole ride, the Best One-Hour Average.
+-   **Shire Map.** This analysis plots the ride over an image containing a map (currently shire_map_b.jpg, which contains a map of The Shire from "Lord of the Rings"). The ride coordinates are shifted to begin at a specific point on the image and scaled by the value RideScale in the user configuration file.
 
 ##  How to launch using the batch file
 
