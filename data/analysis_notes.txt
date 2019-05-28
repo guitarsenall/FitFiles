@@ -7797,6 +7797,126 @@ files from my Garmin Edge 810.
             shire_map_dev_g.png
 
 
+                                                Monday, May 27, 2019 (9:57 AM)
++   There is a problem with pwhr_transfer_function.py: The running TSS jumps
+    during breaks.
+            pwhr_tss_a.png
+
+    *   This is for yesterday's 60-miler (2019-05-26-14-38-51.fit)
+        Notice the total TSS in this plot is 213 TSS while the actual is
+            >>> (3*60.0+41.0)/60*100 * 0.72**2
+            190.944
+        where the moving time is 3:41:27 and intensity is 0.72 (from endurance
+        analysis).
+        -   Garmin Connect gives 0.709 for intensity and 184.5 TSS.
+            Measured time is close: 3:40:54, while moving time is 3:40:13.
+
+    *   I am guessing it is from using time_ci in,
+                TSS[i] = time_ci[i]/36*(norm_power[i]/FTP)**2
+        -   I see the signals are retrieved as 'existing' but resampled
+            to constant-increment. While power will be zeros at the
+            inserted time points, the amount of time measured increases,
+            and this increases TSS.
+                                                Tuesday, May 28, 2019 (7:39 AM)
+            I need to use the resampled power to compute normalized power
+            because, when I resume after a break, I don't want the running
+            30-second power to include data that ended a couple minutes
+            previously.
+            However, for a line like this, I will need a "moving-time"
+            signal that is continuously sampled so I can access the ith
+            element:
+                TSS[i] = moving_time[i]/36*(norm_power[i]/FTP)**2
+            How do I build moving_time?  time_ci is formed from time_idx
+            to fill in the gaps. moving_time would contain data in
+            them--repeats of the "stopped" time until it resumes:
+                    time_idx    time_ci     moving_time
+                        0           0           0
+                        1           1           1
+                        2           2           2
+                                    3           2
+                                    4           2
+                        5           5           3
+                        6           6           4
+                        7           7           5
+                                    8           5
+                                    9           5
+                        10          10          6
+                        11          11          7
+                        12          12          8
+            It is simple enough to call
+                moving_time[time_idx] = time_idx
+            but how do I fill in the gaps?
+            I suppose I need to loop over time_ci and hold an index, idx,
+            which will not change unless a new value is found.
+            Try this in scratch.py.
+                import numpy as np
+                time_idx    = np.array([ 0, 1, 2, 5, 6, 7, 10, 11, 12 ])
+                nScans      = time_idx[-1]+1
+                time_ci     = np.arange(nScans)
+                moving_time = np.zeros(nScans).astype('int')
+                idx = 0
+                for i in time_ci[0:-1]:
+                    moving_time[i] = idx
+                    if time_idx[idx+1] == i+1:
+                        idx += 1
+                moving_time[nScans-1] = idx
+            It appears to work:
+                >>> time_idx
+                array([ 0,  1,  2,          5,  6,  7,         10, 11, 12])
+                >>> time_ci
+                array([ 0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12])
+                >>> moving_time
+                array([ 0,  1,  2,  2,  2,  3,  4,  5,  5,  5,  6,  7,  8])
+
+    *   Integrate this into pwhr_transfer_function.py.
+        -   moving time is correct at 3:41:26, but the computed TSS
+            comes to only 156.
+            >   normalized power is 164.9. The Endurance Analysis computes
+                178W. Garmin Connect gets 180W. So why is it so low?
+                But I cannot see a difference in how it is calculated.
+                Wait.
+                    norm_power[i] = np.average( p30[:i]**4 )**(0.25)
+                I believe this is including all the non-moving points in
+                the average. p30 contains them (correctly), but the
+                average should not. Notice the approach in
+                endurance_summary.py:
+                    tBeg = (lap_start_time[0] - t0).total_seconds()
+                    tEnd = (lap_timestamp[-1] - t0).total_seconds()
+                    ii = nonzero( logical_and( time_idx >= tBeg,  \
+                                               time_idx <  tEnd)  )[0]
+                    all_norm_power  = average( p30[time_idx[ii]]**4 )**(0.25)
+                Can I use this approach? I cannot take p30[time_idx[i]]
+                because i samples the constant-time-increment vector.
+                Perhaps,
+                    ii = nonzero( time_idx <= i) )[0]
+                    norm_power[i] = np.average( p30[time_idx[ii]]**4 )**(0.25)
+            >   Try it.
+                    TSS =  182.27072351078132
+                    moving time:    3:41:26
+                    normalized power: 178.51675847653357
+                IT WORKED!
+
+    *   There is another problem. The heart rate simulation has very large
+        errors in the endurance zone:
+            pwhr_sim_a.png
+        Notice p30 is running around 190W, which should produce a HR
+        of about 140-150 BPM, but the simulation is giving a wild
+        170 BPM--near the threshold of 170 where power should be 254W.
+        -   Use a breakpoint and try
+                [Dbg]>>> np.interp( 190.0, PwHRTable[:,0], PwHRTable[:,1] )
+                144.2992125984252
+            This makes sense. In that case, the error must be coming
+            from the fatigue term, HRDriftRate*TSS[i].
+                [Dbg]>>> HRDriftRate*TSS[-1]
+                27.3406085266172
+            That's what the problem is. It is a long ride! HRDriftRate is 0.15,
+            which is appropriate for a 6% cardiac drift over a 2-hour
+            (100 TSS) ride (see line 5039, "Back to the analysis of cardiac
+            drift").
+        -   Commit & push.
+
+
+
 
 https://help.github.com/articles/basic-writing-and-formatting-syntax/
 
@@ -7867,6 +7987,12 @@ TO DO:
         -   Get to know SciKit-learn:
                 https://scikit-learn.org/stable/index.html
     *   endurance_summery
+        -   Add overall metrics
+            >   distance
+            >   average speed
+            >   elevation gain
+            >   average temperature
+            >   TSS
         -   Crashes if no laps.
         -   Eventually included percent seated time.
         -   Power balance while seated. Degrading with fatigue?

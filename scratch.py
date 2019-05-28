@@ -1,44 +1,66 @@
 
 # scratch.py
 
-# colormap experimentation
+
+# compute moving time
 import numpy as np
-import matplotlib as mpl
-import matplotlib.pyplot as plt
-from matplotlib import cm
-from matplotlib.colors import ListedColormap, LinearSegmentedColormap
-from collections import OrderedDict
-from matplotlib import colors as mcolors
-viridis = cm.get_cmap('viridis', 256)
-# create the new colormap
-colors = dict(mcolors.BASE_COLORS, **mcolors.CSS4_COLORS)
-segment_data = [
-                # X        color
-                ( 0  ,   'darkviolet' ),
-                ( 0.1,   'darkgreen'  ),
-                ( 0.3,   'blue'       ),
-                ( 0.5,   'cyan'       ),
-                ( 0.7,   'yellow'     ),
-                ( 1.0,   'red'        ) ]
-cdict = {'red'  : [],
-         'green': [],
-         'blue' : []}
-for x, cName in segment_data:
-    rgba = mcolors.to_rgba( colors[cName] )
-    cdict[  'red'].append( (x, rgba[0], rgba[0]) )
-    cdict['green'].append( (x, rgba[1], rgba[1]) )
-    cdict[ 'blue'].append( (x, rgba[2], rgba[2]) )
-newcmp = LinearSegmentedColormap('testCmap', segmentdata=cdict, N=256)
-def plot_examples(cms):
-    # helper function to plot two colormaps
-    np.random.seed(19680801)
-    data = np.random.randn(30, 30)
-    fig, axs = plt.subplots(1, 2, figsize=(6, 3) ) #, constrained_layout=True)
-    for [ax, cmap] in zip(axs, cms):
-        psm = ax.pcolormesh(data, cmap=cmap, rasterized=True, vmin=-4, vmax=4)
-        fig.colorbar(psm, ax=ax)
-    plt.show()
-plot_examples([viridis, newcmp])
+time_idx    = np.array([ 0, 1, 2, 5, 6, 7, 10, 11, 12 ])
+nScans      = time_idx[-1]+1
+time_ci     = np.arange(nScans)
+moving_time = np.zeros(nScans).astype('int')
+idx = 0
+for i in time_ci[0:-1]:
+    moving_time[i] = idx
+    if time_idx[idx+1] == i+1:
+        idx += 1
+moving_time[nScans-1] = idx
+#>>> time_idx
+#array([ 0,  1,  2,          5,  6,  7,         10, 11, 12])
+#>>> time_ci
+#array([ 0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12])
+#>>> moving_time
+#array([ 0,  1,  2,  2,  2,  3,  4,  5,  5,  5,  6,  7,  8])
+
+
+
+## colormap experimentation
+#import numpy as np
+#import matplotlib as mpl
+#import matplotlib.pyplot as plt
+#from matplotlib import cm
+#from matplotlib.colors import ListedColormap, LinearSegmentedColormap
+#from collections import OrderedDict
+#from matplotlib import colors as mcolors
+#viridis = cm.get_cmap('viridis', 256)
+## create the new colormap
+#colors = dict(mcolors.BASE_COLORS, **mcolors.CSS4_COLORS)
+#segment_data = [
+#                # X        color
+#                ( 0  ,   'darkviolet' ),
+#                ( 0.1,   'darkgreen'  ),
+#                ( 0.3,   'blue'       ),
+#                ( 0.5,   'cyan'       ),
+#                ( 0.7,   'yellow'     ),
+#                ( 1.0,   'red'        ) ]
+#cdict = {'red'  : [],
+#         'green': [],
+#         'blue' : []}
+#for x, cName in segment_data:
+#    rgba = mcolors.to_rgba( colors[cName] )
+#    cdict[  'red'].append( (x, rgba[0], rgba[0]) )
+#    cdict['green'].append( (x, rgba[1], rgba[1]) )
+#    cdict[ 'blue'].append( (x, rgba[2], rgba[2]) )
+#newcmp = LinearSegmentedColormap('testCmap', segmentdata=cdict, N=256)
+#def plot_examples(cms):
+#    # helper function to plot two colormaps
+#    np.random.seed(19680801)
+#    data = np.random.randn(30, 30)
+#    fig, axs = plt.subplots(1, 2, figsize=(6, 3) ) #, constrained_layout=True)
+#    for [ax, cmap] in zip(axs, cms):
+#        psm = ax.pcolormesh(data, cmap=cmap, rasterized=True, vmin=-4, vmax=4)
+#        fig.colorbar(psm, ax=ax)
+#    plt.show()
+#plot_examples([viridis, newcmp])
 
 
 

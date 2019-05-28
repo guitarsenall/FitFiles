@@ -8,7 +8,7 @@ sex         : male          ; male or female
 
 [power]
 
-EndurancePower  : 182.0     ; watts
+EndurancePower  : 185.0     ; watts
 ThresholdPower  : 254.0     ; watts
 EnduranceHR     : 140.0     ; BPM
 ThresholdHR     : 170.0     ; BPM
@@ -24,5 +24,5 @@ altitude        : feet
 distance        : miles
 
 [mapping]
-RideScale       : 3.0       ; scale the ride distance
+RideScale       : 1.0       ; scale the ride distance
 

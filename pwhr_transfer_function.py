@@ -212,12 +212,32 @@ def pwhr_transfer_function(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
     # compute the 30-second, moving-average power signal.
     p30 = BackwardMovingAverage( power )
 
+    '''
+    # compute moving time
+        moving_time would contain data in the gaps--repeats of the "stopped"
+        time until it resumes:
+            >>> time_idx
+            array([ 0,  1,  2,          5,  6,  7,         10, 11, 12])
+            >>> time_ci
+            array([ 0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12])
+            >>> moving_time
+            array([ 0,  1,  2,  2,  2,  3,  4,  5,  5,  5,  6,  7,  8])
+    '''
+    moving_time = np.zeros(nScans).astype('int')
+    idx = 0
+    for i in time_ci[0:-1]:
+        moving_time[i] = idx
+        if time_idx[idx+1] == i+1:
+            idx += 1
+    moving_time[nScans-1] = idx
+
     # Calculate running normalized power and TSS.
     norm_power  = np.zeros(nScans)
     TSS         = np.zeros(nScans)
     for i in range(1,nScans):
-        norm_power[i] = np.average( p30[:i]**4 )**(0.25)
-        TSS[i] = time_ci[i]/36*(norm_power[i]/FTP)**2
+        ii = np.nonzero( time_idx <= i )[0]
+        norm_power[i] = np.average( p30[time_idx[ii]]**4 )**(0.25)
+        TSS[i] = moving_time[i]/36*(norm_power[i]/FTP)**2
 
     #
     # simulate the heart rate
@@ -262,6 +282,12 @@ def pwhr_transfer_function(FitFilePath, ConfigFile=None, OutStream=sys.stdout):
 
     # -------------- debug ---------------
     print 'coef = ', coef
+    print 'TSS = ', TSS[-1]
+    hh  = moving_time[-1] // 3600
+    mm  = (moving_time[-1] % 3600) // 60
+    ss  = (moving_time[-1] % 3600) % 60
+    print 'moving time: %4i:%02i:%02i' % (hh, mm, ss)
+    print 'normalized power:', norm_power[-1], norm_power.max()
     CrossPlotFig    = plt.figure()
     sc = plt.scatter(TSS[time_idx], -err[time_idx], s=5 )
     plt.title('Simulation Error Vs TSS')
